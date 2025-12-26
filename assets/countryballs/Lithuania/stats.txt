@@ -1,0 +1,7 @@
+name Lithuania
+genitive Lithuanian
+colour #FDB913
+cities 4
+difficulty hard
+description The Grand Duchy of Lithuania used to rule over central Europe, yet now Lithuania is a small baltic country; it is time to do something about that ...
+malus Small country: Has only 4 cities

@@ -1,0 +1,8 @@
+name Saudi Arabia
+genitive Arab
+colour #00532C
+cities 12
+description Saudi Arabia is an evil oppressive state which chopped a journalist to pieces just because he was mean to them.
+difficulty medium
+malus Authoritarian regime: -20% province income
+malus Cut-off: half of Saudi Arabia is not in game

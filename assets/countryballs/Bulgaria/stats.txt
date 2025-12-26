@@ -1,0 +1,6 @@
+name Bulgaria
+genitive Bulgarian
+colour #00966E
+cities 3
+description Bulgaria is one of the stronger powers in the balkans, it is however not the strongest, and needs to watch out for Romania and Türkiye.
+difficulty medium

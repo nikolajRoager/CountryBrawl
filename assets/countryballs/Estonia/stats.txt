@@ -1,0 +1,8 @@
+name Estonia
+genitive Estonian
+colour #0072CE
+cities 3
+difficulty hard
+description Estonia is a small country next to Russia, enough said, good luck.
+malus Small country: Has only 3 cities
+bonus Strong democracy: +10% province income

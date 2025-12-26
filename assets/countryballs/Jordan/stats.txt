@@ -1,0 +1,8 @@
+name Jordan
+genitive Jordanian
+colour #CE1125
+cities 7
+difficulty hard
+description The Hashemite dynasty was once promised all the lands of Arabia, alas now they rule only Jordan, Allah willing, the time has come to correct this
+bonus Hashemite birthright: Conquer Saudi Arabia to gain their cores
+malus Authoritarian regime: -20% province income

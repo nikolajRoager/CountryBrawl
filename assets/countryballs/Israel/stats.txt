@@ -1,0 +1,12 @@
+name Israel
+genitive Israeli
+colour #0038B8
+cities 9
+difficulty hard
+description The history of Israel, is a history of conflict with the Palestinians, and with everybody else around them.
+bonus strong arms sector: -10% equipment production time
+bonus extensive conscription: +20% army capacity from cities
+bonus High military budget: starts with a large army
+malus regional Pariah: has poor relations with all its neighbours
+malus Illegal occupation: The west bank and the Golan heights is not cored
+malus BDS movement: -10% income from non-core cities

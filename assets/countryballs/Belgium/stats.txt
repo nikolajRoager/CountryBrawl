@@ -1,0 +1,9 @@
+name Belgium
+genitive Belgian
+colour #FDDA24
+cities 9
+description Belgium is an artificial country, created to serve as a speedbump against Germany. The best way to achieve this is, of course, to conquer Germany
+difficulty medium
+bonus densely populated: Has a lot of cities for such a small country
+bonus Benelux: Conquer Luxembourg and the Netherlands to gain their cores
+malus belgian infrastructure: -10% transport speed

@@ -1,0 +1,7 @@
+name Kurdistan
+genitive Kurdish
+colour #FEBE08
+cities 0
+description Kurdistan is literally unplayable, as they own 0 countries at game start
+difficulty impossible
+malus doesn't exist: has no cities

@@ -1,0 +1,8 @@
+name Egypt
+genitive Egyptian
+colour #FFCD00
+cities 37
+difficulty easy
+description Egypt is by far the strongest country in Africa, and is poised to dominae the Levant and Maghreb
+malus Authoritarian regime: -20% province income
+bonus Large country: Has a lot of cities

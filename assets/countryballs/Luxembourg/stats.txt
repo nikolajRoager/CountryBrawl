@@ -1,0 +1,9 @@
+name Luxembourg
+genitive Luxembourgish
+colour #00A3E0
+cities 1
+description Luxembourg is probably the least likely candidate to unify the Benelux ... but never say never
+difficulty veryhard
+bonus Benelux: Conquer Belgium and the Netherlands to gain their cores
+bonus Strong democracy: +10% province income
+malus Microstate: Has only one city

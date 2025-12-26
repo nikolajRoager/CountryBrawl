@@ -1,0 +1,7 @@
+name Tunisia
+genitive Tunisian
+colour #e8000b
+cities 10
+difficulty hard
+description Tunisia is the true heir to ancient Carthage, but reclaiming this legacy will certainly be hard as one of the smallest Maghrebi countries
+malus Flawed democracy: -10% province income

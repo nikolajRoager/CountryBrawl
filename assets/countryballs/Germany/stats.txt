@@ -1,0 +1,12 @@
+name Germany
+genitive German
+colour #0A0A0D
+cities 42
+description Whoever controls Berlin controls the Germany, and whoever controls Germany controls Europe: Germany is one of the strongest countries in game.
+difficulty veryeasy
+bonus strong arms sector: -10% equipment production time
+bonus Large country: Has a lot of cities
+bonus Anschluss: Conquer Austria to gain their cores, as if Germany isn't powerful enough
+bonus German efficiency: +10% transport speed
+bonus Strong democracy: +10% province income
+malus Bavaria: contains Bavaria

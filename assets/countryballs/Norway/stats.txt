@@ -1,0 +1,9 @@
+name Norway
+genitive Norwegian
+colour #BA0C2F
+cities 8
+difficulty medium
+description Norway is a very long mountainous country in Scandinavia, the sheer distance between your centres of production and your front-lines may provide a challenge.
+bonus efficient infrastructure: +10% transport speed
+bonus Kalmar union: Conquer Sweden and/or Denmark to gain their cores
+bonus Strong democracy: +10% province income

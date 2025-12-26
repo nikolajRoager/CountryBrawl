@@ -1,0 +1,12 @@
+name Ukraine
+genitive Ukrainian
+colour #0057B7
+cities 26
+description Ukraine has been fighting a successful defensive war against Russia since 2022. So far Ukraine has held back the horde... but with EU support not represented in game, continuing to do so may be hard.
+difficulty hard
+malus Flawed democracy: -10% province income
+bonus Ukrainian patriotism: -10% recruitment time
+bonus strong arms sector: -10% equipment production time
+bonus Large country: Has a lot of cities
+malus Special military operation: starts at war with Russia
+malus Illegal occupation: The east is occupied by Russia

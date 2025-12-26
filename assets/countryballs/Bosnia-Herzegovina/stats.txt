@@ -1,0 +1,9 @@
+name Bosnia and Herzegovina
+genitive Bosnian and Herzegovinian
+colour #FFCD00
+cities 3
+description Bosnia and Herzegovina is a small country in a difficult position, playing Bosnia and Herzegovina is certainly a challenge
+difficulty hard
+malus Local autonomy: Republika Srpska is not cored
+malus Small country: Has only 3 cities
+malus flawed democracy -10% province income

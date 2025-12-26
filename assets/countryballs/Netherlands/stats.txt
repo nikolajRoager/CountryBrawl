@@ -1,0 +1,9 @@
+name Netherlands
+genitive Dutch
+colour #1E4785
+cities 13
+description The Netherlands is the rightful owner of all of Flanders, just a shame the Belgians disagree, you better show them the error of their ways
+difficulty medium
+bonus densely populated: Has a lot of cities for such a small country
+bonus Benelux: Conquer Luxembourg and Belgium to gain their cores
+bonus Dutch infrastructure: +10% transport speed

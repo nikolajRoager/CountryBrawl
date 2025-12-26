@@ -1,0 +1,8 @@
+name Algeria
+genitive Algerian
+colour #007A33
+cities 19
+description Algeria undoubtedly has the strongest army in the Maghreb, far stronger than her arch-rival Morocco, perhaps now the time has come to show Morocco who the stronger nation is ... or perhaps it is time to pick on weaker foes.
+difficulty medium
+bonus High military budget: starts with a large army
+malus Authoritarian regime: -20% province income

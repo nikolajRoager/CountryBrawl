@@ -1,0 +1,7 @@
+name Slovenia
+genitive Slovene
+colour #005CE6
+cities 2
+difficulty veryhard
+description Slovenia is often confused with Slovakia, and honestly, you are better of playing Slovakia, Slovenia is very weak
+malus Small country: has only 2 cities

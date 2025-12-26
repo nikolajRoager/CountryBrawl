@@ -1,0 +1,8 @@
+name Poland
+genitive Polish
+colour #DC143C
+cities 24
+difficulty medium
+description Poland is in a somewhat strong position, with a lot of cities, though it is surrounded by Germany and Russia, two countries which historically have partitioned Poland, twice.
+bonus strong arms sector: -10% equipment production time
+bonus Large country: Has a lot of cities

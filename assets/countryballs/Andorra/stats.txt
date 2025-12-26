@@ -1,0 +1,8 @@
+name Andorra
+genitive Andorran
+colour #D50032
+cities 1
+description Andorra is a microstate, surrounded by much much larger nations ... I doubt this is even playable
+difficulty veryhard
+bonus Strong democracy: +10% province income
+malus Microstate: Has only one city

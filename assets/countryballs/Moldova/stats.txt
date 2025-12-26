@@ -1,0 +1,8 @@
+name Moldova
+genitive Moldovan
+colour #CD022B
+cities 3
+description Moldova is a small country in eastern Europe, with no obvious avenues of expansion... good luck. Thankfully the separatist republic of Transnistria is too small to be represented in game.
+difficulty veryhard
+bonus Unite our people: conquer Romania to gain their cores
+malus Small country: Has only three cities

@@ -1,0 +1,8 @@
+name United Kingdom
+genitive British
+colour #C8102E
+cities 31
+description Rule Britania, Britania used to rule the waves, and is still one of the most powerful countries in Europe... Just a shame it is not as powerful as France.
+difficulty medium
+bonus strong arms sector: -10% equipment production time
+bonus Large country: Has a lot of cities

@@ -1,0 +1,7 @@
+name Slovakia
+genitive Slovak
+colour #ED1C24
+cities 6
+difficulty hard
+description Slovakia is a small country in central Europe, it broke away from Czechoslovakia at the end of the cold war... perhaps it is time to re-unify it.
+bonus Czechoslovak legacy: Conquer Czechia to gain their cores

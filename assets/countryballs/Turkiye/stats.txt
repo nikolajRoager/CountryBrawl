@@ -1,0 +1,9 @@
+name Türkiye
+genitive Turkish
+colour #E30A17
+cities 44
+difficulty easy
+description Türkiye would like you to know it is pronounced Türkiye, not Turkey; as the heir to the Ottoman legacy, Türkiye is easily the strongest country in the Levant and the Balkans.
+malus Kurdish separatism: Kurdistan is not cored
+malus Flawed democracy: -10% province income
+bonus Large country: Has a lot of cities

@@ -1,0 +1,8 @@
+name Georgia
+genitive Georgian
+colour #FFFFFF
+cities 3
+description Georgia is in a difficult situation, not only is South Ossetia and Abkhazia currently occupied by Russia, but half our country is outside the map of the game.
+difficulty hard
+malus Small country: Has only 3 cities
+malus Cut-off: half of Georgia is not in game

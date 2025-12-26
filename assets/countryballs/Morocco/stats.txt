@@ -1,0 +1,7 @@
+name Morocco
+genitive Moroccan
+colour #b7312c
+cities 17
+description Morocco is somewhat weaker than Algeria ... but not a lot weaker, with adaptive leadership Morocco can surely overcome her main rival
+difficulty hard
+malus Flawed democracy: -10% province income

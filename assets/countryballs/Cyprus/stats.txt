@@ -1,0 +1,9 @@
+name Cyprus
+genitive Cypriot
+colour #D57800
+cities 2
+difficulty veryhard
+description The Cypriot flag proclaims a united island, yet since 1974 the northern third has de facto been occupied by Türkiye, reclaiming the north will not be an easy task
+malus Small country: has only 2 cities
+malus Aftermatch of 1974: The north is occupied by Türkiye.
+bonus Eonosis: Conquer Greece to gain their cores

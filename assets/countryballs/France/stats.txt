@@ -1,0 +1,9 @@
+name France
+genitive French
+colour #000091
+cities 36
+difficulty easy
+description France is one of the major powers of Europe, once, under glorious Napoleon, France dominated the continent; the time has come to reclaim his legacy
+bonus strong arms sector: -10% equipment production time
+bonus Large country: Has a lot of cities
+malus Too low retirement age: -10% army capacity from cities

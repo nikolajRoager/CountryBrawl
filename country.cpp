@@ -1,0 +1,139 @@
+//
+// Created by nikolaj on 12/8/25.
+//
+
+#include<fstream>
+#include<sstream>
+#include "country.h"
+
+country::country(const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,SDL_Renderer* renderer): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), flag(path/"flag.png",renderer)  {
+    name="null";
+    //Default values
+    speed=100.0;
+    red=255;
+    green=255;
+    blue=255;
+    genitive="nullian";
+    description="null";
+    nationDifficulty=MEDIUM;
+    startingCities=0;
+
+    //Load the stats line, line by line
+    std::ifstream statsFile (path/"stats.txt");
+    std::string line;
+    while (std::getline(statsFile,line)) {
+        if (!line.empty()) {
+            std::stringstream ss(line);
+            std::string variable;
+            std::string value;
+            if (ss>>variable && ss>>value) {
+                if (variable =="movementSpeed") {
+                    speed=std::stof(value);
+                }
+                else if (variable =="cities") {
+                    startingCities=std::stoi(value);
+                }
+                else if (variable =="difficulty") {
+                    if (value=="veryeasy") {
+                        nationDifficulty=VERY_EASY;
+                    }
+                    else if (value=="easy") {
+                        nationDifficulty=EASY;
+                    }
+                    else if (value=="medium") {
+                        nationDifficulty=MEDIUM;
+                    }
+                    else if (value=="hard") {
+                        nationDifficulty=HARD;
+                    }
+                    else if (value=="veryhard") {
+                        nationDifficulty=VERY_HARD;
+                    }
+                    else if (value=="impossible") {
+                        nationDifficulty=IMPOSSIBLE;
+                    }
+                    else {
+                        throw std::invalid_argument("Invalid country difficulty "+value+" in country "+path.string());
+                    }
+
+                }
+                else if (variable =="name") {
+                    std::string str;
+                    while (ss>>str)
+                        value+=" "+str;
+                    name=value;
+                }
+                else if (variable =="bonus") {
+                    std::string str;
+                    while (ss>>str)
+                        value+=" "+str;
+                    bonuses.emplace_back(value);
+                }
+                else if (variable =="malus") {
+                    std::string str;
+                    while (ss>>str)
+                        value+=" "+str;
+                    maluses.emplace_back(value);
+                }
+                else if (variable =="description") {
+                    std::string str;
+                    while (ss>>str)
+                        value+=" "+str;
+                    description=value;
+                }
+                else if (variable =="genitive") {
+                    std::string str;
+                    while (ss>>str)
+                        value+=" "+str;
+                    genitive=value;
+                }
+                else if (variable == "colour") {
+                    if (value[0] == '#')
+                        value.erase(0, 1);
+                    if (value.length() != 6) {
+                        throw std::invalid_argument("Colour code is not valid for "+name);
+                    }
+
+                    red   = std::stoi(value.substr(0, 2), nullptr, 16);
+                    green = std::stoi(value.substr(2, 2), nullptr, 16);
+                    blue  = std::stoi(value.substr(4, 2), nullptr, 16);
+                }
+/*
+                movementSpeed 100
+                genitive Danish
+                colour #C8102E
+                 */
+
+            }
+        }
+    }
+}
+
+void country::display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, double scale, SDL_Renderer *renderer) const {
+    int xScreen = static_cast<int>(x*scale-screenMinX);
+    int yScreen = static_cast<int>(y*scale-screenMinY);
+
+    texture.render(xScreen,yScreen,renderer,scale,true,true);
+    if (inWater) {
+        ballInWater.render(xScreen,yScreen,renderer,scale,true,true);
+    }
+    if (expression==ANGRY) {
+        angry.render(x,y,renderer,scale,true,true);
+    }
+    else if (expression==HAPPY) {
+        happy.render(x,y,renderer,scale,true,true);
+    }
+}
+
+void country::display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer *renderer) const {
+    texture.render(x,y,renderer,scale,true,true);
+    if (inWater) {
+        ballInWater.render(x,y,renderer,scale,true,true);
+    }
+    if (expression==ANGRY) {
+        angry.render(x,y,renderer,scale,true,true);
+    }
+    else if (expression==HAPPY) {
+        happy.render(x,y,renderer,scale,true,true);
+    }
+}

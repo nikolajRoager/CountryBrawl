@@ -1,0 +1,8 @@
+name Armenia
+genitive Armenian
+colour #0033A0
+cities 2
+description Armenia is already a small country, and only half of Armenia is even inside the game map, may I suggest another nation.
+difficulty hard
+malus Small country: Has only 2 cities
+malus Cut-off: half of Armenia is not in game

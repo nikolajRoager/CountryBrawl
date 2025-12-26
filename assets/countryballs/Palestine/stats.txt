@@ -1,0 +1,9 @@
+name Palestine
+genitive Palestinian
+colour #009736
+cities 2
+difficulty veryhard
+description The history of Palestine, is a history of suffering: The west bank has de-facto been occupied by Israel for generations, and over the past 2 years Israel has carried out a genocidal war on Gaza. Palestine is easier to play than real life, but still very hard.
+malus Authoritarian regime: -20% province income
+malus Nakba: The west bank is occupied by Israel
+bonus Sympathy: Has good relation with other Arab countries, most notably Egypt

@@ -1,0 +1,7 @@
+name Croatia
+genitive Croatian
+colour #C8102E
+cities 4
+description Croatia is a small Balkan country, but not the smallest, playing Croatia should be an interesting challenge.
+difficulty hard
+malus Small country: Has only 4 cities

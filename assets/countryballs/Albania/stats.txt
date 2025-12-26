@@ -1,0 +1,8 @@
+name Albania
+genitive Albanian
+colour #FF0000
+cities 3
+description Albania is a small mountainous country in the Balkans, but by picking her battles carefully, the home of Skanderberg can go on to achieve great things, perhaps even unifying the Balkans.
+difficulty hard
+malus Small country: Has only 3 cities
+bonus Unite our people: Annex Kosovo to form a union and gain their cores

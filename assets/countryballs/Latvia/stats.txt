@@ -1,0 +1,7 @@
+name Latvia
+genitive Latvian
+colour #9D2235
+cities 3
+difficulty hard
+description Latvia is a small baltic state, and very much on the Russian menu.
+malus Small country: Has only 3 cities

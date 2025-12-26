@@ -1,0 +1,9 @@
+name Denmark
+genitive Danish
+colour #C8102E
+cities 7
+difficulty medium
+description Denmark is, by far, the greatest of the Nordic countries. Even so, Sweden is larger, so restoring our rightful rule over Scandinavia may be a challenge.
+bonus efficient public sector: +5% movement speed
+bonus Kalmar union: Conquer Sweden and/or Norway to gain their cores
+bonus Strong democracy: +10% province income

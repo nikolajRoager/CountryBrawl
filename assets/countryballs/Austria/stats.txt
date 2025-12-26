@@ -1,0 +1,8 @@
+name Austria
+genitive Austrian
+colour #FFFFFF
+cities 9
+description "Austriae est imperare orbi universo" meaning "Austrian is to rule the world", this was the motto of the Habsburg empire which once dominated Europe, it is about time to put this into practice
+difficulty medium
+bonus Anschluss: Annex all of Germany to gain their cores
+bonus Strong democracy: +10% province income

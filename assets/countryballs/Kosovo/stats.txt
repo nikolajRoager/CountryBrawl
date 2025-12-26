@@ -1,0 +1,8 @@
+name Kosovo
+genitive Kosovan
+colour #D1A84F
+cities 2
+description Kosovo is a small unrecognized country in the Balkans, which Serbia would really rather didn't exists ... good luck
+difficulty hard
+malus Small country: Has only 2 cities
+bonus Unite our people: Annex Albania to form a union and gain their cores

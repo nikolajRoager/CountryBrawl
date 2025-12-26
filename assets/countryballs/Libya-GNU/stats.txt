@@ -1,0 +1,9 @@
+name Libyan Government of National Unity
+genitive Libyan
+colour #239E46
+cities 6
+difficulty hard
+description The Libyan Government of National Unity is the internationally recognized government of Libya which controls half of Libya
+malus Authoritarian regime: -20% province income
+malus Civil war: Starts at war with a rival government
+bonus Win the civil war: conquer the rival Libyan government to gain their cores
