@@ -6,21 +6,26 @@
 
 #include <future>
 #include <iostream>
+#include <cmath>
 #include <SDL2/SDL_image.h>
 
 #include "getAssets.h"
 #include "mapData.h"
 
+
+
 game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const texwrap &loadingBackground,  const std::string& playerCountry, TTF_Font *smallFont) {
     std::cout<<"Loading new game"<<std::endl;
     //First, set up loading of everything we will be loading asynchronously
+
+
     std::vector<std::future<tile>> futureTiles;
 
     //A counter for how much stuff has been loaded
     std::atomic<int> processedAssets=0;
 
     int zoomLvl=0;
-    //Set up functions for asynchronously loading pngs
+    //Loops over all 1365 locations and zoom level combinations
     for (int n = 1; n <= gridWidth; n*=2) {
         for (int x = 0; x < gridWidth/n; x++)
             for (int y = 0; y < gridWidth/n; y++) {
@@ -97,7 +102,7 @@ game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const te
 
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
         SDL_RenderClear( renderer );
-
+        loadingBackground.render(0,0,renderer,1);
         SDL_Rect loadingBarRect = { 0, windowHeightPx/2, (windowWidthPx*processedAssets)/totalAssets,  windowHeightPx/4};
         SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
 
@@ -114,11 +119,11 @@ game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const te
 
     //Then collect everything which has been loaded
     std::cout<<"Collecting tiles "<<processedAssets<<"/"<<totalAssets<<std::endl;
-
     tiles.reserve(futureTiles.size());
     //Collect the loaded tiles
     for (auto& future : futureTiles)
         try {
+            //Tile has a move constructor and assignment so this is fine
             tiles.push_back(future.get());
         }
         catch (std::exception& e) {
@@ -126,10 +131,6 @@ game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const te
             //Re-package the exception so it is clear where it comes from
             throw std::runtime_error("Loading tiles failed with exception "+std::string(e.what()));
         }
-
-    //Do the not-thread-safe things which need to be done in the main thread
-    for (auto& tile : tiles)
-        tile.finalize();
 
     std::cout<<"Collecting mapdata"<<std::endl;
     try {
@@ -143,38 +144,12 @@ game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const te
         //Re-package the exception so it is clear where it comes from
         throw std::runtime_error("Loading mapdata failed with exception "+std::string(e.what()));
     }
+
     std::cout<<"Created successfully"<<std::endl;
 
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis) const {
-/*
-    double scale=1.0;
-    int x=0;
-    int y=0;
-    int frames=1;
-    int frame=0;
-    if (tex!=nullptr)
-    {
-        //Set rendering space and render to screen
-        int w = (width)/frames;
-
-        SDL_Rect renderQuad = { static_cast<int>(x), static_cast<int>(y), w, height};
-
-        renderQuad.w *= scale;
-        renderQuad.h *= scale;
-
-        SDL_Rect srect = { w*(int)frame, 0, w, height };
-
-
-
-        //Render to screen
-        SDL_SetTextureColorMod(tex, 255,255,255);
-        SDL_SetTextureAlphaMod(tex,255);
-        SDL_Point centerPoint = {0, 0};
-        SDL_RenderCopyEx( renderer, tex, &srect, &renderQuad ,0,&centerPoint ,SDL_FLIP_NONE);
-    }*/
-
     for (const tile& tile : tiles) {
         tile.draw(screenMinX,screenMinY,scale,renderer);
     }
@@ -259,5 +234,5 @@ bool game::shouldOpenNewScene(openSceneCommand &command, std::string &arguments)
 }
 
 game::~game() {
-    if (tex!=nullptr) SDL_DestroyTexture(tex);
+
 }

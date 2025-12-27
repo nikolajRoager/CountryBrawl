@@ -7,10 +7,12 @@ int main() {
     try {
         engine game;
         game.run();
+        std::cout<<"Run done, deleting game implicitly"<<std::endl;
     }
     catch (const std::exception& e) {
         std::cerr<<"The game crashed due to an unhandled exception "<<e.what()<<std::endl;
         return 1;
     }
+    std::cout<<"Farewell, world"<<std::endl;
     return 0;
 }

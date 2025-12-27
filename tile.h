@@ -17,10 +17,8 @@ public:
     ///Update whether this is ready (and ready it if necessary)
     void update(int screenMinX, int screenMaxX, int screenMinY, int screenMaxY,double scale,SDL_Renderer* renderer);
     void draw(int screenMinX, int screenMinY,double scale,SDL_Renderer* renderer) const;
-    tile(std::string fileName,int x, int y, int width, int height, double _minScale, double _maxScale);
+    tile(const std::string& fileName,int x, int y, int width, int height, double _minScale, double _maxScale);
 
-    ///Must be called after the constructor, but NOT THREAD-SAFE, as it uses SDL
-    void finalize();
     ~tile();
 
     tile(tile&& other) noexcept ;

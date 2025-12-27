@@ -88,22 +88,30 @@ engine::engine() {
 
 engine::~engine() {
 
+    std::cout<<"Delete current scene"<<std::endl;
     //Must be called before we destroy the renderer, which it hereby is
     delete currentScene;
+    std::cout<<"Delete background"<<std::endl;
     delete loadingBackground;
 
+    std::cout<<"Delete renderer"<<std::endl;
     if (renderer!=nullptr)
         SDL_DestroyRenderer(renderer);
+    std::cout<<"Delete window"<<std::endl;
     if (window!=nullptr)
         SDL_DestroyWindow(window);
+    std::cout<<"Delete fonts"<<std::endl;
     if (smallFont!=nullptr)
         TTF_CloseFont(smallFont);
     if (midFont!=nullptr)
         TTF_CloseFont(midFont);
     if (largeFont!=nullptr)
         TTF_CloseFont(largeFont);
+    std::cout<<"Quit TTF..."<<std::endl;
     TTF_Quit();
+    std::cout<<"Quit IMG..."<<std::endl;
     IMG_Quit();
+    std::cout<<"Quit SDL"<<std::endl;
     SDL_Quit();
 }
 
@@ -125,6 +133,7 @@ void engine::run() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
+                std::cout<<"Quitting..."<<std::endl;
                 quit = true;
             }
             if (event.type == SDL_WINDOWEVENT) {
@@ -265,6 +274,8 @@ void engine::run() {
         currentInput.prevSPressed=currentInput.sPressed;
         currentInput.prevVPressed=currentInput.vPressed;
     }
+
+    std::cout<<"While loop has ended"<<std::endl;
 
 }
 

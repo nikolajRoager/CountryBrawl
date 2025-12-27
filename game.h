@@ -29,7 +29,6 @@ private:
     double maxScaleExponent=2.0;
     double minScaleExponent=-6.0;//Must be so gridWidth=(2^(-minScaleExponent-1))
 
-
     //TODO, for modability, this should be loaded from a file
     //For calculating longitude and latitude
     int mapHeight = 16384;
@@ -51,10 +50,6 @@ private:
 
     mapData movementPenalties;
     mapData watermap;
-
-
-    SDL_Texture* tex;
-    int width, height;
 };
 
 
