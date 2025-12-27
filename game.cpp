@@ -4,9 +4,6 @@
 
 #include "game.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "thirdPartyLibraryInclude/stb_image.h"
-
 #include <future>
 #include <iostream>
 #include <SDL2/SDL_image.h>
@@ -130,6 +127,9 @@ game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const te
             throw std::runtime_error("Loading tiles failed with exception "+std::string(e.what()));
         }
 
+    //Do the not-thread-safe things which need to be done in the main thread
+    for (auto& tile : tiles)
+        tile.finalize();
 
     std::cout<<"Collecting mapdata"<<std::endl;
     try {
@@ -145,60 +145,10 @@ game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const te
     }
     std::cout<<"Created successfully"<<std::endl;
 
-
-    //TEMP, TODO REMOVE, this is an example of how to create a texture without IMG_load
-
-    fs::path path = assetsPath()/"menuBackground.png";
-    int w, h, c;
-    unsigned char* data = stbi_load(
-        path.string().c_str(),
-        &w, &h, &c,
-        STBI_rgb_alpha
-    );
-
-    if (!data) {
-        throw std::runtime_error(stbi_failure_reason());
-    }
-    std::cout<<"Loaded "<<w<<" "<<h<<" "<<c<<std::endl;
-
-    width = w;
-    height = h;
-
-    tex=nullptr;
-
-    std::vector<unsigned char> png;
-    png.resize(width*height*4);
-    memcpy(png.data(),data,width*height*4);
-    stbi_image_free(data);
-
-    auto surface = SDL_CreateRGBSurfaceWithFormatFrom(
-            (void*)png.data(),
-            width,
-            height,
-            32,
-            width * 4,
-            SDL_PIXELFORMAT_RGBA32
-        );
-    if (surface == nullptr) {
-            throw std::runtime_error("Unable to load image: " + std::string(SDL_GetError()));
-        }
-
-
-    width = surface->w;
-    height = surface->h;
-
-    tex= SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-
-    if (tex == nullptr) {
-        throw std::runtime_error("Unable to create texture: " + std::string(SDL_GetError()));
-    }
-
-
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis) const {
-
+/*
     double scale=1.0;
     int x=0;
     int y=0;
@@ -223,11 +173,85 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         SDL_SetTextureAlphaMod(tex,255);
         SDL_Point centerPoint = {0, 0};
         SDL_RenderCopyEx( renderer, tex, &srect, &renderQuad ,0,&centerPoint ,SDL_FLIP_NONE);
+    }*/
+
+    for (const tile& tile : tiles) {
+        tile.draw(screenMinX,screenMinY,scale,renderer);
     }
 }
 
-void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int dmillis, TTF_Font *smallFont, TTF_Font *midFont, TTF_Font *largeFont) {
+void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis, TTF_Font *smallFont, TTF_Font *midFont, TTF_Font *largeFont) {
 
+    double mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+    double mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+
+    if (userInputs.leftPressed) {
+        screenMinX-=(millis-pmillis);
+        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+    }
+    if (userInputs.rightPressed) {
+        screenMinX+=(millis-pmillis);
+        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+    }
+    if (userInputs.upPressed) {
+        screenMinY-=(millis-pmillis);
+        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+    }
+    if (userInputs.downPressed) {
+        screenMinY+=(millis-pmillis);
+        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+    }
+    if (userInputs.zoomInPressed) {
+        scaleExponent+=(millis-pmillis)*0.001;
+        scaleExponent=scaleExponent>maxScaleExponent?maxScaleExponent:scaleExponent;
+
+        //The following relation exists:
+        //xScreen = xWorld*scale-screenMinX;
+        //And we want the centre of the screen to stay fixed, i.e. xWorld should be unchanged for
+        //windowWidthPx/2= xWorld*scale-screenMinX;
+        //So
+        double centreXWorld = ((screenWidth/2.0+screenMinX)/scale);
+        //And
+        double centreYWorld = ((screenHeight/2.0+screenMinY)/scale);
+        scale = std::pow(2.0,scaleExponent);
+
+        //Now we still want
+        //windowWidthPx/2= xWorld*scale-screenMinX;
+        //So
+        screenMinX= centreXWorld*scale-screenWidth/2.0;
+        screenMinY= centreYWorld*scale-screenHeight/2.0;
+        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+    }
+    if (userInputs.zoomOutPressed) {
+        scaleExponent-=(millis-pmillis)*0.001;
+        scaleExponent=scaleExponent<minScaleExponent?minScaleExponent:scaleExponent;
+        //The following relation exists:
+        //xScreen = xWorld*scale-screenMinX;
+        //And we want the centre of the screen to stay fixed, i.e. xWorld should be unchanged for
+        //windowWidthPx/2= xWorld*scale-screenMinX;
+        //So
+        double centreXWorld = ((screenWidth/2.0+screenMinX)/scale);
+        //And
+        double centreYWorld = ((screenHeight/2.0+screenMinY)/scale);
+        scale = std::pow(2.0,scaleExponent);
+        //Now we still want
+        //windowWidthPx/2= xWorld*scale-screenMinX;
+        //So
+        screenMinX= centreXWorld*scale-screenWidth/2.0;
+        screenMinY= centreYWorld*scale-screenHeight/2.0;
+        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+    }
+
+    //Update which tiles are ready
+    for (tile& tile : tiles) {
+        tile.update(screenMinX,screenMinX+screenWidth,screenMinY,screenMinY+screenHeight,scale,renderer);
+    }
 }
 
 bool game::shouldOpenNewScene(openSceneCommand &command, std::string &arguments) const {

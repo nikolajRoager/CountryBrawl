@@ -5,6 +5,7 @@
 #ifndef TILINGSKETCH_TILE_H
 #define TILINGSKETCH_TILE_H
 #include <string>
+#include <vector>
 #include <SDL2/SDL_render.h>
 
 
@@ -37,8 +38,11 @@ private:
     //Pointer to the actual texture, nullptr if this is not ready (i.e. uploaded to gpu)
     SDL_Texture* tileTexture;
 
-    //Pointer to the surface (CPU texture) for now always loaded for lifetime of tile (TODO chnge this to dynamic loading)
-     SDL_Surface* surface;
+    //Pointer to the surface (CPU texture) for now always loaded for lifetime of tile
+    SDL_Surface* surface;
+
+    //The data of the surface
+    std::vector<unsigned char> imageData;
 };
 
 #endif

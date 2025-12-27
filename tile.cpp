@@ -9,12 +9,38 @@
 #include <filesystem>
 
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "thirdPartyLibraryInclude/stb_image.h"
+
 namespace fs = std::filesystem;
 
 tile::tile(std::string fileName,int x, int y, int _width, int _height, double _minScale, double _maxScale) {
     tileX=x, tileY=y;
     width=_width, height=_height;
 
+    maxScale = _maxScale;
+    minScale = _minScale;
+
+
+    int c;
+    fs::path path = fs::path("assets")/"tiles"/fileName;
+    unsigned char* data = stbi_load(
+        path.string().c_str(),
+        &textureWidth, &textureHeight, &c,
+        STBI_rgb_alpha
+    );
+
+    if (!data) {
+        throw std::runtime_error(stbi_failure_reason());
+    }
+
+    if (c!=4)
+        throw std::runtime_error("Somehow "+fileName+" was loaded with less than 4 channels "+std::to_string(c));
+
+    imageData.resize(width*height*4);
+    memcpy(imageData.data(),data,width*height*4);
+    stbi_image_free(data);
+    /*
     fs::path path = fs::path("assets")/"tiles"/fileName;
     surface = IMG_Load(path.string().c_str());
     if (surface == nullptr) {
@@ -24,14 +50,25 @@ tile::tile(std::string fileName,int x, int y, int _width, int _height, double _m
     textureWidth = surface->w;
     textureHeight = surface->h;
 
-    maxScale = _maxScale;
-    minScale = _minScale;
+*/
 
     //Not ready for display yet (and can't be made ready since we might not be on the main thread)
+    surface=nullptr;
     tileTexture =nullptr;
 }
 
 void tile::finalize() {
+    auto surface = SDL_CreateRGBSurfaceWithFormatFrom(
+            (void*)imageData.data(),
+            width,
+            height,
+            32,
+            width * 4,
+            SDL_PIXELFORMAT_RGBA32
+        );
+    if (surface == nullptr) {
+        throw std::runtime_error("Unable to load image: " + std::string(SDL_GetError()));
+    }
 }
 
 tile::~tile() {

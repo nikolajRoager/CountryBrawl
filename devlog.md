@@ -282,3 +282,5 @@ I need to completely revamp the texture loading infrastructure, but at least I k
 issues
 --------
 IMG_Load is not thread safe, replace it with another png loading function
+
+Update, some AI agent insist that it IS thread safe, some say it is not. I am going with NOT to be on the safe side
