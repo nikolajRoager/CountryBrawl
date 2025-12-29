@@ -6,3 +6,4 @@ difficulty easy
 description Italy is one of the major countries in Europe, Italy is in an excellent position to expand into the Balkans or the Maghreb
 bonus strong arms sector: -10% equipment production time
 bonus Large country: Has a lot of cities
+gun ar90

@@ -7,3 +7,4 @@ description The Libyan Government of National Unity is the internationally recog
 malus Authoritarian regime: -20% province income
 malus Civil war: Starts at war with a rival government
 bonus Win the civil war: conquer the rival Libyan government to gain their cores
+gun akm

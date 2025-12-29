@@ -14,6 +14,13 @@ happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer), veryEasyD
 {
     //Load all country paths first so we put them in alphabetic order
     {
+
+        for (const auto& entry : fs::directory_iterator(fs::path("assets")/"countryballAccessories"/"guns")) {
+            if (entry.path().extension()==".png") {
+                guns.emplace(entry.path().filename().stem(),texwrap(entry.path(),renderer));
+            }
+        }
+
         std::vector<fs::directory_entry> countryPaths;
         for (const auto& entry : fs::directory_iterator(fs::path("assets")/"countryballs")) {
             if (entry.is_directory())
@@ -27,10 +34,11 @@ happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer), veryEasyD
                       return a.path().filename() < b.path().filename();
                   });
 
-        for (const auto& entry : countryPaths)
+        for (int i = 0; i < countryPaths.size(); i++)
         {
+            const auto& entry = countryPaths[i];
             fs::path countryPath = entry.path();
-            countries.emplace_back(countryPath,ballInWater,angryBall,happyBall,renderer);
+            countries.emplace_back(i,countryPath,ballInWater,angryBall,happyBall,guns,renderer);
         }
 
         selectedCountryName=texwrap(countries[selectedCountry].getName(),renderer,midFont);
@@ -144,7 +152,12 @@ void startMenu::render(SDL_Renderer *renderer, const texwrap &loadingBackground,
         startNewGameItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
         goBackFromNewGameItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
         selectCountryLeft.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
-        countries[selectedCountry].display((965+16)*backgroundScale,260*backgroundScale,false,country::HAPPY,backgroundScale,renderer);
+        int countryX = (965+16)*backgroundScale;
+        int countryY = 260*backgroundScale;
+        int dx = userInputs.mouseXPx-countryX;
+        int dy = userInputs.mouseYPx-countryY;
+        double angle = atan2(dy,dx);
+        countries[selectedCountry].display(countryX,countryY,false,country::HAPPY,backgroundScale,renderer,userInputs.mouseXPx>countryX,userInputs.mouseXPx>countryX ?angle : angle+M_PI);
         selectCountryRight.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
         selectCountry.render(965*backgroundScale,120*backgroundScale,renderer,backgroundScale,true);
         selectedCountryName.render(965*backgroundScale,294*backgroundScale,renderer,backgroundScale,true);

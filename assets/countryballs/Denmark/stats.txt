@@ -7,3 +7,4 @@ description Denmark is, by far, the greatest of the Nordic countries. Even so, S
 bonus efficient public sector: +5% movement speed
 bonus Kalmar union: Conquer Sweden and/or Norway to gain their cores
 bonus Strong democracy: +10% province income
+gun m16

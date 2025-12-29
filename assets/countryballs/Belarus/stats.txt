@@ -7,3 +7,4 @@ difficulty hard
 malus Authoritarian regime: -20% province income
 malus Endemic corruption: equipment +20% production time
 malus Russian vassal: Excellent relations with russia, poor relations with everybody else
+gun akm

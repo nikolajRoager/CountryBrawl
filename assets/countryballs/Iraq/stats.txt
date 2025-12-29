@@ -7,3 +7,4 @@ description Half of Iraq is outside the map, and the autonomy of Iraqi Kurdistan
 malus Kurdish autonomy: Kurdistan is not cored
 malus Authoritarian regime: -20% province income
 malus Cut-off: half of Georgia is not in game
+gun akm

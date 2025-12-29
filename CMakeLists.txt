@@ -6,6 +6,7 @@ add_definitions(-DSDL_MAIN_HANDLED)
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 file (COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
 
@@ -54,4 +55,8 @@ add_executable(CountryBrawl main.cpp
         game.cpp
         game.h
         tile.cpp
-        mapData.cpp)
+        mapData.cpp
+        city.cpp
+        jsonClient.cpp
+        countryball.cpp
+        threadPool.cpp)

@@ -6,3 +6,4 @@ description Rule Britania, Britania used to rule the waves, and is still one of 
 difficulty medium
 bonus strong arms sector: -10% equipment production time
 bonus Large country: Has a lot of cities
+gun l85a3

@@ -6,3 +6,4 @@ description Moldova is a small country in eastern Europe, with no obvious avenue
 difficulty veryhard
 bonus Unite our people: conquer Romania to gain their cores
 malus Small country: Has only three cities
+gun akm

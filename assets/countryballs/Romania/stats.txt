@@ -6,3 +6,4 @@ description Romania is one of the stronger countries on the edge of the Balkans,
 difficulty easy
 malus Flawed democracy: -10% province income
 bonus Unite our people: conquer Moldova to gain their cores
+gun akm

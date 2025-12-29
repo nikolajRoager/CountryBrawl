@@ -284,3 +284,101 @@ issues
 IMG_Load is not thread safe, replace it with another png loading function
 
 Update, some AI agent insist that it IS thread safe, some say it is not. I am going with NOT to be on the safe side
+
+
+day 10.5 27-12-2025 workload 4 hours
+=============
+Note
+---
+I was visiting my grandparents, and didn't have a lot of time to work.
+
+I also did a lot of reading up on multithreading and the likes ... I don't think that should be counted as part of this project per-se so I think my work fits under the 4 hour mark
+
+Whatever I am counting this as a half day.
+
+plan
+--------
+Get running on Windows Done
+
+Load tilemap with STB FAILED ... I had a lot of problems and eventually gave up and went back to SDL ... I don't think this is a long term solution
+
+Load cities and countries and just display the damned map DONE
+
+Replace std::async with a proper thread-pool FAILED, this is a huge undertaking
+
+issues
+--------
+IMG_Load is not thread safe, replace it with another png loading function
+At the very least use STB when loading map data
+Get a working thread-pool system
+
+day 11.5 28-12-2025 Workload 6 hours
+=============
+Note
+----
+I am somewhat doubtful as to what to do today, I have essentially four things I could do:
+
+* Add a music management system, and add some music to the menu
+* Make a threadpool loading system
+* STB image loading
+* have countryballs stand around bases at the frontlines
+
+I will get the trusty old random number generator, and got dammit, I will be working on STB image loading
+
+I won't have a lot of time to work today anyway. (Ok, I did only have 6 hours to work, I should really have held it under the 4 hour mark)
+
+plan
+-----
+apparently the plan is to Get STB image loading working (DONE, the program now fails safely). What on earth do I do now, I thought that was going to take longer
+
+Add countryballs, so that countryballs stand around the cities, or along the front-lines. DONE I guess
+
+
+Issues
+-----
+Get a working thread-pool system
+
+Balls jiggle
+
+Front-lines should be proper locations, start facing each other then pull back if they are in water. Artillery lines are missing
+
+Balls miss weapons
+
+watermap and movementPenalties should use STB
+
+day 12.5 29-12-2025 Workload 6 hours
+=============
+Note
+-----
+Once again, I don't know what I shall work on, so lets make a list, actually lets just get the issue list of issues and randomly sort it:
+
+
+* Balls miss weapons
+* watermap and movementPenalties should use STB
+* Get a working thread-pool system
+* Front-lines should be proper locations, start facing each other then pull back if they are in water. Artillery lines are missing
+* Balls jiggle
+
+Alright, that is my plan for tomorrow (yep I am writing this the day before):
+
+Plan
+-------
+
+Add weapons to balls, use the weapons that country actually uses 
+OH MY GOD EVERYONE HAS THEIR OWN MODEL GUN, THIS WILL TAKE LIKE FOREVER (Done, it took like forever)
+
+Weapons should point the right way (Done)
+
+watermap and movementPenalties should use STB (Done)
+
+Make a working thread-pool system (in another project) (Done)
+
+Implement thread pool loading of tiles and watermap/movementPenalties in this project (Done)
+
+Implement early bail on exceptions (Done)
+
+Make front-line start 25 px from each other, pulled back in event of water
+
+Add artillery line behind the front-line
+
+See if you can fix the jigglyness

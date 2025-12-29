@@ -6,3 +6,4 @@ difficulty easy
 description You can not spell Spain without pain ... but actually Spain is in a strong position, poised to unify Iberia and expand into North Africa.
 bonus Strong democracy: +10% province income
 bonus Large country: Has a lot of cities
+gun hk416

@@ -7,3 +7,4 @@ description The history of Palestine, is a history of suffering: The west bank h
 malus Authoritarian regime: -20% province income
 malus Nakba: The west bank is occupied by Israel
 bonus Sympathy: Has good relation with other Arab countries, most notably Egypt
+gun akm

@@ -4,3 +4,4 @@ colour #0C4077
 cities 7
 description Serbia is one of the stronger Yugoslavian successor-states, and an excellent candidate for re-uniting Yugoslavia
 difficulty medium
+gun akm

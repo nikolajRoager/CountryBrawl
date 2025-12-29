@@ -6,3 +6,4 @@ description Saudi Arabia is an evil oppressive state which chopped a journalist 
 difficulty medium
 malus Authoritarian regime: -20% province income
 malus Cut-off: half of Saudi Arabia is not in game
+gun m4

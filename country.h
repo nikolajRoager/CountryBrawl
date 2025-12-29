@@ -7,6 +7,7 @@
 
 #include <string>
 #include <filesystem>
+#include <map>
 #include <vector>
 #include <SDL2/SDL_render.h>
 
@@ -20,9 +21,9 @@ public:
 
     enum difficulty {IMPOSSIBLE,VERY_HARD,HARD,MEDIUM,EASY,VERY_EASY};
 
-    country(const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy, SDL_Renderer* renderer);
-    void display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, double scale, SDL_Renderer* renderer) const;
-    void display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer* renderer) const;
+    country(int id, const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy, const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer);
+    void display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
+    void display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
 
     [[nodiscard]] double getSpeed() const {return speed;}
 
@@ -40,7 +41,10 @@ public:
     [[nodiscard]] const std::vector<std::string>& getBonuses() const {return bonuses;}
     [[nodiscard]] const std::vector<std::string>& getMaluses() const {return maluses;}
 
+    [[nodiscard]] int getId() const {return id;}
 private:
+    int id;
+
     ///E.g. Denmark
     std::string name;
 
@@ -67,6 +71,8 @@ private:
     const texwrap& ballInWater;
     const texwrap& angry;
     const texwrap& happy;
+    //Use a pointer, not a reference, because we won't be able to assign it straight away
+    const texwrap* gun;
 
     double speed;
 };

@@ -10,3 +10,4 @@ bonus Anschluss: Conquer Austria to gain their cores, as if Germany isn't powerf
 bonus German efficiency: +10% transport speed
 bonus Strong democracy: +10% province income
 malus Bavaria: contains Bavaria
+gun hk416

@@ -10,6 +10,9 @@
 
 
 #define STB_IMAGE_IMPLEMENTATION
+#include <cstring>
+#include <iostream>
+
 #include "thirdPartyLibraryInclude/stb_image.h"
 
 namespace fs = std::filesystem;
@@ -20,18 +23,42 @@ tile::tile(const std::string& fileName,int x, int y, int _width, int _height, do
 
     maxScale = _maxScale;
     minScale = _minScale;
+    textureWidth=0;
+    textureHeight=0;
 
     fs::path path = fs::path("assets")/"tiles"/fileName;
-    surface = IMG_Load(path.string().c_str());
+
+    /*surface = IMG_Load(path.string().c_str());
     if (surface == nullptr) {
         throw std::runtime_error("Unable to load image: " + std::string(SDL_GetError()));
     }
 
     textureWidth = surface->w;
     textureHeight = surface->h;
+    */
 
     //Setting up the texture is not thread safe, and will be done on the main thread later
     tileTexture =nullptr;
+    surface=nullptr;
+    int inputChannels=0;
+    unsigned char* rgbData = stbi_load(
+        path.string().c_str(),
+        &textureWidth, &textureHeight, &inputChannels,
+        STBI_rgb_alpha
+    );
+
+    if (!rgbData) {
+        std::string failureReason =stbi_failure_reason();
+        throw std::runtime_error("Loading of "+fileName+" failed because: "+failureReason);
+    }
+
+    //Data is rgba, regardless of what inputChannels is
+    rgbaData.resize(textureWidth*textureHeight*4);
+    std::memcpy(rgbaData.data(), rgbData, textureWidth*textureHeight*4);
+
+
+    stbi_image_free(rgbData);
+
 }
 
 tile::~tile() {
@@ -40,6 +67,22 @@ tile::~tile() {
     if (surface != nullptr)
         SDL_FreeSurface(surface);
 }
+
+void tile::finalize() {
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(
+            (void*)rgbaData.data(),
+            textureWidth,
+            textureHeight,
+            32,
+            textureWidth * 4,
+            SDL_PIXELFORMAT_RGBA32
+        );
+
+    if (surface == nullptr) {
+        throw std::runtime_error("Unable to load image: " + std::string(SDL_GetError()));
+    }
+}
+
 
 void tile::update(int screenMinX, int screenMaxX, int screenMinY, int screenMaxY,double scale,SDL_Renderer* renderer) {
 
@@ -71,6 +114,7 @@ tile::tile(tile &&other) noexcept {
     height=other.height;
     maxScale=other.maxScale;
     minScale=other.minScale;
+    rgbaData=std::move(other.rgbaData);
 
     tileTexture=other.tileTexture;
     other.tileTexture=nullptr;
@@ -87,6 +131,7 @@ tile &tile::operator=(tile &&other) noexcept {
     height=other.height;
     maxScale=other.maxScale;
     minScale=other.minScale;
+    rgbaData=std::move(other.rgbaData);
 
     tileTexture=other.tileTexture;
     other.tileTexture=nullptr;

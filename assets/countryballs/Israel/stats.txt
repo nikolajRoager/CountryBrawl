@@ -10,3 +10,4 @@ bonus High military budget: starts with a large army
 malus regional Pariah: has poor relations with all its neighbours
 malus Illegal occupation: The west bank and the Golan heights is not cored
 malus BDS movement: -10% income from non-core cities
+gun tar21

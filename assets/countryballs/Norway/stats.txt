@@ -7,3 +7,4 @@ description Norway is a very long mountainous country in Scandinavia, the sheer 
 bonus efficient infrastructure: +10% transport speed
 bonus Kalmar union: Conquer Sweden and/or Denmark to gain their cores
 bonus Strong democracy: +10% province income
+gun ak5

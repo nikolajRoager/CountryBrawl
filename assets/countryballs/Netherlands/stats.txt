@@ -7,3 +7,4 @@ difficulty medium
 bonus densely populated: Has a lot of cities for such a small country
 bonus Benelux: Conquer Luxembourg and Belgium to gain their cores
 bonus Dutch infrastructure: +10% transport speed
+gun c7

@@ -10,3 +10,4 @@ bonus strong arms sector: -10% equipment production time
 bonus Large country: Has a lot of cities
 malus Special military operation: starts at war with Russia
 malus Illegal occupation: The east is occupied by Russia
+gun akm

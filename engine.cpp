@@ -247,7 +247,7 @@ void engine::run() {
         currentScene->update(renderer,*loadingBackground,windowWidthPx,windowHeightPx,currentInput,millis,pmillis,smallFont,midFont,largeFont);
 
         //Black background, shouldn't be seen but won't hurt
-        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
+        SDL_SetRenderDrawColor(renderer, 0x50, 0x50, 0x50, 0x00);
         SDL_RenderClear( renderer );
 
         currentScene->render(renderer,*loadingBackground,windowWidthPx,windowHeightPx,currentInput,millis,pmillis);
@@ -261,6 +261,8 @@ void engine::run() {
             }
             if (newSceneCommand==scene::NEW_GAME){
                 delete currentScene;
+                currentScene =nullptr;
+                //TODO, FOR NOW, we just let the program crash if there is an exception here... maybe we should not
                 currentScene = new game(renderer,windowWidthPx,windowHeightPx, *loadingBackground,newSceneArguments,smallFont);
             }
         }

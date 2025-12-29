@@ -6,3 +6,4 @@ description "Austriae est imperare orbi universo" meaning "Austrian is to rule t
 difficulty medium
 bonus Anschluss: Annex all of Germany to gain their cores
 bonus Strong democracy: +10% province income
+gun auga1

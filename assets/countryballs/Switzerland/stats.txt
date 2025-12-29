@@ -6,3 +6,4 @@ difficulty medium
 description Switzerland is a fiercely neutral small country in western Europe, expanding as Switzerland may prove challenging, as most of your neighb ours are much stronger than you.
 bonus Strong democracy: +10% province income
 malus Weird dialect: very hard to understand, even if you speak German
+gun sg550

@@ -5,3 +5,4 @@ cities 8
 difficulty hard
 description Portugal is a medium sized country in the western end of Europe, though Portugal isn't week, she suffers from very limited avenues of expansion.
 bonus Strong democracy: +10% province income
+gun hkg3

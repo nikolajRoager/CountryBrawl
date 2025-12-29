@@ -10,7 +10,7 @@
 ///A class which keeps track of 8bit data for the map, and can return the data for a particular coordinage (using NEAREST interpolation)
 class mapData {
 public:
-    mapData(std::string dataName, double _mapWidth, double _mapHeight);
+    mapData(const std::string& dataName, double _mapWidth, double _mapHeight);
     unsigned char getValue(double x, double y) const;
 
     mapData();

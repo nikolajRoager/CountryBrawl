@@ -5,3 +5,4 @@ cities 1
 description Montenegro is a very small Balkan nation, may I suggest picking another nation.
 difficulty veryhard
 malus Microstate: Has only one city
+gun akm

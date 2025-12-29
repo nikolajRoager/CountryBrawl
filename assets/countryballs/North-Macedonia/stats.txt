@@ -5,3 +5,4 @@ cities 2
 description North Macedonia used to ambitiously be called Macedonia, implicitly claiming all of ancient Macedon. Perhaps it is time to revive this ambition.
 difficulty veryhard
 malus Small country: Has only two cities
+gun akm

@@ -6,3 +6,4 @@ description Georgia is in a difficult situation, not only is South Ossetia and A
 difficulty hard
 malus Small country: Has only 3 cities
 malus Cut-off: half of Georgia is not in game
+gun m4

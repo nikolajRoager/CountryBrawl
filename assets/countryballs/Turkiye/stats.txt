@@ -7,3 +7,4 @@ description Türkiye would like you to know it is pronounced Türkiye, not Turke
 malus Kurdish separatism: Kurdistan is not cored
 malus Flawed democracy: -10% province income
 bonus Large country: Has a lot of cities
+gun hkg3

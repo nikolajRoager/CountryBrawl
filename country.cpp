@@ -6,7 +6,8 @@
 #include<sstream>
 #include "country.h"
 
-country::country(const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,SDL_Renderer* renderer): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), flag(path/"flag.png",renderer)  {
+country::country(int _id,const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), flag(path/"flag.png",renderer)  {
+    id=_id;
     name="null";
     //Default values
     speed=100.0;
@@ -17,6 +18,8 @@ country::country(const fs::path& path, const texwrap& _ballInWater, const texwra
     description="null";
     nationDifficulty=MEDIUM;
     startingCities=0;
+
+    gun=nullptr;
 
     //Load the stats line, line by line
     std::ifstream statsFile (path/"stats.txt");
@@ -63,6 +66,11 @@ country::country(const fs::path& path, const texwrap& _ballInWater, const texwra
                         value+=" "+str;
                     name=value;
                 }
+                else if (variable=="gun") {
+                    if (!guns.contains(value))
+                        throw std::runtime_error("Can not find gun "+value+" required in country "+path.string());
+                    gun = &guns.at(value);
+                }
                 else if (variable =="bonus") {
                     std::string str;
                     while (ss>>str)
@@ -98,34 +106,43 @@ country::country(const fs::path& path, const texwrap& _ballInWater, const texwra
                     green = std::stoi(value.substr(2, 2), nullptr, 16);
                     blue  = std::stoi(value.substr(4, 2), nullptr, 16);
                 }
-/*
-                movementSpeed 100
-                genitive Danish
-                colour #C8102E
-                 */
-
             }
         }
     }
+    if (gun==nullptr) {
+        throw std::runtime_error("Country at "+path.string()+" does not contain a gun");
+    }
 }
 
-void country::display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, double scale, SDL_Renderer *renderer) const {
+void country::display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer *renderer,bool faceRight, double angle) const {
     int xScreen = static_cast<int>(x*scale-screenMinX);
     int yScreen = static_cast<int>(y*scale-screenMinY);
 
-    texture.render(xScreen,yScreen,renderer,scale,true,true);
+    int height = texture.getHeight();
+    int width = texture.getWidth();
+    if (xScreen+height<0 || xScreen>screenWidth+height || yScreen+height<0 || yScreen>screenHeight+height) {
+        return;
+    }
+
+    texture.render(xScreen,yScreen,renderer,scale*0.25,true,true);
     if (inWater) {
-        ballInWater.render(xScreen,yScreen,renderer,scale,true,true);
+        ballInWater.render(xScreen,yScreen,renderer,scale*0.25,true,true);
     }
     if (expression==ANGRY) {
-        angry.render(x,y,renderer,scale,true,true);
+        angry.render(xScreen,yScreen,renderer,scale*0.25,true,true);
     }
     else if (expression==HAPPY) {
-        happy.render(x,y,renderer,scale,true,true);
+        happy.render(xScreen,yScreen,renderer,scale*0.25,true,true);
+    }
+    if (gun!=nullptr) {
+        gun->render(xScreen,yScreen-scale*0.25*height/2,renderer,scale*0.25,true,false,!faceRight,1,0,angle);
     }
 }
 
-void country::display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer *renderer) const {
+void country::display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer *renderer,bool faceRight,double angle) const {
+    int height = texture.getHeight();
+    int width = texture.getWidth();
+
     texture.render(x,y,renderer,scale,true,true);
     if (inWater) {
         ballInWater.render(x,y,renderer,scale,true,true);
@@ -135,5 +152,8 @@ void country::display(int x, int y, bool inWater, countryExpression expression, 
     }
     else if (expression==HAPPY) {
         happy.render(x,y,renderer,scale,true,true);
+    }
+    if (gun!=nullptr) {
+        gun->render(x,y-scale*height/2,renderer,scale,true,false,!faceRight,1,0,angle);
     }
 }

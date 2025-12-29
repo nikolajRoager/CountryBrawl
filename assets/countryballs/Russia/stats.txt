@@ -14,3 +14,4 @@ malus Illegal occupation: the occupied Ukrainian land is not cored
 malus Cut-off: half of Russia is not in game... but you have got enough cities anyway
 bonus Great power: owns very many cities.
 bonus High military budget: starts with a large army
+gun akm

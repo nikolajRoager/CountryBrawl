@@ -6,3 +6,4 @@ difficulty medium
 description Finland once defied Russia, yet lost much of her territory doing so, perhaps it is time to do something about it.
 bonus Strong democracy: +10% province income
 bonus Land of lakes: +10% movement speed in water
+gun rk62

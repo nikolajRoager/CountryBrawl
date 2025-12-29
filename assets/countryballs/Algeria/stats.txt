@@ -6,3 +6,4 @@ description Algeria undoubtedly has the strongest army in the Maghreb, far stron
 difficulty medium
 bonus High military budget: starts with a large army
 malus Authoritarian regime: -20% province income
+gun akm

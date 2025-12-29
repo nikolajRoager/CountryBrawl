@@ -21,10 +21,14 @@ public:
 
     ~tile();
 
+    void finalize();
+
     tile(tile&& other) noexcept ;
     tile& operator=(tile&& other) noexcept ;
 
 private:
+    std::vector<unsigned char> rgbaData;
+
     int tileX, tileY;
     //Width/height of the texture as displayed
     int width, height;
@@ -39,8 +43,6 @@ private:
     //Pointer to the surface (CPU texture) for now always loaded for lifetime of tile
     SDL_Surface* surface;
 
-    //The data of the surface
-    std::vector<unsigned char> imageData;
 };
 
 #endif

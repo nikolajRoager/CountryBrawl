@@ -4,6 +4,7 @@
 
 #ifndef COUNTRYBRAWL_STARTMENU_H
 #define COUNTRYBRAWL_STARTMENU_H
+#include <map>
 #include <vector>
 
 #include "menuItem.h"
@@ -27,6 +28,7 @@ private:
     texwrap ballInWater;
     texwrap angryBall;
     texwrap happyBall;
+    std::map<std::string,texwrap> guns;
 
     //The list of countries the player can choose between
     std::vector<country> countries;

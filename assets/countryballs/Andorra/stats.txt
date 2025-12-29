@@ -6,3 +6,4 @@ description Andorra is a microstate, surrounded by much much larger nations ... 
 difficulty veryhard
 bonus Strong democracy: +10% province income
 malus Microstate: Has only one city
+gun m16

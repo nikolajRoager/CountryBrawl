@@ -7,3 +7,4 @@ description Greece is truly an ancient land, and the heir to both ancient greece
 malus Poor Greco-Turkish relations: Poor relations with a much more powerful neighbour
 bonus Eonosis: Conquer Cyprus to gain their cores
 bonus Strong democracy: +10% province income
+gun hkg3

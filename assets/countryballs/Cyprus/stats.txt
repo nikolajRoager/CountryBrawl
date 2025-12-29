@@ -7,3 +7,4 @@ description The Cypriot flag proclaims a united island, yet since 1974 the north
 malus Small country: has only 2 cities
 malus Aftermatch of 1974: The north is occupied by Türkiye.
 bonus Eonosis: Conquer Greece to gain their cores
+gun hkg3

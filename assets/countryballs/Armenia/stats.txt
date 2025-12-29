@@ -6,3 +6,4 @@ description Armenia is already a small country, and only half of Armenia is even
 difficulty hard
 malus Small country: Has only 2 cities
 malus Cut-off: half of Armenia is not in game
+gun akm

@@ -77,17 +77,17 @@ texwrap::texwrap(fs::path path, SDL_Renderer* renderer) {
         throw std::runtime_error("Unable to create texture: " + std::string(SDL_GetError()));
     }
 }
-void texwrap::render(double x, double y, SDL_Renderer *renderer, double scale,bool centerX,bool belowY,bool flip, unsigned int frames,unsigned int frame) const {
-    render(x,y,255,255,255,255,renderer,scale,centerX,belowY,flip,frames,frame);
+void texwrap::render(double x, double y, SDL_Renderer *renderer, double scale,bool centerX,bool belowY,bool flip, unsigned int frames,unsigned int frame,double angle) const {
+    render(x,y,255,255,255,255,renderer,scale,centerX,belowY,flip,frames,frame,angle);
 }
 
-void texwrap::render(double x, double y, Uint8 r, Uint8 g, Uint8 b, SDL_Renderer *renderer, double scale, bool centerX, bool belowY,bool flip, unsigned int frames,unsigned  int frame) const {
+void texwrap::render(double x, double y, Uint8 r, Uint8 g, Uint8 b, SDL_Renderer *renderer, double scale, bool centerX, bool belowY,bool flip, unsigned int frames,unsigned  int frame,double angle) const {
 
-    render(x,y,r,g,b,255,renderer,scale,centerX,belowY,flip,frames,frame);
+    render(x,y,r,g,b,255,renderer,scale,centerX,belowY,flip,frames,frame,angle);
 }
 
 
-void texwrap::render(double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL_Renderer *renderer, double scale, bool centerX, bool belowY,bool flip,unsigned int frames,unsigned int frame) const {
+void texwrap::render(double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL_Renderer *renderer, double scale, bool centerX, bool belowY,bool flip,unsigned int frames,unsigned int frame,double angle) const {
     if (tex!=nullptr)
     {
         //Set rendering space and render to screen
@@ -111,8 +111,9 @@ void texwrap::render(double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL
         //Render to screen
         SDL_SetTextureColorMod(tex, r,g,b);
         SDL_SetTextureAlphaMod(tex,a);
-        SDL_Point centerPoint = {0, 0};
-        SDL_RenderCopyEx( renderer, tex, &srect, &renderQuad ,0,&centerPoint ,flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+        SDL_Point centerPoint = {renderQuad.w/2, renderQuad.h/2};
+
+        SDL_RenderCopyEx( renderer, tex, &srect, &renderQuad ,angle*180.0/(M_PI),&centerPoint ,flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
     }
 }
 

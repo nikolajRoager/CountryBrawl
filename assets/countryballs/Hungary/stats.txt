@@ -4,3 +4,4 @@ colour #477050
 cities 10
 difficulty medium
 description The quintessential illiberal democracy, Hungary has long clashed with the other European powers diplomatically, perhaps now it is time to clash more literally; Hungary did, after all, use to be a lot bigger.
+gun hk416

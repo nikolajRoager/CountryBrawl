@@ -6,3 +6,4 @@ description Kosovo is a small unrecognized country in the Balkans, which Serbia 
 difficulty hard
 malus Small country: Has only 2 cities
 bonus Unite our people: Annex Albania to form a union and gain their cores
+gun vhs

@@ -4,3 +4,4 @@ colour #169B62
 cities 6
 difficulty hard
 description Ireland is a small country, with no easy avenues of expansion, certainly a challenging country.
+gun auga1

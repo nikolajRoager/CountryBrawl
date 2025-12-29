@@ -6,6 +6,9 @@
 #define COUNTRYBRAWL_GAME_H
 #include <vector>
 
+#include "city.h"
+#include "country.h"
+#include "countryball.h"
 #include "mapData.h"
 #include "scene.h"
 #include "tile.h"
@@ -29,7 +32,7 @@ private:
     double maxScaleExponent=2.0;
     double minScaleExponent=-6.0;//Must be so gridWidth=(2^(-minScaleExponent-1))
 
-    //TODO, for modability, this should be loaded from a file
+    //TODO, for mod ability, this should be loaded from a file
     //For calculating longitude and latitude
     int mapHeight = 16384;
     int mapWidth = mapHeight;
@@ -46,10 +49,31 @@ private:
     double scale=1.0;
 
 
-    std::vector<tile> tiles;
+
+    //Accessories for countryballs
+    texwrap ballInWater;
+    texwrap angryBall;
+    texwrap happyBall;
+    std::map<std::string,texwrap> guns;
+
+
+    //Accessories for city rendering
+    texwrap cityTexture;
+
+    //The list of countries the player can choose between
+    std::vector<country> countries;
+    int playerCountryId= 0;
+
+    std::vector<city> cities;
+
+
+    std::vector<std::unique_ptr<tile>> tiles;
 
     mapData movementPenalties;
     mapData watermap;
+
+
+    std::vector<std::shared_ptr<countryball>> soldiers;
 };
 
 
