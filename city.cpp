@@ -210,7 +210,7 @@ void city::addNeighbour(int newNeighbour) {
     neighbours.insert(newNeighbour);
 }
 
-void city::updateFrontlines(const std::vector<city> &cities) {
+void city::updateFrontlines(const std::vector<city> &cities,const mapData& watermap) {
 
     frontlines.clear();
 
@@ -218,9 +218,24 @@ void city::updateFrontlines(const std::vector<city> &cities) {
         double Dx =(cities[n].getX()-x);
         double Dy =(cities[n].getY()-y);
         double dist = sqrt(Dx*Dx+Dy*Dy);
+        double fX;
+        double fY;
 
-        double fX =cities[n].getX()*(dist/2-25)/dist+x*(dist/2+25)/dist;
-        double fY =cities[n].getY()*(dist/2-25)/dist+y*(dist/2+25)/dist;
+        //Clamp to cities
+        if (dist < 50) {
+            fX =x;
+            fY =y;
+        }
+        else
+            //Slowly pull back if we are in water
+            for (double fOffset = 25; fOffset<dist/2; fOffset+=10) {
+                fX =cities[n].getX()*(dist/2-fOffset)/dist+x*(dist/2+fOffset)/dist;
+                fY =cities[n].getY()*(dist/2-fOffset)/dist+y*(dist/2+fOffset)/dist;
+                //Accept if this is land
+                if (watermap.getValue(fX,fY)<128)
+                    break;
+
+            }
         double norm = sqrt(Dx*Dx+Dy*Dy);
         frontlines.emplace(n,frontlineSegment(fX,fY,-Dy/norm,Dx/norm));
     }

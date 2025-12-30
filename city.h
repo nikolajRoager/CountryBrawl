@@ -54,7 +54,7 @@ public:
     ///For loading from file
     city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, int _income, const std::set<int>& _neighbours);
 
-    void updateFrontlines(const std::vector<city>& cities);
+    void updateFrontlines(const std::vector<city>& cities,const mapData& watermap);
 
     [[nodiscard]] double getShortestNeighbourDistance(const std::vector<city>& cities) const;
 

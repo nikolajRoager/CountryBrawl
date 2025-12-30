@@ -411,7 +411,7 @@ I think left-click to select (shift+left click to select multiple) and right cli
 Plan
 ----
 
-URGENT: test the thread-pool on windows
+URGENT: test the thread-pool on windows Done (That was hard, Windows is way stricter with the C++ standard than Linux)
 
 Framerate counter. Done, and it is fine
 
@@ -433,9 +433,9 @@ Add ability to move soldiers, by right-clicking an adjacent city. Done
 
 Move Should prioritize soldiers along the relevant front. Done
 
-Pull front-lines back from water
+Pull front-lines back from water. Done
 
-Clamp front-lines to cities
+Clamp front-lines to cities Done
 
 Add artillery line 
 

@@ -170,39 +170,6 @@ arrowTexture(assetsPath()/"arrow.png",renderer)
             }
         }
 
-        double cameraCentreX = 0;
-        double cameraCentreY = 0;
-        int playerCities=0;
-
-        for (auto& city : cities) {
-            city.updateFrontlines(cities);
-            city.generateNameTexture(smallFont,renderer);
-            if (city.getOwner()==playerCountryId) {
-                cameraCentreX += city.getX();
-                cameraCentreY += city.getY();
-                playerCities++;
-            }
-            //TODO this is temporary
-            //Add 5 soldier to every city
-            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-            city.addCountryball(soldiers.back(),cities);
-            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-            city.addCountryball(soldiers.back(),cities);
-            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-            city.addCountryball(soldiers.back(),cities);
-            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-            city.addCountryball(soldiers.back(),cities);
-            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-            city.addCountryball(soldiers.back(),cities);
-        }
-
-        cameraCentreX/=playerCities;
-        cameraCentreY/=playerCities;
-
-        //Centre the camera on the player country
-        screenMinX= cameraCentreX*scale-windowWidthPx/2.0;
-        screenMinY= cameraCentreY*scale-windowHeightPx/2.0;
-
 
         //Then display a loading bar
         //Display a loading bar
@@ -252,6 +219,43 @@ arrowTexture(assetsPath()/"arrow.png",renderer)
             tile->finalize();
         }
     }
+
+    //Then do the things which require the things we just loaded to exist
+
+    double cameraCentreX = 0;
+    double cameraCentreY = 0;
+    int playerCities=0;
+
+    for (auto& city : cities) {
+        city.updateFrontlines(cities,watermap);
+        city.generateNameTexture(smallFont,renderer);
+        if (city.getOwner()==playerCountryId) {
+            cameraCentreX += city.getX();
+            cameraCentreY += city.getY();
+            playerCities++;
+        }
+        //TODO this is temporary
+        //Add 5 soldier to every city
+        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
+        city.addCountryball(soldiers.back(),cities);
+        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
+        city.addCountryball(soldiers.back(),cities);
+        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
+        city.addCountryball(soldiers.back(),cities);
+        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
+        city.addCountryball(soldiers.back(),cities);
+        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
+        city.addCountryball(soldiers.back(),cities);
+    }
+
+    cameraCentreX/=playerCities;
+    cameraCentreY/=playerCities;
+
+    //Centre the camera on the player country
+    screenMinX= cameraCentreX*scale-windowWidthPx/2.0;
+    screenMinY= cameraCentreY*scale-windowHeightPx/2.0;
+
+
     std::cout<<"Created successfully"<<std::endl;
 
     previousFPSprintMillis = SDL_GetTicks();
