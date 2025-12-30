@@ -23,6 +23,8 @@ if (UNIX)
     link_libraries(${SDL2_ttf_LIBRARIES})
 endif (UNIX)
 if (WIN32)
+
+
     set(SDL2_PATH "C:/libs/SDL2")
     set(SDL2_INCLUDE_DIR "${SDL2_PATH}/include")
     set(SDL2_LIB_DIR "${SDL2_PATH}/lib")
