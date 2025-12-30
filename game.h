@@ -24,6 +24,19 @@ public:
     bool shouldOpenNewScene(openSceneCommand& command, std::string& arguments) const override;
 
 private:
+    unsigned int previousFPSprintMillis;
+    unsigned int framesSinceFPSprint;
+    bool firstUpdate;
+
+    std::set<int> selectedCities;
+    int primarySelectedCity;
+    //City we currently are hovering over
+    int hoveredCity;
+
+    double boxSelectionX0;
+    double boxSelectionY0;
+    bool boxSelectionActive;
+
     //Each tile is 512x512 pixels
     int tileSize = 512;
     //My true grid width is 32 For a total of 16384x16384 pixels
@@ -59,6 +72,8 @@ private:
 
     //Accessories for city rendering
     texwrap cityTexture;
+    texwrap selectedCityTexture;
+    texwrap arrowTexture;
 
     //The list of countries the player can choose between
     std::vector<country> countries;

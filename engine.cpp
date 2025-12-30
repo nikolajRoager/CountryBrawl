@@ -122,10 +122,11 @@ void engine::run() {
 
     uint32_t pmillis=SDL_GetTicks();
 
+
     while (!quit) {
+
+
         unsigned int millis = SDL_GetTicks();
-
-
 
         scene::openSceneCommand newSceneCommand=scene::MENU;
         std::string newSceneArguments;
@@ -264,6 +265,8 @@ void engine::run() {
                 currentScene =nullptr;
                 //TODO, FOR NOW, we just let the program crash if there is an exception here... maybe we should not
                 currentScene = new game(renderer,windowWidthPx,windowHeightPx, *loadingBackground,newSceneArguments,smallFont);
+                //Reset input data, this is necessary since the game constructor may have cleared all queued inputs
+                currentInput=inputData();
             }
         }
 

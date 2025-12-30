@@ -10,8 +10,7 @@ int main() {
         std::cout<<"Run done, deleting game implicitly"<<std::endl;
     }
     catch (const std::exception& e) {
-        std::cerr<<"The game crashed due to an unhandled exception "<<e.what()<<std::endl;
-        return 1;
+        std::cerr<<"The game shut down after catching exception: "<<e.what()<<std::endl;
     }
     std::cout<<"Farewell, world"<<std::endl;
     return 0;

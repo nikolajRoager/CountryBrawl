@@ -16,19 +16,32 @@ countryball::countryball(const country &_myType, double _x, double _y): myType(_
 void countryball::update(double dt,const mapData& movementPenalties, const mapData& watermap) {
     double deltaX = targetX - x;
     double deltaY = targetY - y;
-    double delta = sqrt(deltaX * deltaX + deltaY * deltaY);
+    double delta2 = (deltaX * deltaX + deltaY * deltaY);
 
-    if (delta>0.01) {
+    if (delta2>0.01) {
         unsigned char penalty = movementPenalties.getValue(x,y);
         //Linearly interpolate between full speed and quarter speed
         double penaltyFactor = (1.0-penalty/255.0)+0.25*penalty/255.0;
         double speed = myType.getSpeed()*penaltyFactor;
 
+        double delta = sqrt(delta2);
         double vx = speed * deltaX / delta;
         double vy = speed * deltaY / delta;
 
-        x += vx * dt;
-        y += vy * dt;
+        double dx = vx*dt;
+        double dy = vy*dt;
+
+        double step = sqrt(dx*dx + dy*dy);
+
+        if (step<delta)
+        {
+            x += dx;
+            y += dy;
+        }
+        else {
+            x = targetX;
+            y = targetY;
+        }
 
         inWater=watermap.getValue(x,y)>128;
     }

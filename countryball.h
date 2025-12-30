@@ -21,6 +21,8 @@ public:
     [[nodiscard]] int getAllegiance() const {return myType.getId();}
 
     void setTarget(double _x, double _y) {targetX=_x; targetY=_y;}
+    void setTargetCity(int city) {targetCity=city;}
+    [[nodiscard]] int getTargetCity() const {return targetCity;}
     void setAimpoint(double _x, double _y) {aimX=_x;aimY=_y;}
     void setExpression(country::countryExpression expression) {myExpression=expression;}
 private:
@@ -35,6 +37,7 @@ private:
 
     //What we should aim at
     double aimX, aimY;
+    int targetCity=-1;
 
     const country& myType;
     country::countryExpression myExpression;

@@ -346,7 +346,7 @@ Balls miss weapons
 
 watermap and movementPenalties should use STB
 
-day 12.5 29-12-2025 Workload 6 hours
+day 12.5 29-12-2025 Workload 10 hours
 =============
 Note
 -----
@@ -365,20 +365,87 @@ Plan
 -------
 
 Add weapons to balls, use the weapons that country actually uses 
-OH MY GOD EVERYONE HAS THEIR OWN MODEL GUN, THIS WILL TAKE LIKE FOREVER (Done, it took like forever)
+OH MY GOD EVERYONE HAS THEIR OWN MODEL GUN, THIS WILL TAKE LIKE FOREVER. Done, it took like forever
 
-Weapons should point the right way (Done)
+Weapons should point the right way. Done
 
-watermap and movementPenalties should use STB (Done)
+watermap and movementPenalties should use STB. Done
 
-Make a working thread-pool system (in another project) (Done)
+Make a working thread-pool system (in another project). Done
 
-Implement thread pool loading of tiles and watermap/movementPenalties in this project (Done)
+Implement thread pool loading of tiles and watermap/movementPenalties in this project. Done
 
-Implement early bail on exceptions (Done)
+Implement early bail on exceptions. Done
 
-Make front-line start 25 px from each other, pulled back in event of water
+See if you can fix the jigglyness. Done
 
-Add artillery line behind the front-line
+Make front-line start 25 px from each other, pulled back in event of water. Partly Done, I miss the pulled back out of water part
 
-See if you can fix the jigglyness
+WOW, I got everything I planned done... wow just wow.
+
+day 13.5 30-12-2025
+=============
+Note
+----
+Once again, I have no idea what to do (since I amazingly finished all open issues yesterday)
+
+Well, lets try to come up with a few things, and shuffle them
+
+
+* URGENT: test the thread-pool on windows
+* Framerate counter
+* Center on selected nation on startup
+* Ability to move soldiers betwixt cities
+  * Requires ability to click on and select cities, we need to indicate the selection to the player visually, maybe with a sound
+* More work on front-lines, pull out of water, clamp to the cities themself
+* Cities should indicate how many soldiers they have, should be able to handle soldiers of different allegiances
+* Multiple types of soldiers (artillery and infantry)
+* Projectiles and death
+
+I already shuffled it, so I guess that is my plan.
+
+But when it comes to the movement of soldiers, I need to think about what style of controls I would like.
+
+I think left-click to select (shift+left click to select multiple) and right click to move makes sense, it is just like the Paradox games which I like
+
+Plan
+----
+
+URGENT: test the thread-pool on windows
+
+Framerate counter. Done, and it is fine
+
+Center on selected nation on startup. Done
+
+Add ability to select cities by left-clicking them Done
+
+Add selection marker to cities when mouse-over Done
+
+Add selection marker to cities when selected Done 
+
+Add ability to select multiple cities by shift+left-clicking Done
+
+Add box to draw over multiple cities by holding down left Done
+
+Add highlight of neighbouring paths for selected cities, for now only highlight path to adjacent cities. Done
+
+Add ability to move soldiers, by right-clicking an adjacent city. Done
+
+Move Should prioritize soldiers along the relevant front. Done
+
+Pull front-lines back from water
+
+Clamp front-lines to cities
+
+Add artillery line 
+
+Cities should indicate how many soldiers they have, should be able to handle soldiers of different allegiances 
+
+Multiple types of soldiers (artillery and infantry)
+
+Projectiles and death
+
+
+Issues
+------
+Add soldier shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that

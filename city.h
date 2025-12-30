@@ -17,7 +17,13 @@
 class city {
 public:
     city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y);
-    void display(const texwrap& baseTexture, const std::vector<city>& bases, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer) const;
+    void display(const texwrap& baseTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<city>& bases, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer) const;
+
+    ///Highlight the path to a direct neighbour
+    void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis) const;
+
+    [[nodiscard]] bool hasSoldiersFromt(int country) const;
+
 
     [[nodiscard]] double getX() const { return x; }
     [[nodiscard]] double getY() const { return y; }
@@ -54,7 +60,19 @@ public:
 
     void addCountryball(std::shared_ptr<countryball> newCountryball, const std::vector<city>& cities);
 
+    void generateNameTexture(TTF_Font* font, SDL_Renderer* renderer) {
+        cityNameTexture=std::make_unique<texwrap>(name,renderer,font);
+
+
+    }
+
+    //Order a soldier to walk to a neighbouring base
+    void moveSoldiersTo(int allegiance,int target,bool all,std::vector<city>& cities);
+
 private:
+
+    std::unique_ptr<texwrap> cityNameTexture;
+
     ///Who currently controls the base and the province (De Facto owner)
     int owner;
     ///My id in the list of bases, used for making sure my neighbours delete me safely
