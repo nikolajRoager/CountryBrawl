@@ -128,7 +128,7 @@ arrowTexture(assetsPath()/"arrow.png",renderer)
         //From testing these things are basically instant
         for (const auto& entry : fs::directory_iterator(fs::path("assets")/"countryballAccessories"/"guns")) {
             if (entry.path().extension()==".png") {
-                guns.emplace(entry.path().filename().stem(),texwrap(entry.path(),renderer));
+                guns.emplace(entry.path().filename().stem().string(),texwrap(entry.path(),renderer));
             }
         }
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <ranges>
+#include <cmath>
 
 city::city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y) {
     owner = _owner;

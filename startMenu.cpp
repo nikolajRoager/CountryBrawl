@@ -5,6 +5,7 @@
 #include "startMenu.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "getAssets.h"
 
@@ -17,7 +18,7 @@ happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer), veryEasyD
 
         for (const auto& entry : fs::directory_iterator(fs::path("assets")/"countryballAccessories"/"guns")) {
             if (entry.path().extension()==".png") {
-                guns.emplace(entry.path().filename().stem(),texwrap(entry.path(),renderer));
+                guns.emplace(entry.path().filename().stem().string(),texwrap(entry.path(),renderer));
             }
         }
 
