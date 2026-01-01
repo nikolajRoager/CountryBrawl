@@ -11,7 +11,8 @@
 
 startMenu::startMenu(SDL_Renderer* renderer, TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont) : gameTitle("Country Brawl",renderer,largeFont), subTitle("Battle for Europe",renderer,midFont), newGameItem(renderer,50,300,midFont,"New Game"), quitGameItem(renderer,50,380,midFont,"Quit"), startNewGameItem(renderer,50,300,midFont,"Start Game"),goBackFromNewGameItem(renderer,50,380,midFont,"Back"), selectCountry("Select Country",renderer,midFont),
 selectCountryLeft(renderer,900,200, assetsPath()/"ui"/"goLeft.png"),selectCountryRight(renderer,1030,200, assetsPath()/"ui"/"goRight.png"),selectedCountryName("null",renderer,midFont), ballInWater(assetsPath()/"countryballAccessories"/"ballInWater.png",renderer), selectedCountryDescription("null",renderer,smallFont),angryBall(assetsPath()/"countryballAccessories"/"angry.png",renderer),
-happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer), veryEasyDifficultyText("Very Easy",renderer,midFont), easyDifficultyText("Easy",renderer,midFont), mediumDifficultyText("Medium",renderer,midFont),hardDifficultyText("Hard",renderer,midFont),veryHardDifficultyText("Very Hard",renderer,midFont),impossibleDifficultyText("Impossible",renderer,midFont), startingCitiesText("Cities: 0",renderer,midFont)
+happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer), veryEasyDifficultyText("Very Easy",renderer,midFont), easyDifficultyText("Easy",renderer,midFont), mediumDifficultyText("Medium",renderer,midFont),hardDifficultyText("Hard",renderer,midFont),veryHardDifficultyText("Very Hard",renderer,midFont),impossibleDifficultyText("Impossible",renderer,midFont), startingCitiesText("Cities: 0",renderer,midFont),
+deadBall(assetsPath()/"countryballAccessories"/"dead.png",renderer)
 {
     //Load all country paths first so we put them in alphabetic order
     {
@@ -39,7 +40,7 @@ happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer), veryEasyD
         {
             const auto& entry = countryPaths[i];
             fs::path countryPath = entry.path();
-            countries.emplace_back(i,countryPath,ballInWater,angryBall,happyBall,guns,renderer);
+            countries.emplace_back(i,countryPath,ballInWater,angryBall,happyBall,deadBall,guns,renderer);
         }
 
         selectedCountryName=texwrap(countries[selectedCountry].getName(),renderer,midFont);

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <ranges>
 #include <cmath>
+#include <queue>
 
 city::city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y) {
     owner = _owner;
@@ -35,7 +36,7 @@ city::city(int _owner, int _core, int _myId, const std::string &_name, const std
 }
 
 
-bool city::hasSoldiersFromt(int country) const {
+bool city::hasSoldiersFrom(int country) const {
     for (const auto &allegiance: squads | std::views::keys) {
         if (allegiance == country) {
             return true;
@@ -45,8 +46,38 @@ bool city::hasSoldiersFromt(int country) const {
 }
 
 
+void city::updateNeighbourhood(std::vector<city> &cities) {
 
-void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<city>& bases, const std::vector<country> &countries, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer) const {
+    //Me
+    neighbourhood.insert(myId);
+    for (int n : neighbours) {
+        //My neighbours
+        neighbourhood.insert(n);
+        for (int m : cities[n].neighbours) {
+            //And their neighbours
+            neighbourhood.insert(m);
+            for (int o : cities[m].neighbours) {
+                //And their neighbours
+                neighbourhood.insert(o);
+            }
+        }
+    }
+}
+
+void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries) {
+    for (auto& squad : squads) {
+        for (int i = squad.second.size() - 1; i >= 0; i--) {
+            if (!squad.second[i]->isAlive())
+                squad.second.erase(squad.second.begin() + i);
+        }
+    }
+
+    updateSoldierLocations(cities, countries);
+}
+
+
+
+void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<city>& bases, const std::vector<country> &countries, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
 
     int xScreen = x*scale-screenMinX;
     int yScreen = y*scale-screenMinY;
@@ -82,9 +113,31 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, b
         if (scale>=1.0)
             cityNameTexture->render(xScreen,yScreen,0,0,0, renderer,thisScale,true,false);
 
-        /*
+        int totalSoldiers = 0;
+        for (const auto &squad : squads) {
+            totalSoldiers+=squad.second.size();
+        }
+        if (totalSoldiers>0 && scale>=0.25) {
+            double barWidth = 64;
+            double barHeight= barWidth/8;
+            double barX = xScreen-barWidth/2;
+            double barY = yScreen-cityTexture.getHeight()*thisScale-barHeight/2;
+            for (const auto &squad : squads) {
+                double width = (barWidth*squad.second.size())/totalSoldiers;
+                SDL_SetRenderDrawColor(renderer,countries[squad.first].getRed(),countries[squad.first].getGreen(),countries[squad.first].getBlue(),255);
 
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+                SDL_Rect quad = {(int)barX,(int)barY,(int)width,(int)(-barHeight)};
+                SDL_RenderFillRect(renderer,&quad);
+
+                numberer.render(squad.second.size(),barX,barY,renderer,1,false,true);
+                barX+=width;
+
+            }
+        }
+
+
+        //Uncomment to display front-lines
+        /*
         for (const auto& borderBase : frontlines) {
 
             int locationScreenX0 = (borderBase.second.x-borderBase.second.dx*50)*scale-screenMinX;
@@ -92,8 +145,18 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, b
             int locationScreenX1 = (borderBase.second.x+borderBase.second.dx*50)*scale-screenMinX;
             int locationScreenY1 = (borderBase.second.y+borderBase.second.dy*50)*scale-screenMinY;
 
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
             SDL_RenderDrawLine(renderer, locationScreenX0, locationScreenY0, locationScreenX1, locationScreenY1);
-        }*/
+
+            locationScreenX0 = (borderBase.second.supportX-borderBase.second.dx*50)*scale-screenMinX;
+            locationScreenY0 = (borderBase.second.supportY-borderBase.second.dy*50)*scale-screenMinY;
+            locationScreenX1 = (borderBase.second.supportX+borderBase.second.dx*50)*scale-screenMinX;
+            locationScreenY1 = (borderBase.second.supportY+borderBase.second.dy*50)*scale-screenMinY;
+
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+            SDL_RenderDrawLine(renderer, locationScreenX0, locationScreenY0, locationScreenX1, locationScreenY1);
+        }
+        */
     }
 }
 
@@ -130,7 +193,7 @@ bool city::isSelected (const texwrap& baseTexture, int mouseX, int mouseY,int sc
     return (mouseX>xScreen-baseTexture.getWidth()/2 && mouseX<xScreen+baseTexture.getWidth()/2 && mouseY<yScreen && mouseY>yScreen-baseTexture.getHeight());
 }
 
-void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<city>& cities) {
+void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<city>& cities, const std::vector<country>& countries) {
     if (!squads.contains(ball->getAllegiance())) {
         squads.emplace(ball->getAllegiance(),std::vector<std::shared_ptr<countryball>>({ball}));
     }
@@ -139,10 +202,38 @@ void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<c
         squads[ball->getAllegiance()].emplace_back(ball);
     }
 
-    updateSoldierLocations(cities);
+    ball->setBase(myId);
+
+    updateSoldierLocations(cities,countries);
 }
 
-void city::updateSoldierLocations(const std::vector<city>& cities) {
+void city::updateOwnership(std::vector<city> &cities, const std::vector<country> &countries) {
+
+    int ownSoldiers = squads.contains(owner) ? squads[owner].size() : 0;
+    int newOwner = owner;
+    for (const auto& squad : squads) {
+        if (squad.first!=owner && squad.second.size()>ownSoldiers) {
+            bool anyArrived = false;
+            for (const auto& soldier : squad.second) {
+                if (soldier->inPosition()) {
+                    anyArrived = true;
+                }
+            }
+
+            if (anyArrived) {
+                owner = squad.first;
+                updateSoldierLocations(cities,countries);
+                //TODO, evacuate defeated soldiers to friendly neighbours, or have them surrender
+                for (int n : neighbours)
+                    cities[n].updateSoldierLocations(cities,countries);
+                break;
+            }
+        }
+    }
+}
+
+
+void city::updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries) {
     for (auto& squad : squads) {
         //Most of the time, balls stand in a circle around the city
         bool useCircle = true;
@@ -154,7 +245,7 @@ void city::updateSoldierLocations(const std::vector<city>& cities) {
             //The id of the hostile front, and how many soldiers we have already assigned to it
             std::map<int,int> hostileFrontsDistibution;
             for (const auto& front : frontlines) {
-                if (cities[front.first].getOwner()!=owner) {
+                if (countries[owner].atWarWith(cities[front.first].getOwner())) {
                     nHostileFronts++;
                     hostileFrontsDistibution.emplace(front.first,0);
                 }
@@ -186,7 +277,6 @@ void city::updateSoldierLocations(const std::vector<city>& cities) {
                 }
             }
         }
-        //TODO, hostile soldiers should target the base itself
 
         //TODO, circles of increasing radius
         //Stand around the city in a circle
@@ -200,7 +290,8 @@ void city::updateSoldierLocations(const std::vector<city>& cities) {
                 squad.second[i]->setTargetCity(myId);
                 //When expression is happy, countryballs point away from the aim-point (they don't want to hurt it)
                 squad.second[i]->setAimpoint(x,y);
-                squad.second[i]->setExpression(country::HAPPY);
+
+                squad.second[i]->setExpression(countries[squad.first].atWarWith(owner) ? country::ANGRY : country::HAPPY);
             }
     }
 }
@@ -209,6 +300,7 @@ void city::updateSoldierLocations(const std::vector<city>& cities) {
 
 void city::addNeighbour(int newNeighbour) {
     neighbours.insert(newNeighbour);
+
 }
 
 void city::updateFrontlines(const std::vector<city> &cities,const mapData& watermap) {
@@ -219,17 +311,19 @@ void city::updateFrontlines(const std::vector<city> &cities,const mapData& water
         double Dx =(cities[n].getX()-x);
         double Dy =(cities[n].getY()-y);
         double dist = sqrt(Dx*Dx+Dy*Dy);
-        double fX;
-        double fY;
+        double fX=x;
+        double fY=y;
 
+        double fOffset;
         //Clamp to cities
         if (dist < 50) {
             fX =x;
             fY =y;
+            fOffset=0;
         }
         else
             //Slowly pull back if we are in water
-            for (double fOffset = 25; fOffset<dist/2; fOffset+=10) {
+            for (fOffset = 25; fOffset<dist/2; fOffset+=10) {
                 fX =cities[n].getX()*(dist/2-fOffset)/dist+x*(dist/2+fOffset)/dist;
                 fY =cities[n].getY()*(dist/2-fOffset)/dist+y*(dist/2+fOffset)/dist;
                 //Accept if this is land
@@ -237,8 +331,20 @@ void city::updateFrontlines(const std::vector<city> &cities,const mapData& water
                     break;
 
             }
+
+        double sX,sY;
+        if (fOffset+50<dist/2) {
+            sX =cities[n].getX()*(dist/2-fOffset-50)/dist+x*(dist/2+fOffset+50)/dist;
+            sY =cities[n].getY()*(dist/2-fOffset-50)/dist+y*(dist/2+fOffset+50)/dist;
+        }
+        else {
+            sX=x;
+            sY=y;
+        }
+
+
         double norm = sqrt(Dx*Dx+Dy*Dy);
-        frontlines.emplace(n,frontlineSegment(fX,fY,-Dy/norm,Dx/norm));
+        frontlines.emplace(n,frontlineSegment(fX,fY,sX,sY,-Dy/norm,Dx/norm));
     }
 }
 
@@ -254,71 +360,232 @@ double city::getShortestNeighbourDistance(const std::vector<city> &cities) const
     return shortestDistance;
 }
 
-void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city> &cities) {
-    bool found = false;
+void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city> &cities, const std::vector<country>& countries, std::list<ticket>& tickets) {
+    //If some idiot want to find the path to an undefined city, tell them to cool off
+    if (target==-1)
+        return;
+
+
+    bool foundAsNeighbour = false;
     for (int n : neighbours) {
         if (n==target) {
-            found = true;
+            foundAsNeighbour = true;
             break;
         }
     }
-    if (found && squads.contains(allegiance)) {
-        auto& squad = squads[allegiance];
+    if (squads.contains(allegiance) && squads[allegiance].size()>0)
+    {
+        if (foundAsNeighbour) {
+            //TODO, temporary, this should NOT be done for immediate neighbours, create a transportation ticket when travelling between adjacent cities with access
+            if (countries[allegiance].hasAccess(owner) && countries[allegiance].hasAccess(cities[target].getOwner())) {
+                std::vector<int> stops {myId , target};
+                tickets.emplace_back(allegiance,stops);
+                //Some duplicate code to select the balls
+                auto& squad = squads[allegiance];
 
-        if (all) {
-            //Update soldier base and add to new base
-            for (auto& s : squad) {
-                cities[target].addCountryball(s,cities);
-            }
-            //Everything has been reassigned, remove from this
-            squads.erase(allegiance);
-        }
-        else {
-            int toMove = (squad.size()+1)/2;
-            //Use the iterator explicitly, because we are going to be deleting
-            for (auto it = squad.begin(); it != squad.end();) {
-                auto& s = *it;
-
-                if (s->getTargetCity()==target) {
-                    auto& s = *it;
-                    cities[target].addCountryball(s,cities);
-                    it = squad.erase(it);
-                    --toMove;
-                    if (toMove <= 0) {
-                        break;
+                if (all) {
+                    //Update soldier base and add to new base
+                    for (auto& s : squad) {
+                        tickets.back().addPassenger(cities,s);
                     }
+                    //Everything has been reassigned, remove from this
+                    squads.erase(allegiance);
                 }
                 else {
-                    ++it;
+                    int toMove = (squad.size()+1)/2;
+                    //Select every other soldier and send them to the new base
+                    int count = 0;
+                    //Use the iterator explicitly, because we are going to be deleting
+                    if (toMove>0)
+                        for (auto it = squad.begin(); it != squad.end();) {
+                            //Since we start at 0, we effectively round UP if there is an odd number, that is intentional
+                            if (count%2==0) {
+                                auto& s = *it;
+                                tickets.back().addPassenger(cities,s);
+                                it = squad.erase(it);
+                                --toMove;
+                                if (toMove <= 0) {
+                                    break;
+                                }
+                            }
+                            else {
+                                ++it;
+                            }
+                            count++;
+                        }
                 }
+                updateSoldierLocations(cities,countries);
             }
-            //Select every other soldier and send them to the new base
-            int count = 0;
+            else {
+                auto& squad = squads[allegiance];
 
-            //Then loop over all remaining soldiers, and send them away until we have half
-            //Use the iterator explicitly, because we are going to be deleting
-            if (toMove>0)
-                for (auto it = squad.begin(); it != squad.end();) {
-                    //Since we start at 0, we effectively round UP if there is an odd number, that is intentional
-                    if (count%2==0) {
+                if (all) {
+                    //Update soldier base and add to new base
+                    for (auto& s : squad) {
+                        cities[target].addCountryball(s,cities,countries);
+                    }
+                    //Everything has been reassigned, remove from this
+                    squads.erase(allegiance);
+                }
+                else {
+                    int toMove = (squad.size()+1)/2;
+                    //Use the iterator explicitly, because we are going to be deleting
+                    for (auto it = squad.begin(); it != squad.end();) {
                         auto& s = *it;
-                        cities[target].addCountryball(s,cities);
-                        it = squad.erase(it);
-                        --toMove;
-                        if (toMove <= 0) {
-                            break;
+
+                        if (s->getTargetCity()==target) {
+                            auto& s = *it;
+                            cities[target].addCountryball(s,cities,countries);
+                            it = squad.erase(it);
+                            --toMove;
+                            if (toMove <= 0) {
+                                break;
+                            }
+                        }
+                        else {
+                            ++it;
                         }
                     }
-                    else {
-                        ++it;
-                    }
+                    //Select every other soldier and send them to the new base
+                    int count = 0;
 
-
-                count++;
-
+                    //Then loop over all remaining soldiers, and send them away until we have half
+                    //Use the iterator explicitly, because we are going to be deleting
+                    if (toMove>0)
+                        for (auto it = squad.begin(); it != squad.end();) {
+                            //Since we start at 0, we effectively round UP if there is an odd number, that is intentional
+                            if (count%2==0) {
+                                auto& s = *it;
+                                cities[target].addCountryball(s,cities,countries);
+                                it = squad.erase(it);
+                                --toMove;
+                                if (toMove <= 0) {
+                                    break;
+                                }
+                            }
+                            else {
+                                ++it;
+                            }
+                            count++;
+                        }
+                }
+                updateSoldierLocations(cities,countries);
             }
         }
-        updateSoldierLocations(cities);
+        else {
+            //We need to take a train
+            if (countries[allegiance].hasAccess(owner) && countries[allegiance].hasAccess(cities[target].getOwner())) {
+                std::vector<int> stops = cities[target].findPathFrom(myId,cities,countries);
+                if (stops.size()>0) {
+                    tickets.emplace_back(allegiance,stops);
+                    //Some duplicate code to select the balls
+                    auto& squad = squads[allegiance];
+
+                    if (all) {
+                        //Update soldier base and add to new base
+                        for (auto& s : squad) {
+                            tickets.back().addPassenger(cities,s);
+                        }
+                        //Everything has been reassigned, remove from this
+                        squads.erase(allegiance);
+                    }
+                    else {
+                        int toMove = (squad.size()+1)/2;
+                        //Select every other soldier and send them to the new base
+                        int count = 0;
+                        //Use the iterator explicitly, because we are going to be deleting
+                        if (toMove>0)
+                            for (auto it = squad.begin(); it != squad.end();) {
+                                //Since we start at 0, we effectively round UP if there is an odd number, that is intentional
+                                if (count%2==0) {
+                                    auto& s = *it;
+                                    tickets.back().addPassenger(cities,s);
+                                    it = squad.erase(it);
+                                    --toMove;
+                                    if (toMove <= 0) {
+                                        break;
+                                    }
+                                }
+                                else {
+                                    ++it;
+                                }
+                                count++;
+                            }
+                    }
+                    updateSoldierLocations(cities,countries);
+                }
+            }
+        }
+    }
+}
+
+//Find path with Dijkstras algorithm
+std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities, const std::vector<country> &countries) {
+    //-1 is used whenever the selected city is undefined, it may accidentally have been inserted here, just ignore it
+    if (source == -1 )
+        return {};
+    //Source is destination: path is empty
+    if (source==myId)
+        return {};
+    //If my (the destinations) owning country bans travellers from the source's country, there is no path
+    int sourceCountry = cities[source].getOwner();
+    if (!countries[owner].hasAccess(sourceCountry)) {
+        return {};
     }
 
+    //I use a map, since I don't have an entry for every city id, only the ones we can access
+    //For example, I might only be able to access city 0,1,2,3,4,42, and 43 (which are the city ids in Denmark)
+    std::map<int,double> distances;
+    std::map<int,int> prev;
+    std::vector<int> Q;
+
+    for (int i = 0; i< cities.size(); ++i) {
+        if (countries[cities[i].getOwner()].hasAccess(sourceCountry)) {
+            Q.emplace_back(i);
+            prev[i]=-1;
+            distances[i]=std::numeric_limits<double>::max();
+
+        }
+    }
+    //Start from the destination (at myId) so we don't have to backtrack to get the path the right way around
+
+    distances[myId]=0;
+    bool found=false;
+    while (!Q.empty() && !found) {
+        //Find the element in Q with the smallest distance
+        int smallestId = 0;
+        for (int i = 0; i < Q.size(); ++i) {
+            if (distances[Q[i]]<distances[Q[smallestId]])
+                smallestId = i;
+        }
+        int u = Q[smallestId];
+
+        Q.erase(Q.begin()+smallestId);
+
+        //Loop through all neighbours of u
+        for (int v : cities[u].getNeighbours()) {
+            //Update their distances
+            double dx = cities[v].getX()-cities[u].getX();
+            double dy = cities[v].getY()-cities[u].getY();
+            double dist = sqrt(dx*dx+dy*dy);
+            double alt = dist+distances[u];
+            if (alt < distances[v]) {
+                distances[v] = alt;
+                prev[v] = u;
+                if (v==source) {
+                    found=true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!found) {
+        return {};
+    }
+    std::vector<int> path;
+    for (int c = source; c!=-1; c=prev[c] ) {
+        path.emplace_back(c);
+    }
+    return path;
 }

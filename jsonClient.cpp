@@ -86,7 +86,9 @@ void jsonClient::load(std::vector<city>& bases,const std::vector<country>& count
 
     bases.clear();
     bases.reserve(basesVector.size());
+    int i = 0;
     for (const auto& base : basesVector) {
+
         auto ownerIt = std::find_if (countries.begin(),countries.end(),[&](const country& obj) {
             return obj.getName()==base.owner;
         });
@@ -103,7 +105,7 @@ void jsonClient::load(std::vector<city>& bases,const std::vector<country>& count
         int ownerId = ownerIt- countries.begin();
         int coreId = coreIt- countries.begin();
 
-        bases.emplace_back(ownerId,coreId,base.id,base.name,base.provinceName,base.x,base.y,base.income,base.neighbours);
+        bases.emplace_back(ownerId,coreId,i++,base.name,base.provinceName,base.x,base.y,base.income,base.neighbours);
     }
 }
 

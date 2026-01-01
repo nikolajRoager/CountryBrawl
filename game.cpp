@@ -12,6 +12,7 @@
 
 #include "getAssets.h"
 #include "jsonClient.h"
+#include "lingeringShot.h"
 #include "mapData.h"
 #include "threadPool.h"
 
@@ -20,9 +21,15 @@ game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const te
 ballInWater(assetsPath()/"countryballAccessories"/"ballInWater.png",renderer),
 happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer),
 angryBall(assetsPath()/"countryballAccessories"/"angry.png",renderer),
+deadBall(assetsPath()/"countryballAccessories"/"dead.png",renderer),
 cityTexture(assetsPath()/"city.png",renderer),
 selectedCityTexture(assetsPath()/"selectedCity.png",renderer),
-arrowTexture(assetsPath()/"arrow.png",renderer)
+arrowTexture(assetsPath()/"arrow.png",renderer),
+trainEnd(assetsPath()/"trainEnd.png",renderer),
+trainSegment(assetsPath()/"trainSegment.png",renderer),
+passengerShip(assetsPath()/"passengerShip.png",renderer),
+numberer(0,smallFont,renderer),
+generator(time(NULL))
 {
     std::cout<<"Loading new game"<<std::endl;
     //First, set up loading of everything we will be loading asynchronously
@@ -153,7 +160,7 @@ arrowTexture(assetsPath()/"arrow.png",renderer)
         {
             const auto& entry = countryPaths[i];
             fs::path countryPath = entry.path();
-            countries.emplace_back(i,countryPath,ballInWater,angryBall,happyBall,guns,renderer);
+            countries.emplace_back(i,countryPath,ballInWater,angryBall,happyBall,deadBall,guns,renderer);
             if (countries[i].getName()==playerCountry) {
                 playerCountryId=i;
             }
@@ -229,6 +236,7 @@ arrowTexture(assetsPath()/"arrow.png",renderer)
     for (auto& city : cities) {
         city.updateFrontlines(cities,watermap);
         city.generateNameTexture(smallFont,renderer);
+        city.updateNeighbourhood(cities);
         if (city.getOwner()==playerCountryId) {
             cameraCentreX += city.getX();
             cameraCentreY += city.getY();
@@ -237,15 +245,17 @@ arrowTexture(assetsPath()/"arrow.png",renderer)
         //TODO this is temporary
         //Add 5 soldier to every city
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-        city.addCountryball(soldiers.back(),cities);
+        city.addCountryball(soldiers.back(),cities,countries);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-        city.addCountryball(soldiers.back(),cities);
+        city.addCountryball(soldiers.back(),cities,countries);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-        city.addCountryball(soldiers.back(),cities);
+        city.addCountryball(soldiers.back(),cities,countries);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-        city.addCountryball(soldiers.back(),cities);
+        city.addCountryball(soldiers.back(),cities,countries);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
-        city.addCountryball(soldiers.back(),cities);
+        city.addCountryball(soldiers.back(),cities,countries);
+
+
     }
 
     cameraCentreX/=playerCities;
@@ -268,9 +278,14 @@ arrowTexture(assetsPath()/"arrow.png",renderer)
     boxSelectionY0=0;
     boxSelectionActive=false;
     hoveredCity=-1;//None
+    msPerFrame=17;
+
+    std::cout<<"Loaded "<<countries.size()<<" countries "<<cities.size()<<" cities and "<<soldiers.size()<<" soldiers "<<std::endl;
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis) const {
+
+
     for (const auto& tile : tiles) {
         tile->draw(screenMinX,screenMinY,scale,renderer);
     }
@@ -278,17 +293,32 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     for (int i = 0; i < cities.size(); i++) {
         const city& city = cities[i];
-        city.display(cityTexture,selectedCityTexture,selectedCities.contains(i),i==primarySelectedCity,cities,countries,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer);
+        city.display(cityTexture,selectedCityTexture,selectedCities.contains(i),i==primarySelectedCity,cities,countries,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer,numberer);
     }
+
+
+    for (const auto& ticket : tickets) {
+        ticket.display(cities,trainEnd,trainSegment,passengerShip,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer,watermap);
+    }
+
 
     for (int i : selectedCities) {
         const city& city = cities[i];
         city.highlightNeighbour(arrowTexture,hoveredCity,cities,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer,millis);
     }
 
+    for (int i = 0; i+1<selectedPath.size(); i++) {
+        cities[selectedPath[i]].highlightNeighbour(arrowTexture,selectedPath[i+1],cities,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer,millis);
+    }
+
+    for (const auto& shot : smallArmsShots) {
+        shot.display(screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer);
+    }
+
     for (const auto& soldier : soldiers) {
         soldier->display(screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer);
     }
+
 
     //Draw a selection box
     if (boxSelectionActive) {
@@ -318,6 +348,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
         SDL_RenderDrawRect(renderer,&quad);
     }
+
 }
 
 void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis, TTF_Font *smallFont, TTF_Font *midFont, TTF_Font *largeFont) {
@@ -325,6 +356,9 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     firstUpdate= false;
     double mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
     double mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+
+    //Useful for debugging
+    //std::cout<<mouseXWorld<<" "<<mouseYWorld<<std::endl;
 
     if (userInputs.leftPressed) {
         screenMinX-=(millis-pmillis);
@@ -388,7 +422,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
         mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
     }
-
+    int prevPrimarySelectedCity=primarySelectedCity;
     //Left click to select cities
     if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown) {
 
@@ -402,7 +436,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         for (int i = 0; i < cities.size(); i++) {
             const auto &city = cities[i];
             if (city.isSelected(cityTexture,userInputs.mouseXPx,userInputs.mouseYPx,screenMinX,screenMinY,scale)
-                && (city.getOwner()==playerCountryId || city.hasSoldiersFromt(playerCountryId))
+                && (city.getOwner()==playerCountryId || city.hasSoldiersFrom(playerCountryId))
             ) {
                 primarySelectedCity=i;
                 selectedCities.insert(i);
@@ -442,7 +476,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         for (int i = 0; i < cities.size(); i++) {
             const auto &city = cities[i];
             if ( (city.getX()>minX && city.getX()<maxX && city.getY()>minY && city.getY()<maxY)
-                && (city.getOwner()==playerCountryId || city.hasSoldiersFromt(playerCountryId))
+                && (city.getOwner()==playerCountryId || city.hasSoldiersFrom(playerCountryId))
             ) {
                 primarySelectedCity=i;
                 selectedCities.insert(i);
@@ -455,11 +489,12 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         //First try to move soldiers to direct neighbours
         for (int i : selectedCities) {
             auto &city = cities[i];
-            city.moveSoldiersTo(playerCountryId,hoveredCity,userInputs.shiftPressed,cities);
+            city.moveSoldiersTo(playerCountryId,hoveredCity,userInputs.shiftPressed,cities,countries,tickets);
         }
     }
 
     //In any case, update which city we are hovering over
+    int prevHoveredCity = hoveredCity;
     hoveredCity=-1;
 
     for (int i = 0; i < cities.size(); i++) {
@@ -470,19 +505,56 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         }
     }
 
+    if (hoveredCity!=-1)
+        if (prevPrimarySelectedCity!=primarySelectedCity || prevHoveredCity!=hoveredCity) {
+            selectedPath=cities[hoveredCity].findPathFrom(primarySelectedCity,cities,countries);
+        }
+
+    for (auto& shot : smallArmsShots)
+        shot.update(dt);
+
+    //Clear lingering shots, since they are inserted from the back, and have the same lifetime, the expired shots are all up front
+    while (!smallArmsShots.empty() && smallArmsShots.front().dead())
+        smallArmsShots.pop_front();
+
     //Update which tiles are ready
     for (auto& tile : tiles) {
         tile->update(screenMinX,screenMinX+screenWidth,screenMinY,screenMinY+screenHeight,scale,renderer);
     }
 
-    for (auto& ball : soldiers) {
-        ball->update(dt,movementPenalties,watermap);
+    for (auto& ticket : tickets) {
+        ticket.update(cities,countries,dt);
     }
 
-    if (framesSinceFPSprint>=1000) {
+
+    tickets.remove_if([](const ticket& ticket) { return ticket.isDone(); });
+
+    std::vector<std::shared_ptr<countryball>> shotBalls;
+    for (auto& ball : soldiers) {
+        ball->move(dt,movementPenalties,watermap);
+        ball->shoot(shotBalls,smallArmsShots,soldiers,cities,generator,dt);
+    }
+
+    for (auto& ball : shotBalls) {
+        ball->kill();
+        int base = ball->getBase();
+        if (base>=0 && base<cities.size())
+            cities[base].removeDeadSoldiers(cities, countries);
+    }
+
+    for (int i = soldiers.size()-1; i >= 0; i--) {
+        if (soldiers[i]->shouldDespawn())
+            soldiers.erase(soldiers.begin()+i);
+    }
+
+    for (auto& city : cities) {
+        city.updateOwnership(cities, countries);
+    }
+
+    if (framesSinceFPSprint>=100) {
 
         unsigned dmillis = millis-previousFPSprintMillis;
-        double msPerFrame = dmillis/((double)framesSinceFPSprint);
+        msPerFrame = dmillis/((double)framesSinceFPSprint);
         std::cout << "ms per frame "<< msPerFrame << std::endl;
 
         previousFPSprintMillis=millis;
@@ -497,5 +569,5 @@ bool game::shouldOpenNewScene(openSceneCommand &command, std::string &arguments)
 }
 
 game::~game() {
-
+//The destructors of my stuff takes care of the cleanup
 }

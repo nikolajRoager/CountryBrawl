@@ -28,6 +28,7 @@ private:
     texwrap ballInWater;
     texwrap angryBall;
     texwrap happyBall;
+    texwrap deadBall;
     std::map<std::string,texwrap> guns;
 
     //The list of countries the player can choose between

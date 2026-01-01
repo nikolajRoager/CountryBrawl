@@ -11,18 +11,20 @@
 
 #include "country.h"
 #include "countryball.h"
+#include "numberRenderer.h"
 #include "texwrap.h"
+#include "ticket.h"
 
 
 class city {
 public:
     city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y);
-    void display(const texwrap& baseTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<city>& bases, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer) const;
+    void display(const texwrap& baseTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<city>& bases, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
 
     ///Highlight the path to a direct neighbour
     void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis) const;
 
-    [[nodiscard]] bool hasSoldiersFromt(int country) const;
+    [[nodiscard]] bool hasSoldiersFrom(int country) const;
 
 
     [[nodiscard]] double getX() const { return x; }
@@ -43,6 +45,7 @@ public:
     void setName(const std::string &newName) {this->name = newName;}
     void setProvinceName(const std::string &newName) {this->provinceName = newName;}
 
+    void updateOwnership(std::vector<city>& cities,const std::vector<country>& countries);
 
     void addNeighbour(int newNeighbour);
 
@@ -58,18 +61,28 @@ public:
 
     [[nodiscard]] double getShortestNeighbourDistance(const std::vector<city>& cities) const;
 
-    void addCountryball(std::shared_ptr<countryball> newCountryball, const std::vector<city>& cities);
+    void addCountryball(std::shared_ptr<countryball> newCountryball, const std::vector<city>& cities, const std::vector<country>& countries);
 
     void generateNameTexture(TTF_Font* font, SDL_Renderer* renderer) {
-        cityNameTexture=std::make_unique<texwrap>(name,renderer,font);
-
-
+        cityNameTexture=std::make_unique<texwrap>(std::to_string(myId)+" "+name,renderer,font);
     }
 
-    //Order a soldier to walk to a neighbouring base
-    void moveSoldiersTo(int allegiance,int target,bool all,std::vector<city>& cities);
+    std::vector<int> findPathFrom(int source, const std::vector<city>& cities, const std::vector<country>& countries);
 
+    [[nodiscard]] const std::map<int, std::vector<std::shared_ptr<countryball> > >& getSquads() const {return squads;}
+
+
+    //Order a soldier to walk to a neighbouring base
+    void moveSoldiersTo(int allegiance,int target,bool all,std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets);
+
+    void removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries);
+
+    void updateNeighbourhood(std::vector<city>& cities);
+    [[nodiscard]] const std::set<int>& getNeighbourhood() const {return neighbourhood;}
 private:
+
+    //A list of nearby cities (me, my neighbours, their neighbours, maybe more)
+    std::set<int> neighbourhood;
 
     std::unique_ptr<texwrap> cityNameTexture;
 
@@ -91,10 +104,12 @@ private:
 
     struct frontlineSegment {
         double x,y;
+        double supportX,supportY;
         double dx,dy;
 
-        frontlineSegment(double _x, double _y, double _dx, double _dy) {
+        frontlineSegment(double _x, double _y, double sX, double sY, double _dx, double _dy) {
             x = _x; y = _y;
+            supportX = sX; supportY = sY;
             dx = _dx;
             dy = _dy;
         }
@@ -106,7 +121,7 @@ private:
     //List of squads of soldiers with different allegiances positioned around this city, indexed by country they belong to
     std::map<int, std::vector<std::shared_ptr<countryball> > > squads;
 
-    void updateSoldierLocations(const std::vector<city>& cities);
+    void updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries);
 
 };
 

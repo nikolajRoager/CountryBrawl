@@ -17,15 +17,18 @@ namespace fs = std::filesystem;
 
 class country {
 public:
-    enum countryExpression {ANGRY, HAPPY};
+    enum countryExpression {ANGRY, HAPPY, DEAD};
 
     enum difficulty {IMPOSSIBLE,VERY_HARD,HARD,MEDIUM,EASY,VERY_EASY};
 
-    country(int id, const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy, const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer);
+    country(int id, const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead, const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer);
     void display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
     void display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
 
     [[nodiscard]] double getSpeed() const {return speed;}
+    [[nodiscard]] double getInfantryRange() const {return infantryRange;}
+    [[nodiscard]] double getFireRate() const {return fireRate;}
+    [[nodiscard]] double getTrainSpeed() const {return trainSpeed;}
 
 
     [[nodiscard]] unsigned char getRed() const {return red;}
@@ -42,6 +45,22 @@ public:
     [[nodiscard]] const std::vector<std::string>& getMaluses() const {return maluses;}
 
     [[nodiscard]] int getId() const {return id;}
+    [[nodiscard]] int getTextureHeight() const {return texture.getHeight();}
+    [[nodiscard]] int getTextureWidth() const {return texture.getWidth();}
+
+
+    //TODO, this is very much a temporary thing, replace with an actual diplomacy system
+    ///Are we currently in a state of war with this country
+    [[nodiscard]] bool atWarWith(int otherCountryId) const {
+        return otherCountryId != id;
+    }
+    //TODO, this is very much a temporary thing, replace with an actual diplomacy system
+    ///Do we have access to this countries transportation infrastructure
+    [[nodiscard]] bool hasAccess(int otherCountryId) const {
+        return otherCountryId == id;
+    }
+
+
 private:
     int id;
 
@@ -71,10 +90,18 @@ private:
     const texwrap& ballInWater;
     const texwrap& angry;
     const texwrap& happy;
+    const texwrap& dead;
     //Use a pointer, not a reference, because we won't be able to assign it straight away
     const texwrap* gun;
 
+    //National stats
     double speed;
+    double trainSpeed;
+    double infantryRange;
+    //Chance of firing a shot at any target every second
+    double fireRate;
+
+
 };
 
 

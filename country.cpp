@@ -6,11 +6,14 @@
 #include<sstream>
 #include "country.h"
 
-country::country(int _id,const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), flag(path/"flag.png",renderer)  {
+country::country(int _id,const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead,const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), dead(_dead), flag(path/"flag.png",renderer)  {
     id=_id;
     name="null";
     //Default values
     speed=100.0;
+    trainSpeed=300.0;
+    infantryRange=200.0;
+    fireRate=5;
     red=255;
     green=255;
     blue=255;
@@ -134,6 +137,9 @@ void country::display(double x, double y, bool inWater, countryExpression expres
     else if (expression==HAPPY) {
         happy.render(xScreen,yScreen,renderer,scale*0.25,true,true);
     }
+    else if (expression==DEAD) {
+        dead.render(xScreen,yScreen,renderer,scale*0.25,true,true);
+    }
     if (gun!=nullptr) {
         gun->render(xScreen,yScreen-scale*0.25*height/2,renderer,scale*0.25,true,false,!faceRight,1,0,angle);
     }
@@ -152,6 +158,9 @@ void country::display(int x, int y, bool inWater, countryExpression expression, 
     }
     else if (expression==HAPPY) {
         happy.render(x,y,renderer,scale,true,true);
+    }
+    else if (expression==DEAD) {
+        dead.render(x,y,renderer,scale,true,true);
     }
     if (gun!=nullptr) {
         gun->render(x,y-scale*height/2,renderer,scale,true,false,!faceRight,1,0,angle);

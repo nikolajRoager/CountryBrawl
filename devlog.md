@@ -383,7 +383,7 @@ Make front-line start 25 px from each other, pulled back in event of water. Part
 
 WOW, I got everything I planned done... wow just wow.
 
-day 13.5 30-12-2025
+day 13.5 30-12-2025, workload 10 hours
 =============
 Note
 ----
@@ -437,15 +437,163 @@ Pull front-lines back from water. Done
 
 Clamp front-lines to cities Done
 
-Add artillery line 
+Add artillery line Done
 
-Cities should indicate how many soldiers they have, should be able to handle soldiers of different allegiances 
+Record a video Done
 
-Multiple types of soldiers (artillery and infantry)
+Cities should indicate how many soldiers they have, should be able to handle soldiers of different allegiances  Done
 
-Projectiles and death
+Multiple types of soldiers (artillery and infantry) Failed (Out of time)
+
+Projectiles and death Failed (Out of time)
 
 
 Issues
 ------
 Add soldier shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+day 14.5 31-12-2025 workload 6 hours
+=============
+Note
+-----
+Again, I don't know what I need to do today, and this day, I probably won't have a lot of time to work, and I don't have the luxury of writing this note the day before.
+  
+Anyway, let us write down a list of things I would like to see added:
+
+* Multiple types of soldiers (artillery and infantry)
+* Projectiles and death
+* Base capturing
+* UI for the game
+
+I kind of feel like adding combat first
+
+In retrospect, this was another day where I really should have accepted that I didn't get to work so much and made this a half day, instead this will count as a full day even though it was only 6 hours
+
+Plan
+----
+Have soldiers shoot at enemies if in range DONE (doing so was easy, doing so without killing performance was hard, doing so and fixing the bugs was extremely hard)
+
+Add bullet sounds for shots on screen and close in enough  Failed, I simply forgot
+
+Have soldiers who get shot die Done
+
+Kill dead soldiers (remove them from bases, have them despawn maybe) Done
+
+Fix reshuffling (I imagine removing dead soldiers will trigger it) Failed I was out of time, and the capture condition seemed more pressing
+
+Add condition to capture base (I think when base is outnumbered, and at least one attacking soldier is on post around it) Done
+
+Have defeated soldiers retreat from captured bases Failed (out of time)
+
+
+issues
+--------------
+Add or kill soldier shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+For now, everything is based on dt, we should add a form of "time-warp" (Requires somewhat of a UI)
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+
+day 15.5 1-1-2026, workload 10 hours
+=====
+
+Note
+----
+Today will hopefully be a good day with a lot of work
+
+There are a lot of loose ends for me to try to close, let us make a list
+
+* The shots need to be better looking, maybe add some particle effects
+* We need sound effects for the shots, while we are at it, music
+* We need to fix the reshuffling issue
+* we need fast-transportation betwixt friendly cities with visual "trains"
+* Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+* Add the beginnings of the UI, we need a top or bottom bar with economy, timewarp, and date-and-time, and maybe a "balance fronts" and "auto-advance" menu menus ... think about what menus we need
+
+I do feel like starting on the transportation system, I feel that might be a whole-day-and-then-some project
+
+An extended think about trains
+-----------
+This is such a delicate issue, that some thinking may be required before I can start this.
+
+The end goal is that a group of soldiers, receiving an order to redeploy to some friendly or neutral city far away:
+* Calculates if there is a path from their city to the target city
+* Then goes to their own city
+* Then (only when all soldiers have arrived by the city) they despawn from the map, and a train spawns.
+* The train drives (much faster than soldiers can walk) along the path so calculated
+* When the train arrives at the destination, the soldiers get out (respawn on the map) and are now assigned to that base
+* If tha path becomes invalid, the train stops wherever and the soldiers get out, assigned to the last location they were at
+* Trains can be destroyed, killing their occupants
+
+For a start, I will only consider immediate neighbours, so I don't need pathfinding (realistically, taking the trains is likely slower in that case, and may not be done in the final game)
+
+I think I will need some kind of "ticket" or "journey" class to keep track of the entire journey.
+The ticket should be managed by the game, and it should "own" the soldiers on the ticket, the same way a base "owns" the soldiers around it
+I don't think the soldiers need a reference to their ticket, but they need some variable to tell that they are on a ticket
+
+wait, I just had a horrible thought ... HOW ON EARTH AM I GOING TO IMPLEMENT SAVING AND LOADING IN THIS GAME ... oh GOD, that is a worry, for another day
+
+Plan
+------
+Transportation of soldiers to friendly bases with trains (Done, that took like forever)
+
+issues
+--------------
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+Add or kill soldier shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+For now, everything is based on dt, we should add a form of "time-warp" (Requires somewhat of a UI)
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 16.5 2-1-2026 
+=====
+
+Note
+----
+Yesterday saw the trains brought to a state where they appear to be working, at the cost of the entire day of work.
+
+I do feel like picking another topic for today, and making the whole day about that
+
+I think todays theme should be UI, let us add a UI system to the game, and let us add relevant things for the UI to display, like a time system
+
+Thinking about UI
+-------
+What do I think should be in the UI, well
+
+* Date and time + timewarp
+* Income and treasury
+* Army size
+* diplomacy menu
+* auto-reinforce switch
+* balance front-lines button
+* music menu + mute button
+* Reminder of who we are at war with

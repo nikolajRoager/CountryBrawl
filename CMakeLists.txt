@@ -61,4 +61,10 @@ add_executable(CountryBrawl main.cpp
         city.cpp
         jsonClient.cpp
         countryball.cpp
-        threadPool.cpp)
+        threadPool.cpp
+        numberRenderer.cpp
+        numberRenderer.h
+        lingeringShot.cpp
+        lingeringShot.h
+        ticket.cpp
+        ticket.h)

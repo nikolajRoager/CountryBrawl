@@ -4,13 +4,18 @@
 
 #ifndef COUNTRYBRAWL_GAME_H
 #define COUNTRYBRAWL_GAME_H
+#include <deque>
+#include <random>
 #include <vector>
 
 #include "city.h"
 #include "country.h"
 #include "countryball.h"
+#include "lingeringShot.h"
 #include "mapData.h"
+#include "numberRenderer.h"
 #include "scene.h"
+#include "ticket.h"
 #include "tile.h"
 
 
@@ -67,6 +72,7 @@ private:
     texwrap ballInWater;
     texwrap angryBall;
     texwrap happyBall;
+    texwrap deadBall;
     std::map<std::string,texwrap> guns;
 
 
@@ -75,20 +81,37 @@ private:
     texwrap selectedCityTexture;
     texwrap arrowTexture;
 
+    //Accessories for trains
+    texwrap trainEnd;
+    texwrap trainSegment;
+    texwrap passengerShip;
+
     //The list of countries the player can choose between
     std::vector<country> countries;
     int playerCountryId= 0;
 
     std::vector<city> cities;
 
+    std::list<ticket> tickets;
 
     std::vector<std::unique_ptr<tile>> tiles;
+    numberRenderer numberer;
 
     mapData movementPenalties;
     mapData watermap;
 
 
     std::vector<std::shared_ptr<countryball>> soldiers;
+
+    std::deque<lingeringShot> smallArmsShots;
+
+    double msPerFrame;
+
+    std::default_random_engine generator;
+
+
+    //TODO, this is temporary
+    std::vector<int> selectedPath = {0,42,4,3,1,2};
 };
 
 
