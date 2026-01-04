@@ -86,6 +86,7 @@ public:
     //Update ongoing recruitment, return true if a soldier needs to spawn
     bool updateRecruitment(unsigned int dtGameTime);
 
+    int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries) const;
 private:
     bool isRecruiting;
     unsigned int recruitmentTimer;

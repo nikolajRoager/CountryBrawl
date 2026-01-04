@@ -19,6 +19,7 @@
 #include "tile.h"
 #include "uiArmyCapCounter.h"
 #include "uiBottomBar.h"
+#include "uiButton.h"
 #include "uiCalendar.h"
 #include "uiCityCounter.h"
 #include "uiExpandableMenu.h"
@@ -36,7 +37,9 @@ public:
     bool shouldOpenNewScene(openSceneCommand& command, std::string& arguments) const override;
 
     void togglePause() {paused = !paused;};
+
 private:
+    void balanceFrontLines(int targetCountry);
 
     //millis when we last printed FPS
     unsigned int previousFPSprintMillis;
@@ -66,6 +69,7 @@ private:
     std::shared_ptr<uiFundsTracker> fundsTracker;
 
     std::shared_ptr<uiExpandableMenu> autoRecruitMenu;
+    std::shared_ptr<uiButton> autoBalanceButton;
 
     std::set<int> selectedCities;
     int primarySelectedCity;

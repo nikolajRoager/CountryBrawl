@@ -651,3 +651,13 @@ bool city::updateRecruitment(unsigned int dtGameTime) {
     }
     return false;
 }
+
+int city::getHostileNeighbours(const std::vector<city> &cities, const std::vector<country> &countries) const {
+
+    int result = 0;
+    for (int n : neighbours) {
+        if (countries[owner].atWarWith(cities[n].getOwner()))
+            ++result;
+    }
+    return result;
+}

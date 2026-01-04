@@ -85,4 +85,6 @@ add_executable(CountryBrawl main.cpp
         uiBottomBar.cpp
         uiBottomBar.h
         uiExpandableMenu.cpp
-        uiExpandableMenu.h)
+        uiExpandableMenu.h
+        uiButton.cpp
+        uiButton.h)

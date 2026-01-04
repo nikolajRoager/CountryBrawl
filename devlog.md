@@ -741,22 +741,21 @@ day 18.5 4-1-2026
 
 plan
 --
-Get auto-recruitment working, this is probably a whole-day project
-
+Get auto-recruitment working, this is probably a whole-day project Done, (it took almost the whole day)
 * Recruitment should cost money
 * There should be some kind of effect, showing that money has been spent, maybe a particle effect with the cost
 * Recruitment should cancel when city is captured
 * Recruitment should update every frame
 * Recruitment should finish with the actual recruitment of a soldier
 
-Make a recruitment menu button, where the player can choose to turn off recruitment, and in the future switch soldier type
+Make a recruitment menu button, where the player can choose to turn off recruitment, and in the future switch soldier type Done (it took surprisingly long)
 
-Add an auto-balance armies button
+Add an auto-balance armies button (Done)
 
-Make an auto-balance armies function (this is going to take like forever)
+Make an auto-balance armies function (this is going to take like forever, and take forever to run) Failed (But started, but out of time)
 
-Make "AI" nations auto-balance every N days
+Make "AI" nations auto-balance every N days Failed (out of time)
 
-add an auto-attack menu button
+add an auto-attack menu button Failed (out of time)
 
-add auto attack
+add auto attack Failed (out of time)

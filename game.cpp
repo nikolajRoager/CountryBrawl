@@ -307,6 +307,8 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     autoRecruitMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"recruitInfantry","recruitArtillery","recruitmentOff"});
     bottomBar.addRightComponent(autoRecruitMenu);
 
+    autoBalanceButton = std::make_shared<uiButton>(renderer, smallFont,"autoBalanceButton");
+    bottomBar.addRightComponent(autoBalanceButton);
 
     std::cout << "Created successfully" << std::endl;
 
@@ -665,7 +667,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     for (int i = 0; i < countries.size(); ++i) {
 
         //Only the player has the option of
-        //TODO, consider changing this when you add the AI
+        //TODO, consider changing this when you add the AI, so the AI can turn of recruitment when at peace
         if (i==playerCountryId && autoRecruitMenu->getSelectedMenu()==2)
             continue;
 
@@ -692,6 +694,11 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                     break;;
             }
         }
+    }
+    //Update auto-balance fronts options
+    //TODO, the AI should have an option to request this
+    if (autoBalanceButton->getIsClicked()) {
+        balanceFrontLines(playerCountryId);
     }
 
 
@@ -726,4 +733,44 @@ bool game::shouldOpenNewScene(openSceneCommand &command, std::string &arguments)
 
 game::~game() {
     //The destructors of my stuff takes care of the cleanup
+}
+
+void game::balanceFrontLines(int targetCountry) {
+    //Loop over all cities belonging to this country
+    //Count how many hostile neighbours they have
+    //Then we can figure out how many soldiers to put down per front
+    int totalHostileNeighbours=0;
+    std::map<int,int> citiesWithHostileNeighbours;
+    for (int i = 0; i < cities.size(); ++i) {
+        const auto &city = cities[i];
+        if (city.getOwner() == targetCountry) {
+            int hostiles = city.getHostileNeighbours(cities,countries);
+            totalHostileNeighbours+=hostiles;
+            citiesWithHostileNeighbours.emplace(i,hostiles);
+        }
+    }
+
+    if (totalHostileNeighbours==0)
+        return;
+
+    //Divide
+    int averageSoldiersPerFront = countries[targetCountry].getArmySize()/totalHostileNeighbours;
+    int remainder = countries[targetCountry].getArmySize()%totalHostileNeighbours;
+
+    std::cout<<"Balance front-line report for "<<countries[targetCountry].getName()<<std::endl;
+    std::cout<<"With "<<countries[targetCountry].getArmySize()<<" soldiers, to be divided among "<<totalHostileNeighbours<<" fronts we expect "<<averageSoldiersPerFront<<"soldiers per front, with a remainder of "<<remainder<<std::endl;
+
+    //This is the desired number of soldiers per each front
+    std::map<int,int> citiesWithRequestedSoldiers;
+    for (const auto &frontCity : citiesWithHostileNeighbours) {
+        int nSoldiers = averageSoldiersPerFront*frontCity.second;
+        //Get extra soldiers from the remainder
+        if (remainder>0) {
+            int extraSoldiers = std::min(frontCity.second, remainder);
+            remainder-=extraSoldiers;
+            nSoldiers+=extraSoldiers;
+        }
+        citiesWithRequestedSoldiers.emplace(frontCity.first, nSoldiers);
+        std::cout<<"  "<<nSoldiers<<" to "<<cities[frontCity.first].getName()<<std::endl;
+    }
 }
