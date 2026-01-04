@@ -16,7 +16,7 @@ class city;
 
 class countryball {
 public:
-    countryball(const country& _myType, double _x, double _y);
+    countryball(country& _myType, double _x, double _y);
 
     void display(double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer) const;
     void move(double dt,const mapData& movementPenalties, const mapData& watermap);
@@ -39,7 +39,13 @@ public:
     }
 
     [[nodiscard]] bool isAlive() const {return alive;}
-    void kill() {alive=false;despawnTimer=10;}
+    void kill(std::vector<country>& countries) {
+        if (alive) {
+            alive=false;
+            despawnTimer=10;
+            countries[myType.getId()].decrementArmySize();
+        }
+    }
     [[nodiscard]] bool shouldDespawn() const {return !alive && despawnTimer<0;}
     [[nodiscard]] int getBase() const {return myBase;}
 

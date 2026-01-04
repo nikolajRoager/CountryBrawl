@@ -24,7 +24,7 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
     if (currentStep==0) {
         bool allInPosition = true;
         for (const auto& p : passengers) {
-            if (!p->inPosition()) {
+            if ( (!p->inPosition() && p->isAlive())) {
                 allInPosition = false;
                 break;
             }

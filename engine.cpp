@@ -173,64 +173,70 @@ void engine::run() {
                 if (event.key.keysym.sym == SDLK_LEFT) {
                     currentInput.leftPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_RIGHT) {
+                else if (event.key.keysym.sym == SDLK_RIGHT) {
                     currentInput.rightPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_UP) {
+                else if (event.key.keysym.sym == SDLK_UP) {
                     currentInput.upPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_DOWN) {
+                else if (event.key.keysym.sym == SDLK_DOWN) {
                     currentInput.downPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_z) {
+                else if (event.key.keysym.sym == SDLK_z) {
                     currentInput.zoomInPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_x) {
+                else if (event.key.keysym.sym == SDLK_x) {
                     currentInput.zoomOutPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_s) {
+                else if (event.key.keysym.sym == SDLK_s) {
                     currentInput.sPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_v) {
+                else if (event.key.keysym.sym == SDLK_v) {
                     currentInput.vPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_RETURN) {
+                else if (event.key.keysym.sym == SDLK_RETURN) {
                     currentInput.enterPressed=true;
                 }
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                else if (event.key.keysym.sym == SDLK_ESCAPE) {
                     currentInput.escapePressed=true;
+                }
+                else if (event.key.keysym.sym == SDLK_SPACE) {
+                    currentInput.spacePressed=true;
                 }
             }
             if (event.type == SDL_KEYUP) {
                 if (event.key.keysym.sym == SDLK_LEFT) {
                     currentInput.leftPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_RIGHT) {
+                else if (event.key.keysym.sym == SDLK_RIGHT) {
                     currentInput.rightPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_UP) {
+                else if (event.key.keysym.sym == SDLK_UP) {
                     currentInput.upPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_DOWN) {
+                else if (event.key.keysym.sym == SDLK_DOWN) {
                     currentInput.downPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_z) {
+                else if (event.key.keysym.sym == SDLK_z) {
                     currentInput.zoomInPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_x) {
+                else if (event.key.keysym.sym == SDLK_x) {
                     currentInput.zoomOutPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_s) {
+                else if (event.key.keysym.sym == SDLK_s) {
                     currentInput.sPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_v) {
+                else if (event.key.keysym.sym == SDLK_v) {
                     currentInput.vPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_RETURN) {
+                else if (event.key.keysym.sym == SDLK_RETURN) {
                     currentInput.enterPressed=false;
                 }
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                else if (event.key.keysym.sym == SDLK_ESCAPE) {
                     currentInput.escapePressed=false;
+                }
+                else if (event.key.keysym.sym == SDLK_SPACE) {
+                    currentInput.spacePressed=false;
                 }
             }
         }
@@ -264,7 +270,7 @@ void engine::run() {
                 delete currentScene;
                 currentScene =nullptr;
                 //TODO, FOR NOW, we just let the program crash if there is an exception here... maybe we should not
-                currentScene = new game(renderer,windowWidthPx,windowHeightPx, *loadingBackground,newSceneArguments,smallFont);
+                currentScene = new game(renderer,windowWidthPx,windowHeightPx, *loadingBackground,newSceneArguments,smallFont,midFont);
                 //Reset input data, this is necessary since the game constructor may have cleared all queued inputs
                 currentInput=inputData();
             }
@@ -278,6 +284,7 @@ void engine::run() {
         currentInput.prevEscapePressed=currentInput.escapePressed;
         currentInput.prevSPressed=currentInput.sPressed;
         currentInput.prevVPressed=currentInput.vPressed;
+        currentInput.prevSpacePressed=currentInput.spacePressed;
     }
 
     std::cout<<"While loop has ended"<<std::endl;

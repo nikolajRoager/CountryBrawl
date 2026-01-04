@@ -13,7 +13,16 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     speed=100.0;
     trainSpeed=300.0;
     infantryRange=200.0;
-    fireRate=5;
+    infantryFireRate=5;
+    armyCapPerCore=5;
+    armyCapPerOccupiedCity=2;
+    coreIncomeMultiplier=1.0;
+    occupiedIncomeMultiplier=0.25;
+    soldierUpkeepCost=1.0;
+
+    //Time to recruit a new infantry soldier, in ms in-game time
+    infantryRecruitmentTime=86400000;//1 day
+
     red=255;
     green=255;
     blue=255;
@@ -21,6 +30,17 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     description="null";
     nationDifficulty=MEDIUM;
     startingCities=0;
+
+    coreCities=0;
+    occupiedCities=0;
+    armySize=0;
+    recruitingSoldiers=0;
+
+    funds=0;
+    lastMonthCoreIncome=0;
+    lastMonthSoldierUpkeepCost=0;
+    lastMonthIncome=0;
+    lastMonthOccupiedIncome=0;
 
     gun=nullptr;
 
@@ -35,6 +55,33 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
             if (ss>>variable && ss>>value) {
                 if (variable =="movementSpeed") {
                     speed=std::stof(value);
+                }
+                else if (variable =="trainSpeed") {
+                    trainSpeed=std::stof(value);
+                }
+                else if (variable =="infantryRange") {
+                    infantryRange=std::stof(value);
+                }
+                else if (variable =="infantryRange") {
+                    infantryRange=std::stof(value);
+                }
+                else if (variable =="infantryFireRate") {
+                    infantryFireRate=std::stof(value);
+                }
+                else if (variable =="armyCapPerCore") {
+                    armyCapPerCore=std::stof(value);
+                }
+                else if (variable =="armyCapPerOccupiedCity") {
+                    armyCapPerOccupiedCity=std::stof(value);
+                }
+                else if (variable =="coreIncomeMultiplier") {
+                   coreIncomeMultiplier=std::stof(value);
+                }
+                else if (variable =="occupiedIncomeMultiplier") {
+                    occupiedIncomeMultiplier=std::stof(value);
+                }
+                else if (variable =="soldierUpkeepCost") {
+                    soldierUpkeepCost=std::stof(value);
                 }
                 else if (variable =="cities") {
                     startingCities=std::stoi(value);
@@ -165,4 +212,20 @@ void country::display(int x, int y, bool inWater, countryExpression expression, 
     if (gun!=nullptr) {
         gun->render(x,y-scale*height/2,renderer,scale,true,false,!faceRight,1,0,angle);
     }
+}
+
+void country::resetLastMonthFundSources() {
+    lastMonthIncome=0;
+    lastMonthCoreIncome=0;
+    lastMonthOccupiedIncome=0;
+    lastMonthSoldierUpkeepCost=0;
+}
+
+
+void country::addFunds(double thisCoreIncome, double thisOccupiedIncome, double thisSoldierUpkeepCost) {
+    lastMonthCoreIncome+=thisCoreIncome;
+    lastMonthOccupiedIncome+=thisOccupiedIncome;
+    lastMonthSoldierUpkeepCost+=thisSoldierUpkeepCost;
+    lastMonthIncome+=thisCoreIncome+thisOccupiedIncome-thisSoldierUpkeepCost;
+    funds+=thisCoreIncome+thisOccupiedIncome-thisSoldierUpkeepCost;
 }

@@ -45,7 +45,7 @@ public:
     void setName(const std::string &newName) {this->name = newName;}
     void setProvinceName(const std::string &newName) {this->provinceName = newName;}
 
-    void updateOwnership(std::vector<city>& cities,const std::vector<country>& countries);
+    void updateOwnership(std::vector<city>& cities,std::vector<country>& countries);
 
     void addNeighbour(int newNeighbour);
 
@@ -64,10 +64,10 @@ public:
     void addCountryball(std::shared_ptr<countryball> newCountryball, const std::vector<city>& cities, const std::vector<country>& countries);
 
     void generateNameTexture(TTF_Font* font, SDL_Renderer* renderer) {
-        cityNameTexture=std::make_unique<texwrap>(std::to_string(myId)+" "+name,renderer,font);
+        cityNameTexture=std::make_unique<texwrap>(name,renderer,font);
     }
 
-    std::vector<int> findPathFrom(int source, const std::vector<city>& cities, const std::vector<country>& countries);
+    std::vector<int> findPathFrom(int source, const std::vector<city>& cities, const std::vector<country>& countries) const;
 
     [[nodiscard]] const std::map<int, std::vector<std::shared_ptr<countryball> > >& getSquads() const {return squads;}
 
@@ -79,7 +79,18 @@ public:
 
     void updateNeighbourhood(std::vector<city>& cities);
     [[nodiscard]] const std::set<int>& getNeighbourhood() const {return neighbourhood;}
+
+    //Try to start recruitment, returns true if recruitment started successfully, also updates the country's recruiting soldier count
+    //TODO, we need a variable telling us what we should recruit
+    bool recruit(std::vector<country>& countries);
+    //Update ongoing recruitment, return true if a soldier needs to spawn
+    bool updateRecruitment(unsigned int dtGameTime);
+
 private:
+    bool isRecruiting;
+    unsigned int recruitmentTimer;
+    unsigned int recruitmentLength;
+    //TODO, we need a variable telling us what we are recruiting
 
     //A list of nearby cities (me, my neighbours, their neighbours, maybe more)
     std::set<int> neighbourhood;

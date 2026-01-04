@@ -10,12 +10,13 @@
 #include "city.h"
 
 
-countryball::countryball(const country &_myType, double _x, double _y): myType(_myType), x(_x), y(_y), targetX(_x), targetY(_y), aimX(_x), aimY(_y) {
+countryball::countryball(country &_myType, double _x, double _y): myType(_myType), x(_x), y(_y), targetX(_x), targetY(_y), aimX(_x), aimY(_y) {
     inWater=false;
     myExpression=country::HAPPY;
     alive=true;
     despawnTimer=1.0;
     isRidingTrain=false;
+    _myType.incrementArmySize();
 }
 
 void countryball::move(double dt,const mapData& movementPenalties, const mapData& watermap) {
@@ -75,7 +76,7 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
         return;
 
     //It is FAR better for performance to calculate the number of shots first (since most soldiers don't shoot each frame)
-    double mean = dt*myType.getFireRate();
+    double mean = dt*myType.getInfantryFireRate();
     std::poisson_distribution<int> poisson_distribution(mean);
 
     int shotsThisFrame = poisson_distribution(randomEngine);

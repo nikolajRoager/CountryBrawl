@@ -42,34 +42,40 @@ int numberRenderer::getWidth(int number) const {
     return width;
 }
 
-void numberRenderer::render(int number, double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL_Renderer *renderer, double scale, bool centerX, bool belowY, bool flip, unsigned int frames, unsigned int frame, double angle) const {
+int numberRenderer::render(int number, double x, double y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, SDL_Renderer *renderer, double scale, bool centerX, bool belowY, bool flip, unsigned int frames, unsigned int frame, double angle) const {
 //TODO, handle negative numbers
 
     int width = 0;
     if (number<0) {
         minus.render(x,y,r,g,b,a,renderer, scale, centerX, belowY, flip, frames, frame, angle);
+        width +=minus.getWidth()+spacing;
         x+=minus.getWidth()+spacing;
     }
 
     number = std::abs(number);
 
     std::vector<int> numberDigits;
-    for (;number>0;number/=10) {
-        numberDigits.push_back(number % 10);
+    if (number==0) {
+        numberDigits.push_back(0);
     }
+    else
+        for (;number>0;number/=10) {
+            numberDigits.push_back(number % 10);
+        }
 
     for (int i = numberDigits.size()-1; i >= 0; i--) {
         digits[numberDigits[i]].render(x,y,r,g,b,a,renderer, scale, centerX, belowY, flip, frames, frame, angle);
+        width +=digits[numberDigits[i]].getWidth()+spacing;
         x+=digits[numberDigits[i]].getWidth()+spacing;
     }
-
+    return width;
 }
 
-void numberRenderer::render(int number, double x, double y, Uint8 r, Uint8 g, Uint8 b, SDL_Renderer *renderer, double scale, bool centerX, bool belowY, bool flip, unsigned int frames, unsigned int frame, double angle) const {
-    render(number,x,y,r,g,b,255,renderer,scale,centerX,belowY,flip,frames,frame,angle);
+int numberRenderer::render(int number, double x, double y, Uint8 r, Uint8 g, Uint8 b, SDL_Renderer *renderer, double scale, bool centerX, bool belowY, bool flip, unsigned int frames, unsigned int frame, double angle) const {
+    return render(number,x,y,r,g,b,255,renderer,scale,centerX,belowY,flip,frames,frame,angle);
 }
-void numberRenderer::render(int number, double x, double y, SDL_Renderer *renderer, double scale, bool centerX, bool belowY, bool flip, unsigned int frames, unsigned int frame, double angle) const {
-    render(number,x,y,255,255,255,255,renderer,scale,centerX,belowY,flip,frames,frame,angle);
+int numberRenderer::render(int number, double x, double y, SDL_Renderer *renderer, double scale, bool centerX, bool belowY, bool flip, unsigned int frames, unsigned int frame, double angle) const {
+    return render(number,x,y,255,255,255,255,renderer,scale,centerX,belowY,flip,frames,frame,angle);
 }
 
 

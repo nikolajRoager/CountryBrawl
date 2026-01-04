@@ -5,6 +5,7 @@
 #include "game.h"
 
 #include <algorithm>
+#include <chrono>
 #include <future>
 #include <iostream>
 #include <cmath>
@@ -15,9 +16,10 @@
 #include "lingeringShot.h"
 #include "mapData.h"
 #include "threadPool.h"
+#include "uiCalendar.h"
 
 
-game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const texwrap &loadingBackground,  const std::string& playerCountry, TTF_Font *smallFont):
+game::game(SDL_Renderer *renderer,int windowWidthPx, int windowHeightPx,const texwrap &loadingBackground,  const std::string& playerCountry, TTF_Font *smallFont, TTF_Font *midFont):
 ballInWater(assetsPath()/"countryballAccessories"/"ballInWater.png",renderer),
 happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer),
 angryBall(assetsPath()/"countryballAccessories"/"angry.png",renderer),
@@ -28,7 +30,10 @@ arrowTexture(assetsPath()/"arrow.png",renderer),
 trainEnd(assetsPath()/"trainEnd.png",renderer),
 trainSegment(assetsPath()/"trainSegment.png",renderer),
 passengerShip(assetsPath()/"passengerShip.png",renderer),
-numberer(0,smallFont,renderer),
+numbererSmall(0,smallFont,renderer),
+numbererMid(0,midFont,renderer),
+pausedText("Paused",renderer,midFont),
+topBar(renderer),
 generator(time(NULL))
 {
     std::cout<<"Loading new game"<<std::endl;
@@ -156,6 +161,7 @@ generator(time(NULL))
         //Default to the first country, alphabetically (Albania)
         playerCountryId=0;
         countries.reserve(countryPaths.size());
+        //TODO, we really SHOULD multithread this, i.e. finalize it later
         for (int i = 0; i < countryPaths.size(); i++)
         {
             const auto& entry = countryPaths[i];
@@ -211,7 +217,7 @@ generator(time(NULL))
                 previousProcessedAssets = processedAssets;
                 processedAssetsText=texwrap (std::to_string(processedAssets)+"/"+std::to_string(totalAssets),renderer,smallFont);
             }
-            processedAssetsText.render(windowWidthPx/2,windowHeightPx/2,renderer);
+            processedAssetsText.render(windowWidthPx*0.5,windowHeightPx*0.5,renderer);
 
             SDL_RenderPresent( renderer );
         }
@@ -233,6 +239,7 @@ generator(time(NULL))
     double cameraCentreY = 0;
     int playerCities=0;
 
+    //Todo multithreading this might be an idea
     for (auto& city : cities) {
         city.updateFrontlines(cities,watermap);
         city.generateNameTexture(smallFont,renderer);
@@ -254,8 +261,6 @@ generator(time(NULL))
         city.addCountryball(soldiers.back(),cities,countries);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
         city.addCountryball(soldiers.back(),cities,countries);
-
-
     }
 
     cameraCentreX/=playerCities;
@@ -264,6 +269,38 @@ generator(time(NULL))
     //Centre the camera on the player country
     screenMinX= cameraCentreX*scale-windowWidthPx/2.0;
     screenMinY= cameraCentreY*scale-windowHeightPx/2.0;
+
+    std::cout<<"Loaded "<<countries.size()<<" countries "<<cities.size()<<" cities and "<<soldiers.size()<<" soldiers "<<std::endl;
+
+    //Count the number of core and occupied cities of each nation
+    for (auto& country : countries) {
+        country.setCoreCities(0);
+        country.setOccupiedCities(0);
+    }
+    for (int i = 0; i < cities.size(); i++) {
+        const auto& city = cities[i];
+        int owner = city.getOwner();
+        int core = city.getCore();
+        if (owner == core)
+            countries[city.getOwner()].incrementCoreCities();
+        else
+            countries[city.getOwner()].incrementOccupiedCities();
+        countries[core].addCoreId(i);
+    }
+
+    //Set up ui elements
+    //I think hardcoding it is fine
+    calendar=std::make_shared<uiCalendar>(renderer,midFont,smallFont);
+    topBar.addRightComponent(calendar);
+
+    cityCounter=std::make_shared<uiCityCounter>(renderer,midFont,smallFont);
+    topBar.addRightComponent(cityCounter);
+
+    armyCapCounter=std::make_shared<uiArmyCapCounter>(renderer,midFont,smallFont,&countries[playerCountryId]);
+    topBar.addRightComponent(armyCapCounter);
+
+    fundsTracker=std::make_shared<uiFundsTracker>(renderer,midFont,smallFont);
+    topBar.addRightComponent(fundsTracker);
 
 
     std::cout<<"Created successfully"<<std::endl;
@@ -274,26 +311,34 @@ generator(time(NULL))
     primarySelectedCity=-1;//Deselected
     selectedCities.clear();
 
+    gameRealTime=0;
+    gameEpoch=std::chrono::sys_days{std::chrono::year{2026}/1/1};
+
     boxSelectionX0=0;
     boxSelectionY0=0;
     boxSelectionActive=false;
     hoveredCity=-1;//None
     msPerFrame=17;
 
-    std::cout<<"Loaded "<<countries.size()<<" countries "<<cities.size()<<" cities and "<<soldiers.size()<<" soldiers "<<std::endl;
+    paused = true;
+    //TODO, this should be loadable from a file
+    timewarpFactor=43200;//1 month per minute
+
+    previousGameTime=gameEpoch;
+
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis) const {
 
 
     for (const auto& tile : tiles) {
-        tile->draw(screenMinX,screenMinY,scale,renderer);
+        tile->draw(static_cast<int>(screenMinX),static_cast<int>(screenMinY),scale,renderer);
     }
 
 
     for (int i = 0; i < cities.size(); i++) {
         const city& city = cities[i];
-        city.display(cityTexture,selectedCityTexture,selectedCities.contains(i),i==primarySelectedCity,cities,countries,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer,numberer);
+        city.display(cityTexture,selectedCityTexture,selectedCities.contains(i),i==primarySelectedCity,cities,countries,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer,numbererSmall);
     }
 
 
@@ -349,36 +394,44 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         SDL_RenderDrawRect(renderer,&quad);
     }
 
+    topBar.display(renderer,userInputs.mouseXPx,userInputs.mouseYPx,screenWidth,screenHeight,numbererMid,numbererSmall);
+
+    if (paused)
+        pausedText.render(screenWidth*0.5,screenHeight*0.5,renderer,1.0,true,true);
+
 }
 
 void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis, TTF_Font *smallFont, TTF_Font *midFont, TTF_Font *largeFont) {
-    double dt = firstUpdate ? 0 : (millis-pmillis)*0.001;
-    firstUpdate= false;
-    double mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
-    double mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+    //Do this before we update time, so it effects time this frame
+    if (userInputs.spacePressed && !userInputs.prevSpacePressed) {
+        togglePause();
+    }
+    unsigned int dmillis =firstUpdate || paused ? 0 :  millis-pmillis;
+    gameRealTime+=dmillis;
+
+    std::chrono::milliseconds realElapsed{gameRealTime};
+    std::chrono::milliseconds gameElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(realElapsed * timewarpFactor);
+    std::chrono::sys_time<std::chrono::milliseconds> currentGameTime = gameEpoch + gameElapsed;
+    unsigned int dtGameTime = (currentGameTime-previousGameTime).count();
+
+
+    double dt = firstUpdate ? 0 : (dmillis)*0.001;
 
     //Useful for debugging
     //std::cout<<mouseXWorld<<" "<<mouseYWorld<<std::endl;
 
     if (userInputs.leftPressed) {
+        //Use millis and pmillis explicitly, since we allow motion while paused
         screenMinX-=(millis-pmillis);
-        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
-        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
     }
     if (userInputs.rightPressed) {
         screenMinX+=(millis-pmillis);
-        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
-        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
     }
     if (userInputs.upPressed) {
         screenMinY-=(millis-pmillis);
-        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
-        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
     }
     if (userInputs.downPressed) {
         screenMinY+=(millis-pmillis);
-        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
-        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
     }
     if (userInputs.zoomInPressed) {
         scaleExponent+=(millis-pmillis)*0.001;
@@ -399,8 +452,6 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         //So
         screenMinX= centreXWorld*scale-screenWidth/2.0;
         screenMinY= centreYWorld*scale-screenHeight/2.0;
-        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
-        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
     }
     if (userInputs.zoomOutPressed) {
         scaleExponent-=(millis-pmillis)*0.001;
@@ -419,9 +470,13 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         //So
         screenMinX= centreXWorld*scale-screenWidth/2.0;
         screenMinY= centreYWorld*scale-screenHeight/2.0;
-        mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
-        mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
     }
+
+    double mouseXWorld = ((userInputs.mouseXPx+screenMinX)/scale);
+    double mouseYWorld = ((userInputs.mouseYPx+screenMinY)/scale);
+
+
+    //Update which cities are selected by the player
     int prevPrimarySelectedCity=primarySelectedCity;
     //Left click to select cities
     if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown) {
@@ -505,23 +560,30 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         }
     }
 
-    if (hoveredCity!=-1)
+    if (hoveredCity!=-1 && primarySelectedCity !=-1)
+    {
         if (prevPrimarySelectedCity!=primarySelectedCity || prevHoveredCity!=hoveredCity) {
             selectedPath=cities[hoveredCity].findPathFrom(primarySelectedCity,cities,countries);
         }
+    }
+    else if (!selectedPath.empty())
+        selectedPath.clear();
 
+    //Update projectiles and particle effects
     for (auto& shot : smallArmsShots)
         shot.update(dt);
 
+    //Clear away dead particle effects
     //Clear lingering shots, since they are inserted from the back, and have the same lifetime, the expired shots are all up front
     while (!smallArmsShots.empty() && smallArmsShots.front().dead())
         smallArmsShots.pop_front();
 
-    //Update which tiles are ready
+    //Update which tiles are in view
     for (auto& tile : tiles) {
         tile->update(screenMinX,screenMinX+screenWidth,screenMinY,screenMinY+screenHeight,scale,renderer);
     }
 
+    //Update logistics (trains with passengers or goods)
     for (auto& ticket : tickets) {
         ticket.update(cities,countries,dt);
     }
@@ -536,7 +598,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     }
 
     for (auto& ball : shotBalls) {
-        ball->kill();
+        ball->kill(countries);
         int base = ball->getBase();
         if (base>=0 && base<cities.size())
             cities[base].removeDeadSoldiers(cities, countries);
@@ -549,12 +611,79 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     for (auto& city : cities) {
         city.updateOwnership(cities, countries);
+        if (city.updateRecruitment(dtGameTime)) {
+            countries[city.getOwner()].decrementRecruitingSoldiers();
+            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()],city.getX(),city.getY()));
+            city.addCountryball(soldiers.back(),cities,countries);
+        }
     }
+
+    //Update UI counters
+    calendar->setTime(currentGameTime);
+    cityCounter->setCount(countries[playerCountryId].getOccupiedCities(),countries[playerCountryId].getCoreCities());
+    armyCapCounter->setCount(countries[playerCountryId].getArmySize(),countries[playerCountryId].getRecruitingSoldiers(),countries[playerCountryId].getArmyCap(),countries[playerCountryId].getArmyCapCores(),countries[playerCountryId].getArmyCapOccupied());
+
+    //Update income, if the month has changed
+    //A month takes about a minute, so checking for multiple months is not necessary
+    auto prevDays = floor<std::chrono::days>(previousGameTime);
+    auto currDays = floor<std::chrono::days>(currentGameTime);
+
+    std::chrono::year_month_day prevYMD{prevDays};
+    std::chrono::year_month_day currYMD{currDays};
+
+    bool monthChanged =
+        (prevYMD.year() != currYMD.year()) ||
+        (prevYMD.month() != currYMD.month());
+
+    if (monthChanged || firstUpdate) {
+        //Update taxes of all countries
+        //First reset the memory of last month taxes, this is the last month now
+        for (auto& country : countries) {
+            country.resetLastMonthFundSources();
+        }
+
+        for (const auto& city: cities) {
+            auto& thisContry =countries[city.getOwner()];
+            if (city.getOwner()==city.getCore()) {
+                thisContry.addFunds(city.getIncome()*thisContry.getCoreIncomeMultiplier(),0,0);
+            }
+            else {
+                thisContry.addFunds(0,city.getIncome()*thisContry.getOccupiedIncomeMultiplier(),0);
+            }
+        }
+        //Then subtract soldier upkeep cost
+        for (auto& country : countries) {
+            //TODO, replace with different types of soldiers ... maybe
+            country.addFunds(0,0,country.getArmySize()*country.getSoldierUpkeepCost());
+        }
+
+        fundsTracker->setValues(countries[playerCountryId]);
+    }
+
+    //Update auto recruitment
+    //TODO, countries should have an option of disabling auto-recruitment
+    for (auto& country : countries) {
+
+        int armyDeficit = country.getArmyCap()-country.getArmySize()-country.getRecruitingSoldiers();
+
+        if (armyDeficit > 0) {
+            for (int coreId : country.getCoreIds()) {
+                //We can only recruit if the core is un-occupied, and not already recruiting
+                if (cities[coreId].getOwner()==country.getId())
+                    if (cities[coreId].recruit(countries)) {
+                        --armyDeficit;
+                        if (armyDeficit <=0)
+                            break;
+                    }
+            }
+        }
+    }
+
 
     if (framesSinceFPSprint>=100) {
 
-        unsigned dmillis = millis-previousFPSprintMillis;
-        msPerFrame = dmillis/((double)framesSinceFPSprint);
+        unsigned deltamillis = millis-previousFPSprintMillis;
+        msPerFrame = deltamillis/((double)framesSinceFPSprint);
         std::cout << "ms per frame "<< msPerFrame << std::endl;
 
         previousFPSprintMillis=millis;
@@ -562,6 +691,9 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     }
     else
         ++framesSinceFPSprint;
+
+    previousGameTime=currentGameTime;
+    firstUpdate= false;
 }
 
 bool game::shouldOpenNewScene(openSceneCommand &command, std::string &arguments) const {

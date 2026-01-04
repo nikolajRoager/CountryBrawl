@@ -6,5 +6,5 @@ difficulty easy
 description Sweden is the largest and most populous country in Scandinavia, and an excellent candidate for restoring the Kalmar Union (despite the fact that they were the ones who broke it)
 bonus Strong democracy: +10% province income
 bonus Gå-på mod: -10% recruitment time
-bonus Kalmar union: Conquer Sweden and/or Denmark to gain their cores
+bonus Kalmar union: Conquer Norway and/or Denmark to gain their cores
 gun ak5

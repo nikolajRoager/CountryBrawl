@@ -17,21 +17,50 @@
 #include "scene.h"
 #include "ticket.h"
 #include "tile.h"
+#include "uiArmyCapCounter.h"
+#include "uiCalendar.h"
+#include "uiCityCounter.h"
+#include "uiFundsTracker.h"
+#include "uiTopBar.h"
 
 
 class game : public scene{
 public:
-    game(SDL_Renderer* renderer,int windowWidthPx, int windowHeightPx, const texwrap &loadingBackground,  const std::string& playerCountry, TTF_Font* smallFont);
+    game(SDL_Renderer* renderer,int windowWidthPx, int windowHeightPx, const texwrap &loadingBackground,  const std::string& playerCountry, TTF_Font* smallFont, TTF_Font *midFont);
     ~game() override;
 
     void render(SDL_Renderer* renderer, const texwrap& loadingBackground,int screenWidth, int screenHeight,const inputData& userInputs, unsigned int millis, unsigned int pmillis) const override;
     void update(SDL_Renderer* renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,const inputData& userInputs,  unsigned int millis, unsigned int pmillis,TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont) override;
     bool shouldOpenNewScene(openSceneCommand& command, std::string& arguments) const override;
 
+    void togglePause() {paused = !paused;};
 private:
+
+    //millis when we last printed FPS
     unsigned int previousFPSprintMillis;
+    //Frames since we last printed FPS
     unsigned int framesSinceFPSprint;
+
+    //True only on the first update, this flag tells us to pretend the game was paused while we loaded
     bool firstUpdate;
+
+    bool paused;
+
+    texwrap pausedText;
+
+    //milliseconds since the start of the game, not incremented while pause or loading
+    unsigned int gameRealTime;
+    //Start of in-game time
+    std::chrono::sys_time<std::chrono::milliseconds> gameEpoch;
+    std::chrono::sys_time<std::chrono::milliseconds> previousGameTime;
+    double timewarpFactor;
+
+    UITopBar topBar;
+    //The calendar, which we share with the top-bar
+    std::shared_ptr<uiCalendar> calendar;
+    std::shared_ptr<uiCityCounter> cityCounter;
+    std::shared_ptr<uiArmyCapCounter> armyCapCounter;
+    std::shared_ptr<uiFundsTracker> fundsTracker;
 
     std::set<int> selectedCities;
     int primarySelectedCity;
@@ -42,6 +71,7 @@ private:
     double boxSelectionY0;
     bool boxSelectionActive;
 
+    //TODO, for mod ability, this should be loaded from a file
     //Each tile is 512x512 pixels
     int tileSize = 512;
     //My true grid width is 32 For a total of 16384x16384 pixels
@@ -95,7 +125,8 @@ private:
     std::list<ticket> tickets;
 
     std::vector<std::unique_ptr<tile>> tiles;
-    numberRenderer numberer;
+    numberRenderer numbererSmall;
+    numberRenderer numbererMid;
 
     mapData movementPenalties;
     mapData watermap;
@@ -110,8 +141,7 @@ private:
     std::default_random_engine generator;
 
 
-    //TODO, this is temporary
-    std::vector<int> selectedPath = {0,42,4,3,1,2};
+    std::vector<int> selectedPath;
 };
 
 

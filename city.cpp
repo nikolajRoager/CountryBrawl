@@ -20,6 +20,12 @@ city::city(int _owner, int _myId, const std::string &_name, const std::string &_
     name = _name;
     provinceName = _provinceName;
     cityNameTexture=nullptr;
+
+
+    isRecruiting=false;
+    recruitmentTimer=0;
+    //Will be set when we know what we are supposed to recruit
+    recruitmentLength=0;
 }
 
 city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, int _income, const std::set<int> &_neighbours) {
@@ -33,6 +39,13 @@ city::city(int _owner, int _core, int _myId, const std::string &_name, const std
     provinceName = _provinceName;
     neighbours = _neighbours;
     cityNameTexture=nullptr;
+
+
+    isRecruiting=false;
+    recruitmentTimer=0;
+    //Will be set when we know what we are supposed to recruit
+    recruitmentLength=0;
+
 }
 
 
@@ -135,6 +148,15 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, b
             }
         }
 
+        if (isRecruiting) {
+            double height = 100*static_cast<double>(recruitmentTimer)/recruitmentLength;
+            SDL_SetRenderDrawColor(renderer,countries[owner].getRed(),countries[owner].getGreen(),countries[owner].getBlue(),255);
+
+            int barWidth = 16;
+            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()*thisScale),(int)yScreen,(int)barWidth,(int)(-height)};
+            SDL_RenderFillRect(renderer,&quad);
+        }
+
 
         //Uncomment to display front-lines
         /*
@@ -207,10 +229,11 @@ void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<c
     updateSoldierLocations(cities,countries);
 }
 
-void city::updateOwnership(std::vector<city> &cities, const std::vector<country> &countries) {
+void city::updateOwnership(std::vector<city> &cities, std::vector<country> &countries) {
 
     int ownSoldiers = squads.contains(owner) ? squads[owner].size() : 0;
     int newOwner = owner;
+    //The city will be captured if a larger squad than the defenders have arrived at the city
     for (const auto& squad : squads) {
         if (squad.first!=owner && squad.second.size()>ownSoldiers) {
             bool anyArrived = false;
@@ -221,7 +244,23 @@ void city::updateOwnership(std::vector<city> &cities, const std::vector<country>
             }
 
             if (anyArrived) {
+                //Also update the number of cities owned by the former and current owner
+                if (owner == core)
+                    countries[owner].decrementCoreCities();
+                else
+                    countries[owner].decrementOccupiedCities();
+
+                //Cancel any ongoing recruitment
+                if (isRecruiting) {
+                    isRecruiting=false;
+                    countries[owner].decrementRecruitingSoldiers();
+                }
                 owner = squad.first;
+                if (owner == core)
+                    countries[owner].incrementCoreCities();
+                else
+                    countries[owner].incrementOccupiedCities();
+
                 updateSoldierLocations(cities,countries);
                 //TODO, evacuate defeated soldiers to friendly neighbours, or have them surrender
                 for (int n : neighbours)
@@ -520,8 +559,8 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
 }
 
 //Find path with Dijkstras algorithm
-std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities, const std::vector<country> &countries) {
-    //-1 is used whenever the selected city is undefined, it may accidentally have been inserted here, just ignore it
+std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities, const std::vector<country> &countries) const {
+    //id=-1 is used whenever the selected city is undefined, it may accidentally have been inserted here, just ignore it
     if (source == -1 )
         return {};
     //Source is destination: path is empty
@@ -539,6 +578,7 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
     std::map<int,int> prev;
     std::vector<int> Q;
 
+    //Create distances, prev, and Q ONLY for the cities we can access, this will likely be much smaller than the entire list of cities
     for (int i = 0; i< cities.size(); ++i) {
         if (countries[cities[i].getOwner()].hasAccess(sourceCountry)) {
             Q.emplace_back(i);
@@ -547,8 +587,7 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
 
         }
     }
-    //Start from the destination (at myId) so we don't have to backtrack to get the path the right way around
-
+    //We start from the destination (at myId) because that makes backtracking easier
     distances[myId]=0;
     bool found=false;
     while (!Q.empty() && !found) {
@@ -588,4 +627,26 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
         path.emplace_back(c);
     }
     return path;
+}
+
+bool city::recruit(std::vector<country> &countries) {
+    if (!isRecruiting) {
+        isRecruiting=true;
+        recruitmentTimer=0;
+        recruitmentLength=countries[owner].getInfantryRecruitmentTime();
+        countries[owner].incrementRecruitingSoldiers();
+        return true;
+    }
+    return false;
+}
+
+bool city::updateRecruitment(unsigned int dtGameTime) {
+    if (isRecruiting) {
+        recruitmentTimer+=dtGameTime;
+        if (recruitmentTimer>=recruitmentLength) {
+            isRecruiting=false;
+            return true;
+        }
+    }
+    return false;
 }

@@ -22,14 +22,18 @@ public:
     enum difficulty {IMPOSSIBLE,VERY_HARD,HARD,MEDIUM,EASY,VERY_EASY};
 
     country(int id, const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead, const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer);
-    void display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
+    void display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=0) const;
     void display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
 
     [[nodiscard]] double getSpeed() const {return speed;}
     [[nodiscard]] double getInfantryRange() const {return infantryRange;}
-    [[nodiscard]] double getFireRate() const {return fireRate;}
+    [[nodiscard]] double getInfantryFireRate() const {return infantryFireRate;}
     [[nodiscard]] double getTrainSpeed() const {return trainSpeed;}
-
+    [[nodiscard]] double getArmyCapPerCity() const {return armyCapPerCore;}
+    [[nodiscard]] double getArmyCapPerOccupiedCity() const {return armyCapPerOccupiedCity;}
+    [[nodiscard]] double getCoreIncomeMultiplier() const {return coreIncomeMultiplier;}
+    [[nodiscard]] double getOccupiedIncomeMultiplier() const {return occupiedIncomeMultiplier;}
+    [[nodiscard]] double getSoldierUpkeepCost() const {return soldierUpkeepCost;}
 
     [[nodiscard]] unsigned char getRed() const {return red;}
     [[nodiscard]] unsigned char getGreen() const {return green;}
@@ -37,6 +41,7 @@ public:
     [[nodiscard]] const texwrap& getFlag () const {return flag;}
 
     [[nodiscard]] const std::string& getName() const {return name;}
+    [[nodiscard]] const std::string& getGenitive() const {return genitive;}
     [[nodiscard]] const std::string& getDescription() const {return description;}
 
     [[nodiscard]] difficulty getDifficulty() const {return nationDifficulty;}
@@ -60,7 +65,42 @@ public:
         return otherCountryId == id;
     }
 
+    [[nodiscard]] int getArmyCap() const {return occupiedCities*armyCapPerOccupiedCity+coreCities*armyCapPerCore;}
+    [[nodiscard]] int getArmyCapCores() const {return coreCities*armyCapPerCore;}
+    [[nodiscard]] int getArmyCapOccupied() const {return occupiedCities*armyCapPerOccupiedCity;}
 
+
+
+    [[nodiscard]] int getArmySize() const {return armySize;}
+    void incrementArmySize() {armySize++;}
+    void decrementArmySize() {armySize--;}
+
+    [[nodiscard]] int getRecruitingSoldiers() const {return recruitingSoldiers;}
+    void incrementRecruitingSoldiers() {recruitingSoldiers++;}
+    void decrementRecruitingSoldiers() {recruitingSoldiers--;}
+
+
+    void setCoreCities(int c) {coreCities=c;}
+    void incrementCoreCities() {coreCities++;}
+    void decrementCoreCities() {coreCities--;}
+    [[nodiscard]] int getCoreCities() const {return coreCities;}
+    void setOccupiedCities(int c) {occupiedCities=c;}
+    void incrementOccupiedCities() {occupiedCities++;}
+    void decrementOccupiedCities() {occupiedCities--;}
+    [[nodiscard]] int getOccupiedCities() const {return occupiedCities;}
+
+    void resetLastMonthFundSources();
+    void addFunds(double thisCoreIncome, double thisOccupiedIncome, double thisSoldierUpkeepCost);
+
+    [[nodiscard]] double getFunds() const {return funds;}
+    [[nodiscard]] double getLastMonthCoreIncome() const {return lastMonthCoreIncome;}
+    [[nodiscard]] double getLastMonthOccupiedIncome() const {return lastMonthOccupiedIncome;}
+    [[nodiscard]] double getLastMonthSoldierUpkeepCost() const {return lastMonthSoldierUpkeepCost;}
+    [[nodiscard]] double getLastMonthIncome() const {return lastMonthIncome;}
+
+    void addCoreId(int cid) {coreIdList.emplace_back(cid);}
+    const std::vector<int>& getCoreIds() const {return coreIdList;}
+    unsigned int getInfantryRecruitmentTime() const {return infantryRecruitmentTime;}
 private:
     int id;
 
@@ -99,7 +139,33 @@ private:
     double trainSpeed;
     double infantryRange;
     //Chance of firing a shot at any target every second
-    double fireRate;
+    double infantryFireRate;
+    double armyCapPerCore;
+    double armyCapPerOccupiedCity;
+    double coreIncomeMultiplier;
+    double occupiedIncomeMultiplier;
+    double soldierUpkeepCost;
+    //Time to recruit a new infantry soldier, in ms in-game time
+    unsigned int infantryRecruitmentTime;
+
+    //Current stats
+    int coreCities;
+    int occupiedCities;
+
+    int armySize;
+    int recruitingSoldiers;
+
+    //Ok, having a set amount of funds might be an outdated notion for modern dept-fueled economy, but it is a useful game mechanic
+    double funds;
+    double lastMonthIncome;
+    double lastMonthCoreIncome;
+    double lastMonthOccupiedIncome;
+    double lastMonthSoldierUpkeepCost;
+
+
+
+    //For fast lookup of places to recruit, here is a list of
+    std::vector<int> coreIdList;
 
 
 };

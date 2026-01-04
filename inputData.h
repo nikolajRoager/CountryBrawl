@@ -30,6 +30,8 @@ struct inputData {
     bool prevEnterPressed=false;
     bool escapePressed=false;
     bool prevEscapePressed=false;
+    bool spacePressed=false;
+    bool prevSpacePressed=false;
 
     bool shiftPressed=false;
     bool ctrlPressed=false;

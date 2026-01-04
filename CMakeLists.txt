@@ -67,4 +67,18 @@ add_executable(CountryBrawl main.cpp
         lingeringShot.cpp
         lingeringShot.h
         ticket.cpp
-        ticket.h)
+        ticket.h
+        uiTopBar.cpp
+        uiTopBar.h
+        uiTopBarComponent.cpp
+        uiTopBarComponent.h
+        uiCalendar.cpp
+        uiCalendar.h
+        uiCityCounter.cpp
+        uiCityCounter.h
+        uiArmyCapCounter.cpp
+        uiArmyCapCounter.h
+        uiMouseOverText.cpp
+        uiMouseOverText.h
+        uiFundsTracker.cpp
+        uiFundsTracker.h)

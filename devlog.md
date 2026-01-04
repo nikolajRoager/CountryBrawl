@@ -574,7 +574,7 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-day 16.5 2-1-2026 
+day 16.5 2-1-2026 Workload 9 hours
 =====
 
 Note
@@ -589,11 +589,167 @@ Thinking about UI
 -------
 What do I think should be in the UI, well
 
+The UI will be made up of a top-bar, with elements, elements may open a menu, menus may have a search bar (search for countries) and a scroll bar (scroll through countries), all elements have a mouse-over text block
+
+
 * Date and time + timewarp
-* Income and treasury
+  * Requires that we think about pause
+* Income and treasury + breakdown
+  * Requires that we add it
 * Army size
+  * Requires that we calculate it, and add army cap
 * diplomacy menu
+  * Requires diplomacy engine (yeah, we are unlikely to actually add this today)
 * auto-reinforce switch
 * balance front-lines button
 * music menu + mute button
 * Reminder of who we are at war with
+* Maybe a terminal with logs of events
+
+The big problem is that each thing I want to add to the UI, requires that I add it in game, it has now been 6 hours, and I only added the calender, because I had to add timekeeping, which took time.
+
+plan
+----
+Implement a "gametime" variable which keeps track of non-paused millis since game start Done
+
+Space to pause gametime Done
+
+Make UI top-bar class which automatically fills the screen Done 
+
+make (virtual) UI top-bar element Done
+
+make (derived) UI clock class, which converts gametime to year, month, day, hour, minute (using Chrono) Done
+
+Add number of cores and occupied cities to nation Done
+
+Add ui to show that Done
+
+Add army cap to nations Done
+
+Add ui containers to that Done
+
+Add mouse-over text to relevant things Failed (out of time)
+
+issues
+--------------
+Train path is still shown after cities are deselected/no longer hovered over
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 17.5 3-1-2026 Workload 7 hours
+=====
+
+plan
+--
+Add UI mouse-over text (Mouse over text must have multiple lines, must be green, red, or white, must have a black background) Done, that was exceedingly difficult and took hours
+
+Think about how money should be spent, write a note here with your thoughts, think about upkeep cost for units, recruitment cost, equipment cost Done
+
+Think about how recruitment should work, keep in mind there will be different soldier types, write a note here with your thoughts
+
+Add income to nations Done
+
+Add income to UI with proper mouse-over text Done
+
+Add auto-recruitment Failed, (out of time)
+
+Thinking about money
+-------
+Money is the sinews of war, and must be represented as such.
+
+Money is collected every month from cities
+
+Money is spent each  time equipment or soldiers are produced, if money is not available the production/recruitment pauses
+
+Soldiers have upkeep cost, which is deducted directly from revenues, there is currently no penalty to not paying your soldiers
+
+For the minimum viable product, there is no equipment production, and the cost and upkeep cost of soldiers should be scaled up accordingly
+
+Thinking about recruitment
+-------
+This is much more of a difficult matter
+
+Recruitment is supposed to happen in cities, in randomly chosen core cities, whenever the army cap so permits.
+
+So I need a reliable and fast way of picking a random core city which is not currently already recruiting a soldier
+
+Recruitment should not happen if it would cause the army cap to be exceeded, it should count ongoing recruitments to the cap, so that if we have 3 soldiers before the cap, only 3 recruitments start
+
+Nations need a "recruiting" soldier counter, which counts how many soldiers are currently undergoing recruitment, it is automatically incremented when recruitment start, and decremented if recruitment finishes or is interrupted
+
+Recruitment has a timer, which builds up over 10 seconds (or whatever the time is going to be), it is visualized by a bar filling up
+
+When the timer runs out, a new soldier spawn, auto-assigned to the city
+
+Recruitment can be interrupted by the city where the recruitment is ongoing being captured
+
+issues
+--------------
+We should switch everything over to using in-game-dt, not real world dt (except camera movement)
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 18.5 4-1-2026 
+=====
+
+plan
+--
+Get auto-recruitment working, this is probably a whole-day project
+
+* Recruitment should cost money
+* There should be some kind of effect, showing that money has been spent, maybe a particle effect with the cost
+* Recruitment should cancel when city is captured
+* Recruitment should update every frame
+* Recruitment should finish with the actual recruitment of a soldier
+
+Make a recruitment menu button, where the player can choose to turn of recruitment, and in the future switch soldier type
+
+Add an auto-balance armies button
+
+Make an auto-balance armies function (this is going to take like forever)
+
+If time permits, add an auto-attack menu button
