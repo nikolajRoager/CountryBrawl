@@ -5,7 +5,7 @@
 #include "uiFundsTracker.h"
 
 uiFundsTracker::uiFundsTracker(SDL_Renderer *renderer, TTF_Font *font, TTF_Font *smallFont):
-uiTopBarComponent(
+uiBarComponent(
     //A very awkward way of creating the lines, necessary since line is not copyable
 [renderer,smallFont] {
     std::vector<uiMouseOverText::line> lines;
@@ -43,12 +43,12 @@ void uiFundsTracker::setValues(const country &myCountry) {
     mouseOverText.setNumber(4,monthlyIncome);
 }
 
-void uiFundsTracker::display(double x, SDL_Renderer *renderer, const numberRenderer &number_renderer) const {
-    euro.render(x,0,0,0,0,renderer);
+void uiFundsTracker::display(double x,double y, SDL_Renderer *renderer, const numberRenderer &number_renderer) const {
+    euro.render(x,y,0,0,0,renderer);
     x+=euro.getWidth();
-    x+=number_renderer.render(funds,x,0,0,0,0,renderer);
-    slashPlusEuro.render(x,0,0,0,0,renderer);
+    x+=number_renderer.render(funds,x,y,0,0,0,renderer);
+    slashPlusEuro.render(x,y,0,0,0,renderer);
     x+=slashPlusEuro.getWidth();
-    number_renderer.render(monthlyIncome,x,0,0,0,0,renderer);
+    number_renderer.render(monthlyIncome,x,y,0,0,0,renderer);
 }
 

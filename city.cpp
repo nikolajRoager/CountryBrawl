@@ -136,15 +136,16 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, b
             double barX = xScreen-barWidth/2;
             double barY = yScreen-cityTexture.getHeight()*thisScale-barHeight/2;
             for (const auto &squad : squads) {
-                double width = (barWidth*squad.second.size())/totalSoldiers;
-                SDL_SetRenderDrawColor(renderer,countries[squad.first].getRed(),countries[squad.first].getGreen(),countries[squad.first].getBlue(),255);
+                if (!squad.second.empty()) {
+                    double width = (barWidth*squad.second.size())/totalSoldiers;
+                    SDL_SetRenderDrawColor(renderer,countries[squad.first].getRed(),countries[squad.first].getGreen(),countries[squad.first].getBlue(),255);
 
-                SDL_Rect quad = {(int)barX,(int)barY,(int)width,(int)(-barHeight)};
-                SDL_RenderFillRect(renderer,&quad);
+                    SDL_Rect quad = {(int)barX,(int)barY,(int)width,(int)(-barHeight)};
+                    SDL_RenderFillRect(renderer,&quad);
 
-                numberer.render(squad.second.size(),barX,barY,renderer,1,false,true);
-                barX+=width;
-
+                    numberer.render(squad.second.size(),barX,barY,renderer,1,false,true);
+                    barX+=width;
+                }
             }
         }
 

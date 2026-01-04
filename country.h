@@ -34,6 +34,7 @@ public:
     [[nodiscard]] double getCoreIncomeMultiplier() const {return coreIncomeMultiplier;}
     [[nodiscard]] double getOccupiedIncomeMultiplier() const {return occupiedIncomeMultiplier;}
     [[nodiscard]] double getSoldierUpkeepCost() const {return soldierUpkeepCost;}
+    [[nodiscard]] double getInfantryRecruitmentCost() const {return infantryRecruitmentCost;}
 
     [[nodiscard]] unsigned char getRed() const {return red;}
     [[nodiscard]] unsigned char getGreen() const {return green;}
@@ -91,6 +92,10 @@ public:
 
     void resetLastMonthFundSources();
     void addFunds(double thisCoreIncome, double thisOccupiedIncome, double thisSoldierUpkeepCost);
+    //Instantly spend saved up funds, this is not counted as part of the monthly budget
+    void spendFunds(double amount) {
+        funds -= amount;
+    }
 
     [[nodiscard]] double getFunds() const {return funds;}
     [[nodiscard]] double getLastMonthCoreIncome() const {return lastMonthCoreIncome;}
@@ -145,6 +150,7 @@ private:
     double coreIncomeMultiplier;
     double occupiedIncomeMultiplier;
     double soldierUpkeepCost;
+    double infantryRecruitmentCost;
     //Time to recruit a new infantry soldier, in ms in-game time
     unsigned int infantryRecruitmentTime;
 

@@ -14,6 +14,15 @@ background(assetsPath()/"ui"/"topBar.png",renderer)
 
 }
 
+void UITopBar::updateMouse(int mouseX, int mouseY, bool leftMouseClick, bool rightMouseClick,  int windowWidth, int windowHeight) {
+    int x = windowWidth;
+    for (auto& component : rightComponents) {
+        int width = component->getWidth();
+        x-=width;
+        component->updateMouse(x,0, mouseX, mouseY, leftMouseClick, rightMouseClick);
+    }
+}
+
 
 void UITopBar::display(SDL_Renderer *renderer, int mouseX, int mouseY,  int windowWidth, int windowHeight, const numberRenderer& number_renderer, const numberRenderer& small_number_renderer) const {
     for (int x=0; x<windowWidth; x+=background.getWidth()) {
@@ -24,7 +33,7 @@ void UITopBar::display(SDL_Renderer *renderer, int mouseX, int mouseY,  int wind
     for (const auto& component : rightComponents) {
         int width = component->getWidth();
         x-=width;
-        component->display(x,renderer,number_renderer);
+        component->display(x,0,renderer,number_renderer);
     }
     //The mouse over text must overlap everything else
     x = windowWidth;
@@ -37,8 +46,6 @@ void UITopBar::display(SDL_Renderer *renderer, int mouseX, int mouseY,  int wind
     }
 }
 
-void UITopBar::addRightComponent(const std::shared_ptr<uiTopBarComponent> &component) {
+void UITopBar::addRightComponent(const std::shared_ptr<uiBarComponent> &component) {
     rightComponents.push_back(component);
 }
-
-

@@ -19,6 +19,7 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     coreIncomeMultiplier=1.0;
     occupiedIncomeMultiplier=0.25;
     soldierUpkeepCost=1.0;
+    infantryRecruitmentCost=2.0;
 
     //Time to recruit a new infantry soldier, in ms in-game time
     infantryRecruitmentTime=86400000;//1 day

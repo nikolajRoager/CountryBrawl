@@ -4,14 +4,14 @@
 
 #ifndef COUNTRYBRAWL_UICITYCOUNTER_H
 #define COUNTRYBRAWL_UICITYCOUNTER_H
-#include "uiTopBarComponent.h"
+#include "uiBarComponent.h"
 
 
-class uiCityCounter : public uiTopBarComponent {
+class uiCityCounter : public uiBarComponent {
 public:
     explicit uiCityCounter(SDL_Renderer* renderer,TTF_Font* font, TTF_Font* smallFont);
     ~uiCityCounter() override = default;
-    void display(double x, SDL_Renderer* renderer, const numberRenderer& number_renderer) const override;
+    void display(double x, double y, SDL_Renderer* renderer, const numberRenderer& number_renderer) const override;
     void setCount(int occupied, int cores);
 private:
     int cores;

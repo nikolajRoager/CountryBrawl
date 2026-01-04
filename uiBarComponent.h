@@ -11,15 +11,15 @@
 #include "uiMouseOverText.h"
 
 
-class uiTopBarComponent {
+class uiBarComponent {
 public:
-    explicit uiTopBarComponent(std::vector<uiMouseOverText::line> lines,int w=0, int h=0);
-    virtual ~uiTopBarComponent()= default;
-    virtual void display(double x, SDL_Renderer* renderer, const numberRenderer& number_renderer) const=0;
+    explicit uiBarComponent(std::vector<uiMouseOverText::line> lines,int w=0, int h=0);
+    virtual ~uiBarComponent()= default;
+    virtual void display(double x,double y, SDL_Renderer* renderer, const numberRenderer& number_renderer) const=0;
 
     void displayMouseOverText(double mouseX, double mouseY, int screenWidth, int screenHeight, SDL_Renderer* renderer,const numberRenderer& number_renderer);
     ///Update the UI element, by default UI elements do nothing
-    virtual void updateMouse(int mouseX, int mouseY, bool leftMouseClick, bool rightMouseClick)
+    virtual void updateMouse(double x, double y, int mouseX, int mouseY, bool leftMouseClick, bool rightMouseClick)
     {/*base implementation does nothing, components which do stuff must EXPLICITLY overwrite this*/}
     [[nodiscard]] int getWidth() const {return width;};
     [[nodiscard]] int getHeight() const {return height;};

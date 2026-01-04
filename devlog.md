@@ -707,6 +707,9 @@ Recruitment can be interrupted by the city where the recruitment is ongoing bein
 
 issues
 --------------
+The number renderer needs to be able to render decimal numbers
+Same goes with the mouseover text
+
 We should switch everything over to using in-game-dt, not real world dt (except camera movement)
 
 Train should "rotate" to point the right way
@@ -746,10 +749,14 @@ Get auto-recruitment working, this is probably a whole-day project
 * Recruitment should update every frame
 * Recruitment should finish with the actual recruitment of a soldier
 
-Make a recruitment menu button, where the player can choose to turn of recruitment, and in the future switch soldier type
+Make a recruitment menu button, where the player can choose to turn off recruitment, and in the future switch soldier type
 
 Add an auto-balance armies button
 
 Make an auto-balance armies function (this is going to take like forever)
 
-If time permits, add an auto-attack menu button
+Make "AI" nations auto-balance every N days
+
+add an auto-attack menu button
+
+add auto attack

@@ -18,8 +18,10 @@
 #include "ticket.h"
 #include "tile.h"
 #include "uiArmyCapCounter.h"
+#include "uiBottomBar.h"
 #include "uiCalendar.h"
 #include "uiCityCounter.h"
+#include "uiExpandableMenu.h"
 #include "uiFundsTracker.h"
 #include "uiTopBar.h"
 
@@ -56,11 +58,14 @@ private:
     double timewarpFactor;
 
     UITopBar topBar;
+    UIBottomBar bottomBar;
     //The calendar, which we share with the top-bar
     std::shared_ptr<uiCalendar> calendar;
     std::shared_ptr<uiCityCounter> cityCounter;
     std::shared_ptr<uiArmyCapCounter> armyCapCounter;
     std::shared_ptr<uiFundsTracker> fundsTracker;
+
+    std::shared_ptr<uiExpandableMenu> autoRecruitMenu;
 
     std::set<int> selectedCities;
     int primarySelectedCity;

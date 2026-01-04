@@ -70,8 +70,8 @@ add_executable(CountryBrawl main.cpp
         ticket.h
         uiTopBar.cpp
         uiTopBar.h
-        uiTopBarComponent.cpp
-        uiTopBarComponent.h
+        uiBarComponent.cpp
+        uiBarComponent.h
         uiCalendar.cpp
         uiCalendar.h
         uiCityCounter.cpp
@@ -81,4 +81,8 @@ add_executable(CountryBrawl main.cpp
         uiMouseOverText.cpp
         uiMouseOverText.h
         uiFundsTracker.cpp
-        uiFundsTracker.h)
+        uiFundsTracker.h
+        uiBottomBar.cpp
+        uiBottomBar.h
+        uiExpandableMenu.cpp
+        uiExpandableMenu.h)

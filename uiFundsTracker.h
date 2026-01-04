@@ -5,14 +5,14 @@
 #ifndef COUNTRYBRAWL_UIFUNDSTRACKER_H
 #define COUNTRYBRAWL_UIFUNDSTRACKER_H
 #include "country.h"
-#include "uiTopBarComponent.h"
+#include "uiBarComponent.h"
 
 
-class uiFundsTracker : public uiTopBarComponent {
+class uiFundsTracker : public uiBarComponent {
 public:
     explicit uiFundsTracker(SDL_Renderer* renderer,TTF_Font* font, TTF_Font* smallFont);
     ~uiFundsTracker() override = default;
-    void display(double x, SDL_Renderer* renderer, const numberRenderer& number_renderer) const override;
+    void display(double x,double y, SDL_Renderer* renderer, const numberRenderer& number_renderer) const override;
     void setValues(const country& myCountry);
 private:
     double funds;

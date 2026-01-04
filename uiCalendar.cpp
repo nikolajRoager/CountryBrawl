@@ -11,7 +11,7 @@
 #include "uiMouseOverText.h"
 
 uiCalendar::uiCalendar(SDL_Renderer* renderer,TTF_Font* font,TTF_Font* smallFont):
-uiTopBarComponent(
+uiBarComponent(
     //A very awkward way of creating the lines, necessary since line is not copyable
 [renderer,smallFont] {
     std::vector<uiMouseOverText::line> lines;
@@ -58,27 +58,27 @@ texwrap(" of December ",renderer,font),
     minute=0;
 }
 
-void uiCalendar::display(double x, SDL_Renderer *renderer, const numberRenderer& number_renderer) const {
+void uiCalendar::display(double x,double y, SDL_Renderer *renderer, const numberRenderer& number_renderer) const {
     auto monthNumber=(month);
-    calendarTexture.render(x,0,renderer,1.0,false,false,false,12,monthNumber-1);
+    calendarTexture.render(x,y,renderer,1.0,false,false,false,12,monthNumber-1);
     int X =x +calendarWidth;
     int dayNumber = static_cast<int>((day));
-    X+=number_renderer.render(dayNumber ,X,0,0,0,0,renderer);
+    X+=number_renderer.render(dayNumber ,X,y,0,0,0,renderer);
     if (dayNumber==1 || dayNumber == 21 || dayNumber==31) {
-        st.render(X,0,0,0,0,renderer);
+        st.render(X,y,0,0,0,renderer);
         X+=st.getWidth();
     }
     else if (dayNumber==2 || dayNumber == 22) {
-        nd.render(X,0,0,0,0,renderer);
+        nd.render(X,y,0,0,0,renderer);
         X+=nd.getWidth();
     }
     else {
-        th.render(X,0,0,0,0,renderer);
+        th.render(X,y,0,0,0,renderer);
         X+=th.getWidth();
     }
-    monthNames[monthNumber-1].render(X,0,0,0,0,renderer);
+    monthNames[monthNumber-1].render(X,y,0,0,0,renderer);
     X+=monthNames[monthNumber-1].getWidth();
-    number_renderer.render(year,X,0,0,0,0,renderer);
+    number_renderer.render(year,X,y,0,0,0,renderer);
 
     //I decided that I didn't want to render hours:minutes
     /*

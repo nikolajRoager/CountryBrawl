@@ -4,21 +4,21 @@
 
 #include "uiArmyCapCounter.h"
 
-void uiArmyCapCounter::display(double x, SDL_Renderer *renderer, const numberRenderer &number_renderer) const {
-    myCountry->display(x,myCountry->getTextureHeight(),false,country::HAPPY,1.0,renderer,false,0);
+void uiArmyCapCounter::display(double x,double y, SDL_Renderer *renderer, const numberRenderer &number_renderer) const {
+    myCountry->display(x,y+myCountry->getTextureHeight(),false,country::HAPPY,1.0,renderer,false,0);
     x+=myCountry->getTextureWidth();
-    x+=number_renderer.render(count,x,0,0,0,0,renderer);
+    x+=number_renderer.render(count,x,y,0,0,0,renderer);
     if (recruiting!=0) {
-        paranOpen.render(x,0,renderer);
+        paranOpen.render(x,y,renderer);
         x+=paranOpen.getWidth();
-        x+=number_renderer.render(recruiting,x,0,0,0,0,renderer);
-        paranClose.render(x,0,renderer);
+        x+=number_renderer.render(recruiting,x,y,0,0,0,renderer);
+        paranClose.render(x,y,renderer);
         x+=paranClose.getWidth();
 
     }
-    slash.render(x,0,renderer);
+    slash.render(x,y,renderer);
     x+=slash.getWidth();
-    number_renderer.render(cap,x,0,0,0,0,renderer);
+    number_renderer.render(cap,x,y,0,0,0,renderer);
 }
 
 void uiArmyCapCounter::setCount(int _count, int _recruiting, int _cap, int fromCores, int fromOccupation) {
@@ -31,7 +31,7 @@ void uiArmyCapCounter::setCount(int _count, int _recruiting, int _cap, int fromC
 }
 
 uiArmyCapCounter::uiArmyCapCounter(SDL_Renderer* renderer,TTF_Font* font, TTF_Font* smallFont, const country* _myCountry):
-uiTopBarComponent(
+uiBarComponent(
     //A very awkward way of creating the lines, necessary since line is not copyable
 [renderer,smallFont] {
     std::vector<uiMouseOverText::line> lines;
