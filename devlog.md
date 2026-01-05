@@ -792,8 +792,9 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-day 19.5 4-1-2026 
+day 19.5 5-1-2026 workload 6 hours
 =====
+I won't have a lot of time to work today
 
 plan
 --
@@ -806,13 +807,15 @@ Have countries auto-attack based on their stance (Done)
 
 Implement all implementable country bonuses (gonna take like forever) (Done)
 
-Draw some countryball art, to use a thumbnail for the next video
+Draw some countryball art, to use a thumbnail for the next video (Done)
 
-Record a video
+Record a video (Done)
 
 
 issues
 --------------
+Laggy autobalance
+
 Buggy autobalance when autobalance triggers while autobalance trains are still driving does not count the countryballs already on the way to destinations
 
 

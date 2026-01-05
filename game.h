@@ -69,6 +69,7 @@ private:
     std::shared_ptr<uiFundsTracker> fundsTracker;
 
     std::shared_ptr<uiExpandableMenu> autoRecruitMenu;
+    std::shared_ptr<uiExpandableMenu> stanceMenu;
     std::shared_ptr<uiButton> autoBalanceButton;
 
     std::set<int> selectedCities;

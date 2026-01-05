@@ -110,6 +110,9 @@ public:
     [[nodiscard]] unsigned int getInfantryRecruitmentTime() const {return infantryRecruitmentTime;}
 
     [[nodiscard]] offensiveStance getOffensiveStance() const {return stance;}
+    void setOffensiveStance(offensiveStance _stance) {
+        stance = _stance;
+    };
 private:
     int id;
 

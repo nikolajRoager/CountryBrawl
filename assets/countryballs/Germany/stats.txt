@@ -13,4 +13,4 @@ malus Bavaria: contains Bavaria
 gun hk416
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
-trainSpeed 1.1
+trainSpeedMultiplier 1.1

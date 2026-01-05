@@ -310,6 +310,9 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     autoBalanceButton = std::make_shared<uiButton>(renderer, smallFont,"autoBalanceButton");
     bottomBar.addRightComponent(autoBalanceButton);
 
+    stanceMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"defensiveStance","cautiousAdvance","aggressiveAdvance"});
+    bottomBar.addRightComponent(stanceMenu);
+
     std::cout << "Created successfully" << std::endl;
 
     previousFPSprintMillis = SDL_GetTicks();
@@ -736,11 +739,27 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     //AI auto-balances front-lines every 5 day
     if ((prev5Days!=curr5Days) || firstUpdate) {
+        std::cout <<"Balancing front-lines "<< std::endl;
+        auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < countries.size(); ++i) {
             if (i != playerCountryId)
                 balanceFrontLines(i);
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        std::cout <<"Balance front line took "<< duration.count() << " ms\n"<<std::endl;
     }
+
+    if (stanceMenu->getSelectedMenu()==0) {
+        countries[playerCountryId].setOffensiveStance(country::DEFENSIVE);
+    }
+    else if (stanceMenu->getSelectedMenu()==1) {
+        countries[playerCountryId].setOffensiveStance(country::CAUTIOUS);
+    }
+    else if (stanceMenu->getSelectedMenu()==2) {
+        countries[playerCountryId].setOffensiveStance(country::AGGRESSIVE);
+    }
+
 
     //Attack decisions are taken daily, leading to maximum chaos
     if (dayChanged || firstUpdate)

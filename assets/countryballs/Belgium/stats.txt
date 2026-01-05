@@ -6,7 +6,8 @@ description Belgium is an artificial country, created to serve as a speedbump ag
 difficulty medium
 bonus densely populated: Has a lot of cities for such a small country
 bonus Benelux: Conquer Luxembourg and the Netherlands to gain their cores
-malus belgian infrastructure: -10% transport speed
+malus belgian infrastructure: -10% train speed
 gun fnscar
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
+trainSpeedMultiplier 0.9
