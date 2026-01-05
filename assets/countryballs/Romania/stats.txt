@@ -7,3 +7,5 @@ difficulty easy
 malus Flawed democracy: -10% province income
 bonus Unite our people: conquer Moldova to gain their cores
 gun akm
+coreIncomeMultiplier 0.9
+occupiedIncomeMultiplier 0.9

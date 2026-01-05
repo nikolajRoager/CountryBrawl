@@ -7,3 +7,5 @@ description Syria has only just come out of a civil war, with the ouster of the 
 malus Kurdish autonomy: Kurdistan is not cored
 malus Flawed democracy: -10% province income
 gun akm
+coreIncomeMultiplier 0.9
+occupiedIncomeMultiplier 0.9

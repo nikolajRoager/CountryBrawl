@@ -8,3 +8,6 @@ bonus Strong democracy: +10% province income
 bonus Gå-på mod: -10% recruitment time
 bonus Kalmar union: Conquer Norway and/or Denmark to gain their cores
 gun ak5
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1
+infantryRecruitmentTimeMultiplier 0.9

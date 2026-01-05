@@ -759,3 +759,89 @@ Make "AI" nations auto-balance every N days Failed (out of time)
 add an auto-attack menu button Failed (out of time)
 
 add auto attack Failed (out of time)
+
+issues
+--------------
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Train path is still shown after cities are deselected/no longer hovered over
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 19.5 4-1-2026 
+=====
+
+plan
+--
+
+Get auto-balance front-lines to work (Done, that was surprisingly easy, but it lags A LOT, we need multithreading)
+
+Implement country offensive stances (Done)
+
+Have countries auto-attack based on their stance (Done)
+
+Implement all implementable country bonuses (gonna take like forever) (Done)
+
+Draw some countryball art, to use a thumbnail for the next video
+
+Record a video
+
+
+issues
+--------------
+Buggy autobalance when autobalance triggers while autobalance trains are still driving does not count the countryballs already on the way to destinations
+
+
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Trains should stop if the city they try to drive to is no longer controlled
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations

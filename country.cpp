@@ -24,6 +24,8 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     //Time to recruit a new infantry soldier, in ms in-game time
     infantryRecruitmentTime=86400000;//1 day
 
+    stance=AGGRESSIVE;
+
     red=255;
     green=255;
     blue=255;
@@ -57,8 +59,14 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
                 if (variable =="movementSpeed") {
                     speed=std::stof(value);
                 }
+                else if (variable =="movementSpeedMultiplier") {
+                    speed*=std::stof(value);
+                }
                 else if (variable =="trainSpeed") {
                     trainSpeed=std::stof(value);
+                }
+                else if (variable =="trainSpeedMultiplier") {
+                    trainSpeed*=std::stof(value);
                 }
                 else if (variable =="infantryRange") {
                     infantryRange=std::stof(value);
@@ -69,17 +77,24 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
                 else if (variable =="infantryFireRate") {
                     infantryFireRate=std::stof(value);
                 }
+                else if (variable == "infantryRecruitmentTimeMultiplier") {
+                    infantryRecruitmentTime*=std::stof(value);
+                }
                 else if (variable =="armyCapPerCore") {
                     armyCapPerCore=std::stof(value);
                 }
                 else if (variable =="armyCapPerOccupiedCity") {
                     armyCapPerOccupiedCity=std::stof(value);
                 }
+                else if (variable =="armyCapMultiplier") {
+                    armyCapPerCore*=std::stof(value);
+                    armyCapPerOccupiedCity*=std::stof(value);
+                }
                 else if (variable =="coreIncomeMultiplier") {
-                   coreIncomeMultiplier=std::stof(value);
+                   coreIncomeMultiplier*=std::stof(value);
                 }
                 else if (variable =="occupiedIncomeMultiplier") {
-                    occupiedIncomeMultiplier=std::stof(value);
+                    occupiedIncomeMultiplier*=std::stof(value);
                 }
                 else if (variable =="soldierUpkeepCost") {
                     soldierUpkeepCost=std::stof(value);

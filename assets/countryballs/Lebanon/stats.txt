@@ -6,3 +6,5 @@ difficulty hard
 description Lebanon is a small country in the Levant, surrounded by larger and more powerful countries, playing Lebanon is certainly a challenge.
 malus Authoritarian regime: -20% province income
 gun akm
+coreIncomeMultiplier 0.8
+occupiedIncomeMultiplier 0.8

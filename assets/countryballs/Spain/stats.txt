@@ -7,3 +7,5 @@ description You can not spell Spain without pain ... but actually Spain is in a 
 bonus Strong democracy: +10% province income
 bonus Large country: Has a lot of cities
 gun hk416
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1

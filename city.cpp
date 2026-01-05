@@ -343,7 +343,7 @@ void city::addNeighbour(int newNeighbour) {
 
 }
 
-void city::updateFrontlines(const std::vector<city> &cities,const mapData& watermap) {
+void city::updateFrontlinesAndNeighbourDistances(const std::vector<city> &cities,const mapData& watermap) {
 
     frontlines.clear();
 
@@ -351,6 +351,7 @@ void city::updateFrontlines(const std::vector<city> &cities,const mapData& water
         double Dx =(cities[n].getX()-x);
         double Dy =(cities[n].getY()-y);
         double dist = sqrt(Dx*Dx+Dy*Dy);
+        neighbourDistances.emplace(n,dist);
         double fX=x;
         double fY=y;
 
@@ -416,7 +417,6 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
     if (squads.contains(allegiance) && squads[allegiance].size()>0)
     {
         if (foundAsNeighbour) {
-            //TODO, temporary, this should NOT be done for immediate neighbours, create a transportation ticket when travelling between adjacent cities with access
             if (countries[allegiance].hasAccess(owner) && countries[allegiance].hasAccess(cities[target].getOwner())) {
                 std::vector<int> stops {myId , target};
                 tickets.emplace_back(allegiance,stops);
@@ -516,7 +516,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
             //We need to take a train
             if (countries[allegiance].hasAccess(owner) && countries[allegiance].hasAccess(cities[target].getOwner())) {
                 std::vector<int> stops = cities[target].findPathFrom(myId,cities,countries);
-                if (stops.size()>0) {
+                if (!stops.empty()) {
                     tickets.emplace_back(allegiance,stops);
                     //Some duplicate code to select the balls
                     auto& squad = squads[allegiance];
@@ -559,12 +559,39 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
     }
 }
 
-//Find path with Dijkstras algorithm
+
+//TODO, this is NOT thread-safe, please, for the love of god, make it threadsafe!!!
+void city::transferSoldiersTo(int allegiance, int numberToMove, const std::vector<int>& path, std::vector<city> &cities, const std::vector<country> &countries, std::list<ticket> &tickets) {
+
+    if (!path.empty()) {
+        tickets.emplace_back(allegiance,path);
+        //Some duplicate code to select the balls
+        auto& squad = squads[allegiance];
+
+        //Use the iterator explicitly, because we are going to be deleting
+        if (numberToMove>0)
+            for (auto it = squad.begin(); it != squad.end();) {
+                auto& s = *it;
+                //TODO, this is not thread safe (the way we pick the back ticket), make it thread safe
+                tickets.back().addPassenger(cities,s);
+                it = squad.erase(it);
+                --numberToMove;
+                if (numberToMove<= 0) {
+                    break;
+                }
+       }
+
+        updateSoldierLocations(cities,countries);
+    }
+}
+
+
+//Find path to this city from a city with id source, using Dijkstras algorithm
 std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities, const std::vector<country> &countries) const {
-    //id=-1 is used whenever the selected city is undefined, it may accidentally have been inserted here, just ignore it
+    //id=-1 is used whenever the selected city is undefined, if some idiot passes that as an argument, just return an empty path
     if (source == -1 )
         return {};
-    //Source is destination: path is empty
+    //Source is destination=path is empty
     if (source==myId)
         return {};
     //If my (the destinations) owning country bans travellers from the source's country, there is no path
@@ -573,19 +600,22 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
         return {};
     }
 
-    //I use a map, since I don't have an entry for every city id, only the ones we can access
-    //For example, I might only be able to access city 0,1,2,3,4,42, and 43 (which are the city ids in Denmark)
+    //I use an std::map to store the distances and prev we have access to,
+    //This is because we only has access to a (hopefully) tiny subset of all the cities
+    //For example, Denmark by default has access to cities with ID 0,1,2,3,4,42, and 43
     std::map<int,double> distances;
     std::map<int,int> prev;
     std::vector<int> Q;
 
     //Create distances, prev, and Q ONLY for the cities we can access, this will likely be much smaller than the entire list of cities
     for (int i = 0; i< cities.size(); ++i) {
+        //Only if the country owning the city gives access to someone from source country is the city added
         if (countries[cities[i].getOwner()].hasAccess(sourceCountry)) {
             Q.emplace_back(i);
+            //-1 is a shorthand for undefined/no previous
             prev[i]=-1;
+            //This number is larger than all real distances we can compare it to
             distances[i]=std::numeric_limits<double>::max();
-
         }
     }
     //We start from the destination (at myId) because that makes backtracking easier
@@ -602,12 +632,10 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
 
         Q.erase(Q.begin()+smallestId);
 
-        //Loop through all neighbours of u
-        for (int v : cities[u].getNeighbours()) {
+        //Loop through all neighbours of u, and their distances
+        //(getNeighbourDistances gives a reference to a map<int,double> with neighbour ids and pre-computed distances)
+        for (auto [v, dist] : cities[u].getNeighbourDistances()) {
             //Update their distances
-            double dx = cities[v].getX()-cities[u].getX();
-            double dy = cities[v].getY()-cities[u].getY();
-            double dist = sqrt(dx*dx+dy*dy);
             double alt = dist+distances[u];
             if (alt < distances[v]) {
                 distances[v] = alt;
@@ -620,9 +648,12 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
         }
     }
 
+    //Return empty path if not found
     if (!found) {
         return {};
     }
+
+    //Backtrack the path
     std::vector<int> path;
     for (int c = source; c!=-1; c=prev[c] ) {
         path.emplace_back(c);

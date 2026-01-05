@@ -8,3 +8,5 @@ malus Local autonomy: Republika Srpska is not cored
 malus Small country: Has only 3 cities
 malus flawed democracy -10% province income
 gun hkg3
+coreIncomeMultiplier 0.9
+occupiedIncomeMultiplier 0.9

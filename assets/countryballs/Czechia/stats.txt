@@ -7,3 +7,5 @@ description Czechia is a medium-sized country in central Europe, it boasts an im
 bonus Czechoslovak legacy: Conquer Slovakia to gain their cores
 bonus Strong democracy: +10% province income
 gun 805bren
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1

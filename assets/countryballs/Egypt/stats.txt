@@ -7,3 +7,5 @@ description Egypt is by far the strongest country in Africa, and is poised to do
 malus Authoritarian regime: -20% province income
 bonus Large country: Has a lot of cities
 gun akm
+coreIncomeMultiplier 0.8
+occupiedIncomeMultiplier 0.8

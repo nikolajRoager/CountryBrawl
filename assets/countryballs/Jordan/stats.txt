@@ -7,3 +7,5 @@ description The Hashemite dynasty was once promised all the lands of Arabia, ala
 bonus Hashemite birthright: Conquer Saudi Arabia to gain their cores
 malus Authoritarian regime: -20% province income
 gun m16
+coreIncomeMultiplier 0.8
+occupiedIncomeMultiplier 0.8

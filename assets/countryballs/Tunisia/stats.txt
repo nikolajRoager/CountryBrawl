@@ -6,3 +6,5 @@ difficulty hard
 description Tunisia is the true heir to ancient Carthage, but reclaiming this legacy will certainly be hard as one of the smallest Maghrebi countries
 malus Flawed democracy: -10% province income
 gun m4
+coreIncomeMultiplier 0.9
+occupiedIncomeMultiplier 0.9

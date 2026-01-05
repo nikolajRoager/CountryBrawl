@@ -7,3 +7,5 @@ difficulty medium
 malus Authoritarian regime: -20% province income
 malus Cut-off: half of Saudi Arabia is not in game
 gun m4
+coreIncomeMultiplier 0.8
+occupiedIncomeMultiplier 0.8

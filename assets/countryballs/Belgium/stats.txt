@@ -8,3 +8,5 @@ bonus densely populated: Has a lot of cities for such a small country
 bonus Benelux: Conquer Luxembourg and the Netherlands to gain their cores
 malus belgian infrastructure: -10% transport speed
 gun fnscar
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1

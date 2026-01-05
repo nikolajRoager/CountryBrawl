@@ -57,7 +57,7 @@ public:
     ///For loading from file
     city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, int _income, const std::set<int>& _neighbours);
 
-    void updateFrontlines(const std::vector<city>& cities,const mapData& watermap);
+    void updateFrontlinesAndNeighbourDistances(const std::vector<city>& cities,const mapData& watermap);
 
     [[nodiscard]] double getShortestNeighbourDistance(const std::vector<city>& cities) const;
 
@@ -67,13 +67,16 @@ public:
         cityNameTexture=std::make_unique<texwrap>(name,renderer,font);
     }
 
-    std::vector<int> findPathFrom(int source, const std::vector<city>& cities, const std::vector<country>& countries) const;
+    [[nodiscard]] std::vector<int> findPathFrom(int source, const std::vector<city>& cities, const std::vector<country>& countries) const;
 
     [[nodiscard]] const std::map<int, std::vector<std::shared_ptr<countryball> > >& getSquads() const {return squads;}
 
 
-    //Order a soldier to walk to a neighbouring base
+    //Order all or half the soldiers to walk to a neighbouring base
     void moveSoldiersTo(int allegiance,int target,bool all,std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets);
+
+    //Transfer a specific number of soldiers somewhere else using a pre-calculated path
+    void transferSoldiersTo(int allegiance,int numberToMove, const std::vector<int>& path, std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets);
 
     void removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries);
 
@@ -86,7 +89,21 @@ public:
     //Update ongoing recruitment, return true if a soldier needs to spawn
     bool updateRecruitment(unsigned int dtGameTime);
 
-    int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries) const;
+    [[nodiscard]] int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries) const;
+
+    [[nodiscard]] int getSoldiers(int allegiance) {
+        return squads.contains(allegiance) ? squads[allegiance].size() : 0;
+    }
+
+    const std::map<int,double>& getNeighbourDistances() const {
+        return neighbourDistances;
+    }
+
+    ///get distance to this neighbour, throws exception if not a neighbour
+    [[nodiscard]] double getNeighbourDistance(int n) const {
+        return neighbourDistances.at(n);
+    }
+
 private:
     bool isRecruiting;
     unsigned int recruitmentTimer;
@@ -113,6 +130,7 @@ private:
 
     ///Neighbour, saved as index to be safe when the vector containing us get resized
     std::set<int> neighbours;
+    std::map<int,double> neighbourDistances;
 
     struct frontlineSegment {
         double x,y;

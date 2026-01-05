@@ -15,6 +15,10 @@ struct inputData {
     bool zoomInPressed=false;
     bool zoomOutPressed=false;
 
+
+    bool homePressed=false;
+    bool prevHomePressed=false;
+
     bool sPressed=false;
     bool prevSPressed=false;
 

@@ -4,4 +4,7 @@ colour #169B62
 cities 6
 difficulty hard
 description Ireland is a small country, with no easy avenues of expansion, certainly a challenging country.
+bonus Strong democracy: +10 province income
 gun auga1
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1

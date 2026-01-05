@@ -234,14 +234,13 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     }
 
     //Then do the things which require the things we just loaded to exist
-
     double cameraCentreX = 0;
     double cameraCentreY = 0;
     int playerCities = 0;
 
     //Todo multithreading this might be an idea
     for (auto &city: cities) {
-        city.updateFrontlines(cities, watermap);
+        city.updateFrontlinesAndNeighbourDistances(cities, watermap);
         city.generateNameTexture(smallFont, renderer);
         city.updateNeighbourhood(cities);
         if (city.getOwner() == playerCountryId) {
@@ -262,9 +261,10 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
         city.addCountryball(soldiers.back(), cities, countries);
     }
-
-    cameraCentreX /= playerCities;
-    cameraCentreY /= playerCities;
+    if (playerCities>0) {
+        cameraCentreX /= playerCities;
+        cameraCentreY /= playerCities;
+    }
 
     //Centre the camera on the player country
     screenMinX = cameraCentreX * scale - windowWidthPx / 2.0;
@@ -483,6 +483,28 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         screenMinX = centreXWorld * scale - screenWidth / 2.0;
         screenMinY = centreYWorld * scale - screenHeight / 2.0;
     }
+    if (userInputs.homePressed && !userInputs.prevHomePressed) {
+        double cameraCentreX = 0;
+        double cameraCentreY = 0;
+        int playerCities = 0;
+
+        for (auto &city: cities) {
+            if (city.getOwner() == playerCountryId) {
+                cameraCentreX += city.getX();
+                cameraCentreY += city.getY();
+                playerCities++;
+            }
+        }
+        if (playerCities>0) {
+            cameraCentreX /= playerCities;
+            cameraCentreY /= playerCities;
+        }
+
+        //Centre the camera on the player country
+        screenMinX = cameraCentreX * scale - screenWidth/ 2.0;
+        screenMinY = cameraCentreY * scale - screenHeight/ 2.0;
+
+    }
 
     double mouseXWorld = ((userInputs.mouseXPx + screenMinX) / scale);
     double mouseYWorld = ((userInputs.mouseYPx + screenMinY) / scale);
@@ -641,6 +663,8 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             (prevYMD.year() != currYMD.year()) ||
             (prevYMD.month() != currYMD.month());
 
+    bool dayChanged = monthChanged || (prevYMD.day() != currYMD.day());
+
     if (monthChanged || firstUpdate) {
         //Update taxes of all countries
         //First reset the memory of last month taxes, this is the last month now
@@ -662,6 +686,9 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             country.addFunds(0, 0, country.getArmySize() * country.getSoldierUpkeepCost());
         }
     }
+
+
+    //AI an automation related scripts below:
 
     //Update auto recruitment
     for (int i = 0; i < countries.size(); ++i) {
@@ -696,10 +723,47 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         }
     }
     //Update auto-balance fronts options
-    //TODO, the AI should have an option to request this
+    //The player must manually request an auto-balance
     if (autoBalanceButton->getIsClicked()) {
         balanceFrontLines(playerCountryId);
     }
+
+    auto previousDayIndex = floor<std::chrono::days>((previousGameTime)-gameEpoch).count();
+    auto currentDayIndex = floor<std::chrono::days>((currentGameTime)-gameEpoch).count();
+
+    auto prev5Days = previousDayIndex/5;
+    auto curr5Days = currentDayIndex/5;
+
+    //AI auto-balances front-lines every 5 day
+    if ((prev5Days!=curr5Days) || firstUpdate) {
+        for (int i = 0; i < countries.size(); ++i) {
+            if (i != playerCountryId)
+                balanceFrontLines(i);
+        }
+    }
+
+    //Attack decisions are taken daily, leading to maximum chaos
+    if (dayChanged || firstUpdate)
+    {
+        //Update which cities should auto-attack which neighbours
+        for (auto &city: cities) {
+            int owner= city.getOwner();
+            auto stance = countries[owner].getOffensiveStance();
+            if (stance!=country::DEFENSIVE) {
+                for (int n : city.getNeighbours()) {
+                    int ourSoldiers = city.getSoldiers(owner);
+                    int theirOwner = cities[n].getOwner();
+                    if (countries[owner].atWarWith(theirOwner)) {
+                        int theirSoldiers = cities[n].getSoldiers(theirOwner);
+                        bool shouldAttack= (stance == country::AGGRESSIVE && theirSoldiers*2<ourSoldiers) || (stance == country::CAUTIOUS && theirSoldiers*4<ourSoldiers);
+                        if (shouldAttack)
+                            city.moveSoldiersTo(owner,n,false,cities,countries,tickets);
+                    }
+                }
+            }
+        }
+    }
+
 
 
     //Update UI counters
@@ -714,8 +778,8 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
 
     if (framesSinceFPSprint >= 100) {
-        unsigned deltamillis = millis - previousFPSprintMillis;
-        msPerFrame = deltamillis / ((double) framesSinceFPSprint);
+        unsigned deltaMillis = millis - previousFPSprintMillis;
+        msPerFrame = deltaMillis / ((double) framesSinceFPSprint);
         std::cout << "ms per frame " << msPerFrame << std::endl;
 
         previousFPSprintMillis = millis;
@@ -741,11 +805,14 @@ void game::balanceFrontLines(int targetCountry) {
     //Then we can figure out how many soldiers to put down per front
     int totalHostileNeighbours=0;
     std::map<int,int> citiesWithHostileNeighbours;
+    std::set<int> myCities;
     for (int i = 0; i < cities.size(); ++i) {
         const auto &city = cities[i];
+        //TODO, we also need to consider soldiers in other cities than my own
         if (city.getOwner() == targetCountry) {
             int hostiles = city.getHostileNeighbours(cities,countries);
             totalHostileNeighbours+=hostiles;
+            //We also insert cities with 0 hostile neighbours, because we will loop over them too
             citiesWithHostileNeighbours.emplace(i,hostiles);
         }
     }
@@ -754,23 +821,45 @@ void game::balanceFrontLines(int targetCountry) {
         return;
 
     //Divide
-    int averageSoldiersPerFront = countries[targetCountry].getArmySize()/totalHostileNeighbours;
-    int remainder = countries[targetCountry].getArmySize()%totalHostileNeighbours;
-
-    std::cout<<"Balance front-line report for "<<countries[targetCountry].getName()<<std::endl;
-    std::cout<<"With "<<countries[targetCountry].getArmySize()<<" soldiers, to be divided among "<<totalHostileNeighbours<<" fronts we expect "<<averageSoldiersPerFront<<"soldiers per front, with a remainder of "<<remainder<<std::endl;
+    int armySize = countries[targetCountry].getArmySize();
+    int averageSoldiersPerFront = armySize /totalHostileNeighbours;
+    int remainder = armySize%totalHostileNeighbours;
 
     //This is the desired number of soldiers per each front
     std::map<int,int> citiesWithRequestedSoldiers;
-    for (const auto &frontCity : citiesWithHostileNeighbours) {
-        int nSoldiers = averageSoldiersPerFront*frontCity.second;
+    for (const auto &cityFronts : citiesWithHostileNeighbours) {
+        int nSoldiers = averageSoldiersPerFront*cityFronts.second;
         //Get extra soldiers from the remainder
         if (remainder>0) {
-            int extraSoldiers = std::min(frontCity.second, remainder);
+            int extraSoldiers = std::min(cityFronts.second, remainder);
             remainder-=extraSoldiers;
             nSoldiers+=extraSoldiers;
         }
-        citiesWithRequestedSoldiers.emplace(frontCity.first, nSoldiers);
-        std::cout<<"  "<<nSoldiers<<" to "<<cities[frontCity.first].getName()<<std::endl;
+        //Excess need will be negative, if we have to many soldiers here
+        int excessNeed = nSoldiers - cities[cityFronts.first].getSoldiers(targetCountry);
+        citiesWithRequestedSoldiers.emplace(cityFronts.first, excessNeed);
+    }
+
+    for (auto &cityRequest : citiesWithRequestedSoldiers) {
+        if (cityRequest.second < 0) {
+            //We have soldiers to spare
+            int toSend = -cityRequest.second;
+
+            //Loop through potential receivers
+            for (auto &destination : citiesWithRequestedSoldiers) {
+                if (destination.second > 0) {
+                    int toSendHere = std::min(toSend, destination.second);
+                    auto path = cities[destination.first].findPathFrom(cityRequest.first,cities,countries);
+                    //Empty path is returned if the journey is not possible (happens when we try to send soldiers to an exclave)
+                    if (!path.empty()) {
+                        cities[cityRequest.first].transferSoldiersTo(targetCountry,toSendHere,path,cities,countries,tickets);
+                        toSend-=toSendHere;
+                        destination.second-=toSendHere;
+                        if (toSend==0)
+                            break;
+                    }
+                }
+            }
+        }
     }
 }

@@ -194,6 +194,9 @@ void engine::run() {
                 else if (event.key.keysym.sym == SDLK_v) {
                     currentInput.vPressed=true;
                 }
+                else if (event.key.keysym.sym == SDLK_HOME) {
+                    currentInput.homePressed=true;
+                }
                 else if (event.key.keysym.sym == SDLK_RETURN) {
                     currentInput.enterPressed=true;
                 }
@@ -228,6 +231,9 @@ void engine::run() {
                 }
                 else if (event.key.keysym.sym == SDLK_v) {
                     currentInput.vPressed=false;
+                }
+                else if (event.key.keysym.sym == SDLK_HOME) {
+                    currentInput.homePressed=false;
                 }
                 else if (event.key.keysym.sym == SDLK_RETURN) {
                     currentInput.enterPressed=false;
@@ -285,6 +291,7 @@ void engine::run() {
         currentInput.prevSPressed=currentInput.sPressed;
         currentInput.prevVPressed=currentInput.vPressed;
         currentInput.prevSpacePressed=currentInput.spacePressed;
+        currentInput.prevHomePressed=currentInput.homePressed;
     }
 
     std::cout<<"While loop has ended"<<std::endl;

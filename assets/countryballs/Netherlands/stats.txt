@@ -6,5 +6,8 @@ description The Netherlands is the rightful owner of all of Flanders, just a sha
 difficulty medium
 bonus densely populated: Has a lot of cities for such a small country
 bonus Benelux: Conquer Luxembourg and Belgium to gain their cores
-bonus Dutch infrastructure: +10% transport speed
+bonus Dutch infrastructure: +10% train speed
 gun c7
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1
+trainSpeedMultiplier 1.1

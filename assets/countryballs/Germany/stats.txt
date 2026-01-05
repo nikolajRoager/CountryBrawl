@@ -7,7 +7,10 @@ difficulty veryeasy
 bonus strong arms sector: -10% equipment production time
 bonus Large country: Has a lot of cities
 bonus Anschluss: Conquer Austria to gain their cores, as if Germany isn't powerful enough
-bonus German efficiency: +10% transport speed
+bonus German efficiency: +10% train speed
 bonus Strong democracy: +10% province income
 malus Bavaria: contains Bavaria
 gun hk416
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1
+trainSpeed 1.1

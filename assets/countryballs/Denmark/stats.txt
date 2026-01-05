@@ -8,3 +8,6 @@ bonus efficient public sector: +5% movement speed
 bonus Kalmar union: Conquer Sweden and/or Norway to gain their cores
 bonus Strong democracy: +10% province income
 gun m16
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1
+movementSpeedMultiplier 1.05

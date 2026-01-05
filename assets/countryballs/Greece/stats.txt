@@ -8,3 +8,5 @@ malus Poor Greco-Turkish relations: Poor relations with a much more powerful nei
 bonus Eonosis: Conquer Cyprus to gain their cores
 bonus Strong democracy: +10% province income
 gun hkg3
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1

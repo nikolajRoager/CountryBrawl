@@ -6,3 +6,5 @@ description Morocco is somewhat weaker than Algeria ... but not a lot weaker, wi
 difficulty hard
 malus Flawed democracy: -10% province income
 gun m16
+coreIncomeMultiplier 0.9
+occupiedIncomeMultiplier 0.9

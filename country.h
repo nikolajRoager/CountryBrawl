@@ -21,6 +21,8 @@ public:
 
     enum difficulty {IMPOSSIBLE,VERY_HARD,HARD,MEDIUM,EASY,VERY_EASY};
 
+    enum offensiveStance {DEFENSIVE, CAUTIOUS, AGGRESSIVE};
+
     country(int id, const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead, const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer);
     void display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=0) const;
     void display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
@@ -104,8 +106,10 @@ public:
     [[nodiscard]] double getLastMonthIncome() const {return lastMonthIncome;}
 
     void addCoreId(int cid) {coreIdList.emplace_back(cid);}
-    const std::vector<int>& getCoreIds() const {return coreIdList;}
-    unsigned int getInfantryRecruitmentTime() const {return infantryRecruitmentTime;}
+    [[nodiscard]] const std::vector<int>& getCoreIds() const {return coreIdList;}
+    [[nodiscard]] unsigned int getInfantryRecruitmentTime() const {return infantryRecruitmentTime;}
+
+    [[nodiscard]] offensiveStance getOffensiveStance() const {return stance;}
 private:
     int id;
 
@@ -120,6 +124,8 @@ private:
 
     ///Used to guide the player
     int startingCities;
+
+    offensiveStance stance;
 
     ///Description of bonuses and maluses the country suffers from
     std::vector <std::string> bonuses, maluses;

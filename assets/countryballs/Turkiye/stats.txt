@@ -8,3 +8,5 @@ malus Kurdish separatism: Kurdistan is not cored
 malus Flawed democracy: -10% province income
 bonus Large country: Has a lot of cities
 gun hkg3
+coreIncomeMultiplier 0.9
+occupiedIncomeMultiplier 0.9

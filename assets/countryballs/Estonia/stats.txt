@@ -7,3 +7,5 @@ description Estonia is a small country next to Russia, enough said, good luck.
 malus Small country: Has only 3 cities
 bonus Strong democracy: +10% province income
 gun hkg3
+coreIncomeMultiplier 1.1
+occupiedIncomeMultiplier 1.1

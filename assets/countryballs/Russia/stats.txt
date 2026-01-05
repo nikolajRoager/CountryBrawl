@@ -5,7 +5,7 @@ cities 53
 description Russia is the great boogeyman of Eastern Europe, a vile revanchist state, bend on restoring its old imperial borders by force.
 difficulty easy
 malus Authoritarian regime: -20% province income
-malus Depoliticized population: -20% recruitment speed
+malus Depoliticized population: +20% recruitment time
 malus Endemic corruption: equipment +20% production time
 malus Post-Truth propaganda: a terrible place to live
 malus Pariah: has poor relations with almost everyone
@@ -15,3 +15,6 @@ malus Cut-off: half of Russia is not in game... but you have got enough cities a
 bonus Great power: owns very many cities.
 bonus High military budget: starts with a large army
 gun akm
+coreIncomeMultiplier 0.8
+occupiedIncomeMultiplier 0.8
+infantryRecruitmentTimeMultiplier 1.2
