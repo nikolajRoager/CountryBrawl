@@ -18,6 +18,7 @@ private:
     texwrap calendarTexture;
     texwrap st;
     texwrap nd;
+    texwrap rd;
     texwrap th;
     texwrap colon;
     std::array<texwrap, 12> monthNames;

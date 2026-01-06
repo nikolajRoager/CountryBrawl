@@ -848,7 +848,7 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-day 20.5 6-1-2026 
+day 21 6-1-2026 Workload less than 4 hours
 =====
 
 A very extended think about pathfinding
@@ -872,6 +872,10 @@ Implement a way of visualizing the way soldiers are going to move as a result of
 Implement Dijkstra's algorithm for filling the front-lines in its most basic form Done
 
 Solve the trains-passing through enemy cities bug Done
+
+Download some songs and make sure they are legal to use Done, a few only
+
+Implement the music wrapper class, for use by the music manager Done
 
 issues
 --------------

@@ -64,8 +64,8 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
             stopped = true;
             for (auto& p : passengers) {
                 p->setRidingTrain(false);
-                cities[stops[currentStep]].addCountryball(p,cities,countries);
-                p->setLocation(cities[stops[currentStep]].getX(),cities[stops[currentStep]].getY());
+                cities[stops[currentStep-1]].addCountryball(p,cities,countries);
+                p->setLocation(cities[stops[currentStep-1]].getX(),cities[stops[currentStep-1]].getY());
             }
         }
         else {

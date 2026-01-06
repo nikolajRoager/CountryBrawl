@@ -23,13 +23,14 @@ calendarTexture(assetsPath()/"ui"/"calendar.png",renderer),
 st("st",renderer,font),
 nd("nd",renderer,font),
 th("th",renderer,font),
+rd("rd",renderer,font),
 colon(":",renderer,font),
 monthNames{
 texwrap(" of January ",renderer,font),
-texwrap(" of February",renderer,font),
+texwrap(" of February ",renderer,font),
 texwrap(" of March ",renderer,font),
 texwrap(" of April ",renderer,font),
-texwrap(" of May",renderer,font),
+texwrap(" of May ",renderer,font),
 texwrap(" of June ",renderer,font),
 texwrap(" of July ",renderer,font),
 texwrap(" of August ",renderer,font),
@@ -47,7 +48,7 @@ texwrap(" of December ",renderer,font),
         maxMonthWidth = std::max(maxMonthWidth,m.getWidth());
     width+=maxMonthWidth;
     //Presumed width to 2 * "22"
-    width+=th.getHeight()*2;
+    width+=th.getHeight()*3;
     width+=th.getWidth();
 
 
@@ -71,6 +72,10 @@ void uiCalendar::display(double x,double y, SDL_Renderer *renderer, const number
     else if (dayNumber==2 || dayNumber == 22) {
         nd.render(X,y,0,0,0,renderer);
         X+=nd.getWidth();
+    }
+    else if (dayNumber==3 || dayNumber == 23) {
+        rd.render(X,y,0,0,0,renderer);
+        X+=rd.getWidth();
     }
     else {
         th.render(X,y,0,0,0,renderer);

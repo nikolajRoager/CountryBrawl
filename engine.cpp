@@ -72,7 +72,7 @@ engine::engine() {
     if (smallFont==nullptr) {
         throw std::runtime_error("Failed to load font "+path.string()+", error "+std::string(TTF_GetError())+"");
     }
-    midFont=TTF_OpenFont( path.string().c_str(), 64 );
+    midFont=TTF_OpenFont( path.string().c_str(), 48 );
     if (midFont==nullptr) {
         throw std::runtime_error("Failed to load font "+path.string()+", error "+std::string(TTF_GetError())+"");
     }
