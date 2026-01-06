@@ -53,3 +53,14 @@ Performed by Erik Damskier in 2009
 Original link: https://da.wikipedia.org/wiki/Fil:Dengang_jeg_drog_af_sted.ogg
 
 Copyright (for the recording):  Creative Commons - Attribution 3.0 Unported: https://creativecommons.org/licenses/by-sa/3.0/deed.en
+
+Preobrazhensky.mp3 - Preobrazhensky Regiment March
+-------------------------------
+Original composition unknown but certainly in public domain
+
+Performed by the Military Orchestra, unknown date
+
+Digitized by the Museum of Russian Culture, San Francisco and added to the internet archive
+
+Copyright (for the digitization): Creative Commons - Attribution-NonCommercial-NoDerivatives 4.0 International: https://creativecommons.org/licenses/by-nc-nd/4.0/
+

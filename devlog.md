@@ -906,3 +906,21 @@ We need to highlight all neighbours of cities
 Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
 
 Implement the bonuses for the nations
+
+day 22, 7-1-2026
+=======
+
+Music wishlist
+--------------
+Here are the songs I wish I could add in game, but only if public domain/Creative Commons recordings can be found
+
+Warzawienko: No recordings found, not added, sadly, Whirlwinds of danger is great but not the right genre
+
+British Grenadiers: We need an instrumental recording
+Colonel Bogey march: Good recording: https://commons.wikimedia.org/wiki/File:Colonel_Bogey.ogg
+
+Le Régiment de Sambre et Meuse: Is on Wikimedia
+
+Legal/copyright issues
+------
+Check if non-derivatives clause prevents me from using the Preobrazhensky march in game
