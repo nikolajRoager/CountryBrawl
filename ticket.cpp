@@ -18,6 +18,7 @@ ticket::ticket(int issuer, const std::vector<int> &_stops)
     if (stops.empty()) {
         throw std::invalid_argument("attempting to create an empty ticket");
     }
+    stopped = false;
 }
 
 void ticket::update(std::vector<city> &cities, const std::vector<country> &countries, double dt) {
@@ -56,30 +57,43 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
         }
     }
     else if (currentStep<stops.size()) {
-        double dFac = countries[cities[stops[currentStep]].getOwner()].getTrainSpeed()*dt/currentDistance;
+        int currentStepOwner = cities[stops[currentStep]].getOwner();
 
-        distanceFactor += dFac;
-
-        if (distanceFactor>=1.0) {
-            currentStep++;
-            if (currentStep<stops.size()) {
-                double prevX = cities[stops[currentStep-1]].getX();
-                double prevY = cities[stops[currentStep-1]].getY();
-                double currentX = cities[stops[currentStep]].getX();
-                double currentY = cities[stops[currentStep]].getY();
-                double dx = currentX - prevX;
-                double dy = currentY - prevY;
-                currentDistance = sqrt(dx*dx + dy*dy);
+        if (!countries[issuingNation].hasAccess(currentStepOwner)) {
+            //Emergency disembark
+            stopped = true;
+            for (auto& p : passengers) {
+                p->setRidingTrain(false);
+                cities[stops[currentStep]].addCountryball(p,cities,countries);
+                p->setLocation(cities[stops[currentStep]].getX(),cities[stops[currentStep]].getY());
             }
-            else {
-                //Disembark
-                for (auto& p : passengers) {
-                    p->setRidingTrain(false);
-                    cities[stops.back()].addCountryball(p,cities,countries);
-                    p->setLocation(cities[stops.back()].getX(),cities[stops.back()].getY());
+        }
+        else {
+            double dFac = countries[currentStepOwner].getTrainSpeed()*dt/currentDistance;
+
+            distanceFactor += dFac;
+
+            if (distanceFactor>=1.0) {
+                currentStep++;
+                if (currentStep<stops.size()) {
+                    double prevX = cities[stops[currentStep-1]].getX();
+                    double prevY = cities[stops[currentStep-1]].getY();
+                    double currentX = cities[stops[currentStep]].getX();
+                    double currentY = cities[stops[currentStep]].getY();
+                    double dx = currentX - prevX;
+                    double dy = currentY - prevY;
+                    currentDistance = sqrt(dx*dx + dy*dy);
                 }
+                else {
+                    //Disembark
+                    for (auto& p : passengers) {
+                        p->setRidingTrain(false);
+                        cities[stops.back()].addCountryball(p,cities,countries);
+                        p->setLocation(cities[stops.back()].getX(),cities[stops.back()].getY());
+                    }
+                }
+                distanceFactor = 0.0;
             }
-            distanceFactor = 0.0;
         }
     }
     else {

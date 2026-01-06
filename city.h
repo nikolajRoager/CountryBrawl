@@ -19,7 +19,7 @@
 class city {
 public:
     city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y);
-    void display(const texwrap& baseTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<city>& bases, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
+    void display(const texwrap& baseTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
 
     ///Highlight the path to a direct neighbour
     void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis) const;
@@ -95,7 +95,7 @@ public:
         return squads.contains(allegiance) ? squads[allegiance].size() : 0;
     }
 
-    const std::map<int,double>& getNeighbourDistances() const {
+    [[nodiscard]] const std::map<int,double>& getNeighbourDistances() const {
         return neighbourDistances;
     }
 

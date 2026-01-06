@@ -90,7 +90,7 @@ void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector
 
 
 
-void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<city>& bases, const std::vector<country> &countries, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
+void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
 
     int xScreen = x*scale-screenMinX;
     int yScreen = y*scale-screenMinY;
@@ -154,7 +154,7 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, b
             SDL_SetRenderDrawColor(renderer,countries[owner].getRed(),countries[owner].getGreen(),countries[owner].getBlue(),255);
 
             int barWidth = 16;
-            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()*thisScale),(int)yScreen,(int)barWidth,(int)(-height)};
+            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
             SDL_RenderFillRect(renderer,&quad);
         }
 
@@ -600,9 +600,10 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
         return {};
     }
 
-    //I use an std::map to store the distances and prev we have access to,
-    //This is because we only has access to a (hopefully) tiny subset of all the cities
-    //For example, Denmark by default has access to cities with ID 0,1,2,3,4,42, and 43
+    //I use a std::map to store the distances and prev we have access to,
+    //This is because we only has access to a (hopefully) small subset of all the cities
+    //For example, Denmark by default has access to cities with ID 0,1,2,3,4,42, and 43,
+    //So there is no point in using a vector with 670 cities when we are looking at Denmark
     std::map<int,double> distances;
     std::map<int,int> prev;
     std::vector<int> Q;

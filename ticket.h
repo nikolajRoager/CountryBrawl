@@ -19,10 +19,12 @@ public:
 
     void update(std::vector<city>& cities, const std::vector<country>& countries, double dt);
 
-    [[nodiscard]] bool isDone() const{return currentStep>=stops.size();}
+    [[nodiscard]] bool isDone() const{return  stopped || currentStep>=stops.size() ;}
 
     void display(const std::vector<city>& cities, const texwrap& trainEnd, const texwrap& trainSegment, const texwrap& ship,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,const mapData& watermap) const;
 private:
+
+    bool stopped;
 
     int issuingNation;
     std::vector<std::shared_ptr<countryball>> passengers;

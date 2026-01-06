@@ -818,12 +818,66 @@ Laggy autobalance
 
 Buggy autobalance when autobalance triggers while autobalance trains are still driving does not count the countryballs already on the way to destinations
 
-
 Limit ingame timer to pass half a day when the game is lagging
 
 Switch all time over from dt, to ingame timer
 
 Trains should stop if the city they try to drive to is no longer controlled
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 20.5 6-1-2026 
+=====
+
+A very extended think about pathfinding
+--------
+Forget about multithreading pathfind, using Dijkstra's algorithm in a point-to-point manner is stupid
+
+We need a completely new strategy for re-balancing the front, one which doesn't rely on finding the path from Moscow to Donetsk every 5 days
+
+As I see it there are two options, one suggested by me, the other an AI generated suggestion.
+
+My suggestion is a hub-and-spoke pathfinding system, where I pre-designate certain cities (maybe 100) as hubs, and pre-calculate the paths to the nearest hub, and betwixt hubs, and then piece together a path from that.
+
+The AI suggestion is Dijkstra's algorithm once, with the front-lines as the "source", which essentially will generate paths from everywhere to the front-lines.
+
+I must be honest, I like the AI suggestion bests, at least that sounds easiest to implement
+
+plan
+--
+Implement a way of visualizing the way soldiers are going to move as a result of auto-balance front-lines Done
+
+Implement Dijkstra's algorithm for filling the front-lines in its most basic form Done
+
+Solve the trains-passing through enemy cities bug Done
+
+issues
+--------------
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
 
 Train should "rotate" to point the right way
 

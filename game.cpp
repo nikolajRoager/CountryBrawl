@@ -270,6 +270,9 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     screenMinX = cameraCentreX * scale - windowWidthPx / 2.0;
     screenMinY = cameraCentreY * scale - windowHeightPx / 2.0;
 
+
+    frontlinePathByCountry.resize(countries.size());
+
     std::cout << "Loaded " << countries.size() << " countries " << cities.size() << " cities and " << soldiers.size() <<
             " soldiers " << std::endl;
 
@@ -346,7 +349,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     for (int i = 0; i < cities.size(); i++) {
         const city &city = cities[i];
-        city.display(cityTexture, selectedCityTexture, selectedCities.contains(i), i == primarySelectedCity, cities,
+        city.display(cityTexture, selectedCityTexture, selectedCities.contains(i), i == primarySelectedCity,
                      countries, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall);
     }
 
@@ -835,6 +838,125 @@ void game::balanceFrontLines(int targetCountry) {
             citiesWithHostileNeighbours.emplace(i,hostiles);
         }
     }
+    //No need to re-balance if we have no enemies
+    if (totalHostileNeighbours==0)
+        return;
+
+    //Divide
+    int armySize = countries[targetCountry].getArmySize();
+    int averageSoldiersPerFront = armySize /totalHostileNeighbours;
+    int remainder = armySize%totalHostileNeighbours;
+
+    //This is the desired number of soldiers per each front
+    std::map<int,int> citiesWithRequestedSoldiers;
+    for (const auto &cityFronts : citiesWithHostileNeighbours) {
+        int nSoldiers = averageSoldiersPerFront*cityFronts.second;
+        //Get extra soldiers from the remainder
+        if (remainder>0) {
+            int extraSoldiers = std::min(cityFronts.second, remainder);
+            remainder-=extraSoldiers;
+            nSoldiers+=extraSoldiers;
+        }
+        //Excess need will be negative, if we have to many soldiers here
+        int excessNeed = nSoldiers - cities[cityFronts.first].getSoldiers(targetCountry);
+        citiesWithRequestedSoldiers.emplace(cityFronts.first, excessNeed);
+    }
+    //Run dijkstra's algorithm to find the paths
+    frontlinePathByCountry[targetCountry] = getReinforcementPaths(citiesWithRequestedSoldiers, targetCountry);
+
+    //Then loop through all cities and dispatch soldiers along the paths
+    for (auto [city, requestedSoldiers]: citiesWithRequestedSoldiers) {
+        //This city has soldiers to spa
+        if (requestedSoldiers < 0) {
+            if (frontlinePathByCountry[targetCountry].contains(city)) {
+                if (frontlinePathByCountry[targetCountry][city]!=-1) {
+                   std::vector<int> path;
+                    for (int i =city; i!=-1; i=frontlinePathByCountry[targetCountry][i]) {
+                        path.push_back(i);
+                    }
+                    cities[city].transferSoldiersTo(targetCountry,-requestedSoldiers ,path,cities,countries,tickets);
+                }
+            }
+        }
+
+    }
+}
+
+std::map<int, int> game::getReinforcementPaths(const std::map<int, int>& citiesWithRequestedSoldiers, int targetCountry) {
+
+    //I use a std::map to store the distances and prev we have access to,
+    //This is because we only has access to a (hopefully) small subset of all the cities
+    //For example, Denmark by default has access to cities with ID 0,1,2,3,4,42, and 43,
+    //So there is no point in using a vector with 670 cities when we are looking at Denmark
+    std::map<int,double> distances;
+    std::map<int,int> prev;
+    std::vector<int> Q;
+
+    //Create distances, prev, and Q ONLY for the cities we can access, this will likely be much smaller than the entire list of cities
+    for (int i = 0; i< cities.size(); ++i) {
+        //Only if the country owning the city gives access to someone from source country is the city added
+        if (countries[cities[i].getOwner()].hasAccess(targetCountry)) {
+            Q.emplace_back(i);
+            //-1 is a shorthand for undefined/no previous
+            prev[i]=-1;
+            //This number is larger than all real distances we can compare it to
+            distances[i]=std::numeric_limits<double>::max();
+        }
+    }
+
+    //Set everywhere which requests additional soldiers as the source
+    for (auto [city,requestedSoldiers] : citiesWithRequestedSoldiers) {
+        if (requestedSoldiers>0)
+            distances[city]=0;
+    }
+
+    while (!Q.empty()) {
+        //Find the element in Q with the smallest distance
+        int smallestId = 0;
+        for (int i = 0; i < Q.size(); ++i) {
+            if (distances[Q[i]]<distances[Q[smallestId]])
+                smallestId = i;
+        }
+        int u = Q[smallestId];
+
+        Q.erase(Q.begin()+smallestId);
+
+        //Loop through all neighbours of u, and their distances
+        //(getNeighbourDistances gives a reference to a map<int,double> with neighbour ids and pre-computed distances)
+        for (auto [v, dist] : cities[u].getNeighbourDistances()) {
+            //Update their distances
+            double alt = dist+distances[u];
+            if (alt < distances[v]) {
+                distances[v] = alt;
+                prev[v] = u;
+            }
+        }
+    }
+
+
+    //Prev will function as the path from every location, to the source (the front-line)
+    return prev;
+}
+
+
+/*
+void game::balanceFrontLines(int targetCountry) {
+    //Loop over all cities belonging to this country
+    //Count how many hostile neighbours they have
+    //Then we can figure out how many soldiers to put down per front
+    int totalHostileNeighbours=0;
+    std::map<int,int> citiesWithHostileNeighbours;
+    std::set<int> myCities;
+    for (int i = 0; i < cities.size(); ++i) {
+        const auto &city = cities[i];
+        //TODO, we also need to consider soldiers in other cities than my own
+        if (city.getOwner() == targetCountry) {
+            int hostiles = city.getHostileNeighbours(cities,countries);
+            totalHostileNeighbours+=hostiles;
+            //We also insert cities with 0 hostile neighbours, because we will loop over them too
+            citiesWithHostileNeighbours.emplace(i,hostiles);
+        }
+    }
 
     if (totalHostileNeighbours==0)
         return;
@@ -882,3 +1004,4 @@ void game::balanceFrontLines(int targetCountry) {
         }
     }
 }
+*/

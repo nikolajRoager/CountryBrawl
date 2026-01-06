@@ -41,6 +41,8 @@ public:
 private:
     void balanceFrontLines(int targetCountry);
 
+    std::map<int,int> getReinforcementPaths(const std::map<int,int>& citiesWithRequestedSoldiers, int targetCountry);
+
     //millis when we last printed FPS
     unsigned int previousFPSprintMillis;
     //Frames since we last printed FPS
@@ -141,6 +143,8 @@ private:
     mapData movementPenalties;
     mapData watermap;
 
+
+    std::vector<std::map<int,int>> frontlinePathByCountry;
 
     std::vector<std::shared_ptr<countryball>> soldiers;
 
