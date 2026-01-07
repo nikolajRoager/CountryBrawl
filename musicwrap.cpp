@@ -4,14 +4,14 @@
 
 #include "musicWrap.h"
 
-musicWrap::musicWrap(const fs::path& path) {
+musicWrap::musicWrap(const fs::path& path, const std::string& _name) {
 
     music = Mix_LoadMUS(path.string().c_str());
     if (!music) {
         throw std::runtime_error("Could not load music file: " + path.string()+" error: " + std::string(Mix_GetError()));
     }
     length = Mix_GetMusicLoopLengthTime(music);
-    name = Mix_GetMusicTitle(music);
+    name = _name;
 }
 
 musicWrap::musicWrap(musicWrap &&tex) noexcept {
@@ -30,5 +30,6 @@ musicWrap& musicWrap::operator=(musicWrap &&tex) noexcept {
 }
 
 musicWrap::~musicWrap() {
-
+    if (music!=nullptr)
+        Mix_FreeMusic(music);
 }

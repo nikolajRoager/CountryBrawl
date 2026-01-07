@@ -17,8 +17,8 @@ public:
     startMenu(SDL_Renderer* renderer, TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont);
     ~startMenu() override;
 
-    void render(SDL_Renderer* renderer, const texwrap& loadingBackground,int screenWidth, int screenHeight,const inputData& userInputs, unsigned int millis, unsigned int pmillis) const override;
-    void update(SDL_Renderer* renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,const inputData& userInputs,  unsigned int millis, unsigned int dmillis,TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont) override;
+    void render(SDL_Renderer* renderer, const texwrap& loadingBackground,int screenWidth, int screenHeight,const inputData& userInputs, unsigned int millis, unsigned int pmillis, musicManager& muse) const override;
+    void update(SDL_Renderer* renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,const inputData& userInputs,  unsigned int millis, unsigned int dmillis,TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont, std::default_random_engine& generator, musicManager& muse) override;
     bool shouldOpenNewScene(openSceneCommand& command, std::string& arguments) const override;
 private:
     enum menuState {MAIN,SELECT_NEW_COUNTRY,SETTINGS};
@@ -37,8 +37,17 @@ private:
 
     //Main menu items
     menuItem newGameItem;
+    menuItem settingsItem;
     menuItem quitGameItem;
 
+    //Stuff related to the volume control
+
+    texwrap setMusicVolumeText;
+    texwrap musicOffTexture;
+    texwrap musicFullTexture;
+
+    int musicVolumeBarWidth;
+    int musicVolumeBarHeight;
 
     //start new game with new country items
     menuItem startNewGameItem;

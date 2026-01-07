@@ -16,6 +16,7 @@
 
 #include "game.h"
 #include "inputData.h"
+#include "musicManager.h"
 #include "startMenu.h"
 
 namespace fs = std::filesystem;
@@ -121,6 +122,11 @@ void engine::run() {
     inputData currentInput;
 
     uint32_t pmillis=SDL_GetTicks();
+
+    std::default_random_engine generator(time(NULL));
+
+    musicManager muse;
+    muse.setLoopTitleTrack(true);
 
 
     while (!quit) {
@@ -257,13 +263,14 @@ void engine::run() {
         else
             currentInput.ctrlPressed=false;
 
-        currentScene->update(renderer,*loadingBackground,windowWidthPx,windowHeightPx,currentInput,millis,pmillis,smallFont,midFont,largeFont);
+        muse.update(generator);
+        currentScene->update(renderer,*loadingBackground,windowWidthPx,windowHeightPx,currentInput,millis,pmillis,smallFont,midFont,largeFont,generator,muse);
 
         //Black background, shouldn't be seen but won't hurt
         SDL_SetRenderDrawColor(renderer, 0x50, 0x50, 0x50, 0x00);
         SDL_RenderClear( renderer );
 
-        currentScene->render(renderer,*loadingBackground,windowWidthPx,windowHeightPx,currentInput,millis,pmillis);
+        currentScene->render(renderer,*loadingBackground,windowWidthPx,windowHeightPx,currentInput,millis,pmillis,muse);
         //theScenario->render(renderer,mouseXPos,mouseYPos,shiftDown,millis);
         SDL_RenderPresent( renderer );
 
@@ -277,6 +284,8 @@ void engine::run() {
                 currentScene =nullptr;
                 //TODO, FOR NOW, we just let the program crash if there is an exception here... maybe we should not
                 currentScene = new game(renderer,windowWidthPx,windowHeightPx, *loadingBackground,newSceneArguments,smallFont,midFont);
+
+                muse.setLoopTitleTrack(false);
                 //Reset input data, this is necessary since the game constructor may have cleared all queued inputs
                 currentInput=inputData();
             }

@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 ///A wrapper class for music, which manages movement and deletion of the track
 class musicWrap {
 public:
-    explicit musicWrap(const fs::path& path);
+    musicWrap(const fs::path& path, const std::string& name);
     musicWrap(musicWrap&& tex) noexcept ;
     musicWrap& operator=(musicWrap&& other) noexcept ;
     ~musicWrap();

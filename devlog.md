@@ -921,6 +921,51 @@ Colonel Bogey march: Good recording: https://commons.wikimedia.org/wiki/File:Col
 
 Le Régiment de Sambre et Meuse: Is on Wikimedia
 
+Thinking about music
+---------
+How the music should be integrated in the game is a difficult and delicate issue, which requires a lot of thinking
+
+Let us start with how the finished product shall behave: It should very much be like the music manager in Paradox games.
+
+* In the title screen, we will simply loop the title melodi.
+* The player can click somewhere to mute music
+* The player can open a settings menu, where they can modify the volume of the music and effects
+* In the game, the music manager plays the music track until it finished, then it picks a random new track.
+* The player can open a music manager window, which shows the progress of the current playing track, and all tracks, the player can click any tracks to play it from the beginning
+
+Then how are we going to slowly build it...
+
+* We need a music manager class, which is owned by the engine, and leased out to the scenes
+* Before everything is loaded, the music manager loads all music from a json file
+* The music manager has a `loopTitle()` function which sets whether or not the title loops
+* The music manager `update()` function is called by the engine
+* `update()` keeps a variable with the current playing song, it keeps track of whether a song is playing
+* The graphical music manager ... is a completely different kettle of fish, which I likely won't get to today
+
+Plan
+------
+Make music manager load music wrappers from JSon (Done)
+
+Make the `loopTitle()` and `update()` functions Done
+
+Make the title music loop in the title screen, then stop in the game Done
+
+Make the random generator a global variable Done
+
+Make music pick random tracks in game Done
+
+Find a way of modifying the volume Done
+
+Add a settings menu to modify the volume Done
+
+Add a music button to the bottom bar (from the left), and the settings menu
+
+Add the graphical music manager display, let us be clear, you won't have time to do this
+
+Add functionalities to music manager, definitely out of scope for today
+
+Add option to pause music
+
 Legal/copyright issues
 ------
 Check if non-derivatives clause prevents me from using the Preobrazhensky march in game

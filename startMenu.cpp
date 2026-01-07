@@ -9,10 +9,10 @@
 
 #include "getAssets.h"
 
-startMenu::startMenu(SDL_Renderer* renderer, TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont) : gameTitle("Country Brawl",renderer,largeFont), subTitle("Battle for Europe",renderer,midFont), newGameItem(renderer,50,300,midFont,"New Game"), quitGameItem(renderer,50,380,midFont,"Quit"), startNewGameItem(renderer,50,300,midFont,"Start Game"),goBackFromNewGameItem(renderer,50,380,midFont,"Back"), selectCountry("Select Country",renderer,midFont),
+startMenu::startMenu(SDL_Renderer* renderer, TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont) : gameTitle("Country Brawl",renderer,largeFont), subTitle("Battle for Europe",renderer,midFont), newGameItem(renderer,50,300,midFont,"New Game"), settingsItem(renderer,50,380,midFont,"Settings"), quitGameItem(renderer,50,460,midFont,"Quit"), startNewGameItem(renderer,50,300,midFont,"Start Game"),goBackFromNewGameItem(renderer,50,380,midFont,"Back"), selectCountry("Select Country",renderer,midFont),
 selectCountryLeft(renderer,900,200, assetsPath()/"ui"/"goLeft.png"),selectCountryRight(renderer,1030,200, assetsPath()/"ui"/"goRight.png"),selectedCountryName("null",renderer,midFont), ballInWater(assetsPath()/"countryballAccessories"/"ballInWater.png",renderer), selectedCountryDescription("null",renderer,smallFont),angryBall(assetsPath()/"countryballAccessories"/"angry.png",renderer),
 happyBall(assetsPath()/"countryballAccessories"/"happy.png",renderer), veryEasyDifficultyText("Very Easy",renderer,midFont), easyDifficultyText("Easy",renderer,midFont), mediumDifficultyText("Medium",renderer,midFont),hardDifficultyText("Hard",renderer,midFont),veryHardDifficultyText("Very Hard",renderer,midFont),impossibleDifficultyText("Impossible",renderer,midFont), startingCitiesText("Cities: 0",renderer,midFont),
-deadBall(assetsPath()/"countryballAccessories"/"dead.png",renderer)
+deadBall(assetsPath()/"countryballAccessories"/"dead.png",renderer), setMusicVolumeText("Music Volume",renderer,midFont),musicOffTexture(assetsPath()/"ui"/"menuMusicOff.png",renderer),musicFullTexture(assetsPath()/"ui"/"menuMusic.png",renderer)
 {
     //Load all country paths first so we put them in alphabetic order
     {
@@ -63,6 +63,9 @@ deadBall(assetsPath()/"countryballAccessories"/"dead.png",renderer)
 
 
     backgroundScale=1.0;
+
+    musicVolumeBarWidth = 512;
+    musicVolumeBarHeight = 64;
 }
 
 startMenu::~startMenu() = default;
@@ -77,7 +80,7 @@ bool startMenu::shouldOpenNewScene(openSceneCommand &command, std::string &argum
     }
 }
 
-void startMenu::update(SDL_Renderer* renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int dmillis,TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont) {
+void startMenu::update(SDL_Renderer* renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int dmillis,TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont, std::default_random_engine& generator, musicManager& muse) {
 
     backgroundScale = std::max(screenWidth/double(loadingBackground.getWidth()),screenHeight /double(loadingBackground.getHeight()));
 
@@ -89,6 +92,37 @@ void startMenu::update(SDL_Renderer* renderer, const texwrap &loadingBackground,
             else if (quitGameItem.isHovered(userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale)) {
                 newSceneCommand=QUIT;
             }
+            else if (settingsItem.isHovered(userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale)) {
+                currentState=SETTINGS;
+            }
+        }
+    }
+    else if (currentState==SETTINGS) {
+        if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown) {
+            if (goBackFromNewGameItem.isHovered(userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale)) {
+                currentState = MAIN;
+            }
+        }
+        if (userInputs.leftMouseDown){
+            //Check if we clicked the bar which controls music volume
+            int middleScreenX = screenWidth / 2;
+            int middleScreenY = screenHeight / 2;
+            int musicVolumeBarX0 = middleScreenX-musicVolumeBarWidth/2;
+            int musicVolumeBarY0 = middleScreenY;
+            int newVolume=-1;
+            if (userInputs.mouseYPx>musicVolumeBarY0 && userInputs.mouseYPx<musicVolumeBarY0+musicVolumeBarHeight) {
+                if (userInputs.mouseXPx>musicVolumeBarX0 && userInputs.mouseXPx<musicVolumeBarX0+musicVolumeBarWidth) {
+                    newVolume= (userInputs.mouseXPx-musicVolumeBarX0)/(musicVolumeBarWidth/SDL_MIX_MAXVOLUME);
+                    }
+                else if (userInputs.mouseXPx<musicVolumeBarX0 && userInputs.mouseXPx>musicVolumeBarX0-musicOffTexture.getWidth()) {
+                    newVolume=0;
+                }
+                else if (userInputs.mouseXPx<musicVolumeBarX0+musicVolumeBarWidth+musicOffTexture.getWidth() && userInputs.mouseXPx>musicVolumeBarX0+musicVolumeBarWidth) {
+                    newVolume=SDL_MIX_MAXVOLUME;
+                }
+            }
+            if (newVolume!=-1)
+                muse.setMusicVolume(newVolume);
         }
     }
     else if (currentState ==SELECT_NEW_COUNTRY) {
@@ -136,7 +170,7 @@ void startMenu::update(SDL_Renderer* renderer, const texwrap &loadingBackground,
     }
 }
 
-void startMenu::render(SDL_Renderer *renderer, const texwrap &loadingBackground,int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis) const {
+void startMenu::render(SDL_Renderer *renderer, const texwrap &loadingBackground,int screenWidth, int screenHeight, const inputData &userInputs, unsigned int millis, unsigned int pmillis, musicManager& muse) const {
     //We use the loading background as menu background
     //Set the scale so it covers the screen
     //We will use this scale on every menu item
@@ -148,7 +182,30 @@ void startMenu::render(SDL_Renderer *renderer, const texwrap &loadingBackground,
 
     if (currentState ==MAIN) {
         newGameItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
+        settingsItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
         quitGameItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
+    }
+    else if (currentState == SETTINGS) {
+        goBackFromNewGameItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);
+
+
+        int middleScreenX = screenWidth / 2;
+        int middleScreenY = screenHeight / 2;
+        setMusicVolumeText.render(middleScreenX,middleScreenY,renderer,backgroundScale,true,true);
+        int musicVolumeBarX0 = middleScreenX-musicVolumeBarWidth/2;
+        int musicVolumeBarY0 = middleScreenY;
+        SDL_Rect musicVolumeBarQuad{musicVolumeBarX0 ,musicVolumeBarY0,musicVolumeBarWidth,musicVolumeBarHeight};
+        SDL_SetRenderDrawColor(renderer,128,128,128,255);
+        SDL_RenderFillRect(renderer,&musicVolumeBarQuad);
+        int volume = muse.getMusicVolume();
+        for (int i = 0; i < volume; ++i) {
+            //Draw green quads at 3 px wide, for each volume level
+            SDL_Rect quad{musicVolumeBarX0+i*musicVolumeBarWidth/SDL_MIX_MAXVOLUME,musicVolumeBarY0,musicVolumeBarWidth/SDL_MIX_MAXVOLUME-1,musicVolumeBarHeight};
+            SDL_SetRenderDrawColor(renderer,128,255,128,255);
+            SDL_RenderFillRect(renderer,&quad);
+        }
+        musicOffTexture.render(musicVolumeBarX0-musicOffTexture.getWidth(),musicVolumeBarY0,renderer);
+        musicFullTexture.render(musicVolumeBarX0+musicVolumeBarWidth,musicVolumeBarY0,renderer);
     }
     else if (currentState ==SELECT_NEW_COUNTRY) {
         startNewGameItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);

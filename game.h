@@ -32,8 +32,8 @@ public:
     game(SDL_Renderer* renderer,int windowWidthPx, int windowHeightPx, const texwrap &loadingBackground,  const std::string& playerCountry, TTF_Font* smallFont, TTF_Font *midFont);
     ~game() override;
 
-    void render(SDL_Renderer* renderer, const texwrap& loadingBackground,int screenWidth, int screenHeight,const inputData& userInputs, unsigned int millis, unsigned int pmillis) const override;
-    void update(SDL_Renderer* renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,const inputData& userInputs,  unsigned int millis, unsigned int pmillis,TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont) override;
+    void render(SDL_Renderer* renderer, const texwrap& loadingBackground,int screenWidth, int screenHeight,const inputData& userInputs, unsigned int millis, unsigned int pmillis, musicManager& muse) const override;
+    void update(SDL_Renderer* renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,const inputData& userInputs,  unsigned int millis, unsigned int pmillis,TTF_Font* smallFont, TTF_Font* midFont, TTF_Font* largeFont, std::default_random_engine& generator, musicManager& muse) override;
     bool shouldOpenNewScene(openSceneCommand& command, std::string& arguments) const override;
 
     void togglePause() {paused = !paused;};
@@ -151,8 +151,6 @@ private:
     std::deque<lingeringShot> smallArmsShots;
 
     double msPerFrame;
-
-    std::default_random_engine generator;
 
 
     std::vector<int> selectedPath;

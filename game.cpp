@@ -35,8 +35,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     numbererMid(0, midFont, renderer),
     pausedText("Paused", renderer, midFont),
     topBar(renderer),
-    bottomBar(renderer),
-    generator(time(NULL)) {
+    bottomBar(renderer){
     std::cout << "Loading new game" << std::endl;
     //First, set up loading of everything we will be loading asynchronously
 
@@ -341,7 +340,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
-                  const inputData &userInputs, unsigned int millis, unsigned int pmillis) const {
+                  const inputData &userInputs, unsigned int millis, unsigned int pmillis, musicManager& muse) const {
     for (const auto &tile: tiles) {
         tile->draw(static_cast<int>(screenMinX), static_cast<int>(screenMinY), scale, renderer);
     }
@@ -418,7 +417,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
 void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
                   const inputData &userInputs, unsigned int millis, unsigned int pmillis, TTF_Font *smallFont,
-                  TTF_Font *midFont, TTF_Font *largeFont) {
+                  TTF_Font *midFont, TTF_Font *largeFont, std::default_random_engine& generator, musicManager& muse) {
     //Do this before we update time, so it effects time this frame
     if (userInputs.spacePressed && !userInputs.prevSpacePressed) {
         togglePause();
