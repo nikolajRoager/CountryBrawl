@@ -907,14 +907,20 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-day 22, 7-1-2026
+day 22, 7-1-2026, workload 10 hours
 =======
+
+Sad note
+------
+I believe I may have to downgrade Syria from "flawed democracy" to "authoritarian regime", I was willing to give them the benefit of the doubt, but the recent attack on the SDF rather settles the matter.
+
+I will hold off and not make the change for now, but observe the situation closely
 
 Music wishlist
 --------------
 Here are the songs I wish I could add in game, but only if public domain/Creative Commons recordings can be found
 
-Warzawienko: No recordings found, not added, sadly, Whirlwinds of danger is great but not the right genre
+Warzawienko: No recordings found, not added, sadly; the later version: Whirlwinds of danger is great but not the right genre
 
 British Grenadiers: We need an instrumental recording
 Colonel Bogey march: Good recording: https://commons.wikimedia.org/wiki/File:Colonel_Bogey.ogg
@@ -960,12 +966,189 @@ Add a settings menu to modify the volume Done
 
 Add a music button to the bottom bar (from the left), and the settings menu
 
-Add the graphical music manager display, let us be clear, you won't have time to do this
+Add the graphical music manager display, let us be clear, you won't have time to do this Done
 
-Add functionalities to music manager, definitely out of scope for today
+Add functionalities to music manager, definitely out of scope for today Done, except there will soon be too many songs for one page
 
-Add option to pause music
+Download more music
+
+
 
 Legal/copyright issues
 ------
 Check if non-derivatives clause prevents me from using the Preobrazhensky march in game
+
+issues
+--------------
+Music manager requires multiple pages
+
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 22, 8-1-2026, workload 10 hours
+=======
+
+note
+------
+There are still unresolved issues in the music manager, and the list of issues is long ...
+but I feel like making today, a day of diplomacy.
+
+First we will have a think about what we need to add, and how we want diplomacy to work, then we will try to implement it.
+
+A very extended think about diplomacy
+------------
+Diplomacy operates on a monthly basis, with random relation changes (+ or - 1), and random events happening each week.
+
+Relations between nations is represented by "tension", tension is a two-way interaction: your tension with someone is their tension with you
+
+Tension goes from 0 to 10, at 10 means war, but countries can declare war above 6
+
+Tension is fixed at 10 when at war with a country.
+
+When you first open up diplomacy, you see a giant graph of all countries and their tension with you, you can scroll left or right on this graph
+
+It is possible to open up a diplomacy menu with all other countries, this allows you to take diplomatic actions
+
+diplomatic effects take effect immediately, but some have a weekly cooldown (e.g. send insult)
+
+Diplomatic interactions should eventually include
+* Ask for lend-lease (receive equipment from that nation, neighbour only) REQUIRES SUPPLY
+* Ask for military access (two-way access, neighbour only)
+* Ask for volunteers (Receive small army cap from their cities, neighbour only)
+* cancel volunteers to them 
+* cancel volunteers from them
+* cancel lend-lease to them
+* cancel lend-lease from them
+* cancel military access
+* Declare war (neighbour only)
+* Request cease-fire
+* send insult
+* send compliment
+* send gift
+
+The AI have access to the same diplomatic interactions as the player, at first it doesn't interact with it, later we have to add a diplomatic AI
+
+AI decisions will be based on AI "temperament" which should be different from nation to nation
+
+Diplomacy should be manged by a diplomacyManager class which keeps track of the tension matrix.
+
+What should we start with?
+
+Well, we should just start with tension, and complements, insults and war-declaration, let us write a plan for that
+
+plan
+----
+Make diplomacyManager class with tension matrix Done
+
+Think about what tension with each other each nation should start with, and how we should load the tension matrix Done
+
+Make the tension matrix file for each nation OH MY GOD THAT THING IS HUGE Done
+
+Make atWarWith and hasAccess depend on the diplomacy manager Done
+
+Make diplomacy menu button Done
+
+Make display of initial diplomacy menu showing all tensions, that will likely be difficult Done
+
+Make update functionality of diplomacy menu, likely still difficult Done
+
+Make menu for each nation individually, still difficult Failed (out of time)
+* Basic menu showing the country you are talking with
+* Option to insult/compliment with weekly cooldown
+* Option to declare war
+
+Make a pop-up even message system Failed (out of time)
+
+Implement random tension events Failed (out of time)
+
+Legal/copyright issues
+------
+Check if non-derivatives clause prevents me from using the Preobrazhensky march in game
+
+issues
+--------------
+Russia keeps beating Ukraine in a few weeks, that isn't realistic
+
+Music manager requires multiple pages
+
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need a diplomacy system, right now everyone shoots at everyone, and everyone has a hostile border with everyone.
+
+We need a "tension" diplomatic matrix
+
+We need a "military access" diplomatic matrix
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 23, 9-1-2026
+=======
+
+plan
+-----
+Graphic for individual nation negotiations with: Done
+* Basic menu showing the country you are talking with
+* Option to insult/compliment with weekly cooldown
+* Option to declare war
+* Option to defenestrate ambassador (Czech exclusive)
+
+Functionality for the buttons. Done
+
+including weekly cooldown, and limit to one insult/compliment per week Done, I made it part of the 5-day cooldown
+
+Remove dead countries from the diplomacy menu Done
+
+NO AI DIPLOMACY YET Done, (I have NOT added AI diplomacy, thus fulfilling this objective)
+
+Implement small names in country (Done)
+
+Implement defenestration Done
+
+Implement display of event messages
+
+Implement a simple script for event messages, so you can easily add them
+
+... wouldn't it be fun if you added unification events already

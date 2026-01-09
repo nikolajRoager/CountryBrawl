@@ -6,7 +6,7 @@
 #include<sstream>
 #include "country.h"
 
-country::country(int _id,const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead,const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), dead(_dead), flag(path/"flag.png",renderer)  {
+country::country(int _id,const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead,const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer,TTF_Font* smallFont,TTF_Font* midFont): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), dead(_dead), flag(path/"flag.png",renderer)  {
     id=_id;
     name="null";
     //Default values
@@ -20,6 +20,7 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     occupiedIncomeMultiplier=0.25;
     soldierUpkeepCost=1.0;
     infantryRecruitmentCost=2.0;
+    canDefenestrate=false;
 
     //Time to recruit a new infantry soldier, in ms in-game time
     infantryRecruitmentTime=86400000;//1 day
@@ -98,6 +99,9 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
                 }
                 else if (variable =="soldierUpkeepCost") {
                     soldierUpkeepCost=std::stof(value);
+                }
+                else if (variable =="defenestration") {
+                    canDefenestrate=true;
                 }
                 else if (variable =="cities") {
                     startingCities=std::stoi(value);
@@ -178,6 +182,9 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     if (gun==nullptr) {
         throw std::runtime_error("Country at "+path.string()+" does not contain a gun");
     }
+
+    nameTextureMid=std::make_unique<texwrap>(name,renderer,midFont);
+    nameTextureSmall=std::make_unique<texwrap>(name,renderer,smallFont);
 }
 
 void country::display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer *renderer,bool faceRight, double angle) const {

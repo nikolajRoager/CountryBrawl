@@ -67,7 +67,8 @@ void countryball::move(double dt,const mapData& movementPenalties, const mapData
 }
 
 
-void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt) {
+void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager) {
+
     if (!alive || isRidingTrain || myBase<0 || myBase>=cities.size())
         return;
 
@@ -96,7 +97,7 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
         //And all squads of soldiers around that city
         for (const auto& squad : cities[c].getSquads())
             //And if we are at war with that squad (the first index is their allegiance) we will loop over all the soldiers
-            if (myType.atWarWith(squad.first)) {
+            if (myType.atWarWith(squad.first,diploManager)) {
 
                 //7512.64,5952.25
 

@@ -125,7 +125,7 @@ void engine::run() {
 
     std::default_random_engine generator(time(NULL));
 
-    musicManager muse;
+    musicManager muse(renderer,midFont);
     muse.setLoopTitleTrack(true);
 
 

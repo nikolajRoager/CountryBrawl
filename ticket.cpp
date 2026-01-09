@@ -21,7 +21,7 @@ ticket::ticket(int issuer, const std::vector<int> &_stops)
     stopped = false;
 }
 
-void ticket::update(std::vector<city> &cities, const std::vector<country> &countries, double dt) {
+void ticket::update(std::vector<city> &cities, const std::vector<country> &countries, double dt, const diplomacyManager& diploManager) {
     if (currentStep==0) {
         bool allInPosition = true;
         for (const auto& p : passengers) {
@@ -49,7 +49,7 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
                 //Disembark
                 for (auto& p : passengers) {
                     p->setRidingTrain(false);
-                    cities[stops.back()].addCountryball(p,cities,countries);
+                    cities[stops.back()].addCountryball(p,cities,countries,diploManager);
                     p->setLocation(cities[stops.back()].getX(),cities[stops.back()].getY());
                 }
             }
@@ -64,7 +64,7 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
             stopped = true;
             for (auto& p : passengers) {
                 p->setRidingTrain(false);
-                cities[stops[currentStep-1]].addCountryball(p,cities,countries);
+                cities[stops[currentStep-1]].addCountryball(p,cities,countries,diploManager);
                 p->setLocation(cities[stops[currentStep-1]].getX(),cities[stops[currentStep-1]].getY());
             }
         }
@@ -88,7 +88,7 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
                     //Disembark
                     for (auto& p : passengers) {
                         p->setRidingTrain(false);
-                        cities[stops.back()].addCountryball(p,cities,countries);
+                        cities[stops.back()].addCountryball(p,cities,countries,diploManager);
                         p->setLocation(cities[stops.back()].getX(),cities[stops.back()].getY());
                     }
                 }
@@ -100,7 +100,7 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
         //Disembark
         for (auto& p : passengers) {
             p->setRidingTrain(false);
-            cities[stops.back()].addCountryball(p,cities,countries);
+            cities[stops.back()].addCountryball(p,cities,countries,diploManager);
             p->setLocation(cities[stops.back()].getX(),cities[stops.back()].getY());
         }
     }

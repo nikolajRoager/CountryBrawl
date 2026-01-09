@@ -40,7 +40,7 @@ deadBall(assetsPath()/"countryballAccessories"/"dead.png",renderer), setMusicVol
         {
             const auto& entry = countryPaths[i];
             fs::path countryPath = entry.path();
-            countries.emplace_back(i,countryPath,ballInWater,angryBall,happyBall,deadBall,guns,renderer);
+            countries.emplace_back(i,countryPath,ballInWater,angryBall,happyBall,deadBall,guns,renderer,smallFont,midFont);
         }
 
         selectedCountryName=texwrap(countries[selectedCountry].getName(),renderer,midFont);
@@ -107,17 +107,17 @@ void startMenu::update(SDL_Renderer* renderer, const texwrap &loadingBackground,
             //Check if we clicked the bar which controls music volume
             int middleScreenX = screenWidth / 2;
             int middleScreenY = screenHeight / 2;
-            int musicVolumeBarX0 = middleScreenX-musicVolumeBarWidth/2;
+            int musicVolumeBarX0 = middleScreenX-backgroundScale*musicVolumeBarWidth/2;
             int musicVolumeBarY0 = middleScreenY;
             int newVolume=-1;
-            if (userInputs.mouseYPx>musicVolumeBarY0 && userInputs.mouseYPx<musicVolumeBarY0+musicVolumeBarHeight) {
-                if (userInputs.mouseXPx>musicVolumeBarX0 && userInputs.mouseXPx<musicVolumeBarX0+musicVolumeBarWidth) {
-                    newVolume= (userInputs.mouseXPx-musicVolumeBarX0)/(musicVolumeBarWidth/SDL_MIX_MAXVOLUME);
+            if (userInputs.mouseYPx>musicVolumeBarY0 && userInputs.mouseYPx<musicVolumeBarY0+backgroundScale*musicVolumeBarHeight) {
+                if (userInputs.mouseXPx>musicVolumeBarX0 && userInputs.mouseXPx<musicVolumeBarX0+backgroundScale*musicVolumeBarWidth) {
+                    newVolume= (userInputs.mouseXPx-musicVolumeBarX0)/(backgroundScale*musicVolumeBarWidth/SDL_MIX_MAXVOLUME);
                     }
-                else if (userInputs.mouseXPx<musicVolumeBarX0 && userInputs.mouseXPx>musicVolumeBarX0-musicOffTexture.getWidth()) {
+                else if (userInputs.mouseXPx<musicVolumeBarX0 && userInputs.mouseXPx>musicVolumeBarX0-backgroundScale*musicOffTexture.getWidth()) {
                     newVolume=0;
                 }
-                else if (userInputs.mouseXPx<musicVolumeBarX0+musicVolumeBarWidth+musicOffTexture.getWidth() && userInputs.mouseXPx>musicVolumeBarX0+musicVolumeBarWidth) {
+                else if (userInputs.mouseXPx<musicVolumeBarX0+backgroundScale*musicVolumeBarWidth+backgroundScale*musicOffTexture.getWidth() && userInputs.mouseXPx>musicVolumeBarX0+backgroundScale*musicVolumeBarWidth) {
                     newVolume=SDL_MIX_MAXVOLUME;
                 }
             }
@@ -192,20 +192,20 @@ void startMenu::render(SDL_Renderer *renderer, const texwrap &loadingBackground,
         int middleScreenX = screenWidth / 2;
         int middleScreenY = screenHeight / 2;
         setMusicVolumeText.render(middleScreenX,middleScreenY,renderer,backgroundScale,true,true);
-        int musicVolumeBarX0 = middleScreenX-musicVolumeBarWidth/2;
+        int musicVolumeBarX0 = middleScreenX-(int)(backgroundScale*musicVolumeBarWidth/2);
         int musicVolumeBarY0 = middleScreenY;
-        SDL_Rect musicVolumeBarQuad{musicVolumeBarX0 ,musicVolumeBarY0,musicVolumeBarWidth,musicVolumeBarHeight};
+        SDL_Rect musicVolumeBarQuad{musicVolumeBarX0 ,musicVolumeBarY0,(int)(backgroundScale*musicVolumeBarWidth),(int)(backgroundScale*musicVolumeBarHeight)};
         SDL_SetRenderDrawColor(renderer,128,128,128,255);
         SDL_RenderFillRect(renderer,&musicVolumeBarQuad);
         int volume = muse.getMusicVolume();
         for (int i = 0; i < volume; ++i) {
             //Draw green quads at 3 px wide, for each volume level
-            SDL_Rect quad{musicVolumeBarX0+i*musicVolumeBarWidth/SDL_MIX_MAXVOLUME,musicVolumeBarY0,musicVolumeBarWidth/SDL_MIX_MAXVOLUME-1,musicVolumeBarHeight};
+            SDL_Rect quad{(int)(musicVolumeBarX0+backgroundScale*i*musicVolumeBarWidth/SDL_MIX_MAXVOLUME),musicVolumeBarY0, std::max(1,(int)(backgroundScale*musicVolumeBarWidth/SDL_MIX_MAXVOLUME-1)),(int)(backgroundScale*musicVolumeBarHeight)};
             SDL_SetRenderDrawColor(renderer,128,255,128,255);
             SDL_RenderFillRect(renderer,&quad);
         }
-        musicOffTexture.render(musicVolumeBarX0-musicOffTexture.getWidth(),musicVolumeBarY0,renderer);
-        musicFullTexture.render(musicVolumeBarX0+musicVolumeBarWidth,musicVolumeBarY0,renderer);
+        musicOffTexture.render(musicVolumeBarX0-backgroundScale*musicOffTexture.getWidth(),musicVolumeBarY0,renderer,backgroundScale);
+        musicFullTexture.render(musicVolumeBarX0+backgroundScale*musicVolumeBarWidth,musicVolumeBarY0,renderer,backgroundScale);
     }
     else if (currentState ==SELECT_NEW_COUNTRY) {
         startNewGameItem.render(renderer,userInputs.mouseXPx,userInputs.mouseYPx,backgroundScale);

@@ -77,7 +77,7 @@ void city::updateNeighbourhood(std::vector<city> &cities) {
     }
 }
 
-void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries) {
+void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) {
     for (auto& squad : squads) {
         for (int i = squad.second.size() - 1; i >= 0; i--) {
             if (!squad.second[i]->isAlive())
@@ -85,7 +85,7 @@ void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector
         }
     }
 
-    updateSoldierLocations(cities, countries);
+    updateSoldierLocations(cities, countries,diploManager);
 }
 
 
@@ -216,7 +216,7 @@ bool city::isSelected (const texwrap& baseTexture, int mouseX, int mouseY,int sc
     return (mouseX>xScreen-baseTexture.getWidth()/2 && mouseX<xScreen+baseTexture.getWidth()/2 && mouseY<yScreen && mouseY>yScreen-baseTexture.getHeight());
 }
 
-void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<city>& cities, const std::vector<country>& countries) {
+void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) {
     if (!squads.contains(ball->getAllegiance())) {
         squads.emplace(ball->getAllegiance(),std::vector<std::shared_ptr<countryball>>({ball}));
     }
@@ -227,10 +227,10 @@ void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<c
 
     ball->setBase(myId);
 
-    updateSoldierLocations(cities,countries);
+    updateSoldierLocations(cities,countries,diploManager);
 }
 
-void city::updateOwnership(std::vector<city> &cities, std::vector<country> &countries) {
+void city::updateOwnership(std::vector<city> &cities, std::vector<country> &countries,const diplomacyManager& diploManager) {
 
     int ownSoldiers = squads.contains(owner) ? squads[owner].size() : 0;
     int newOwner = owner;
@@ -262,10 +262,10 @@ void city::updateOwnership(std::vector<city> &cities, std::vector<country> &coun
                 else
                     countries[owner].incrementOccupiedCities();
 
-                updateSoldierLocations(cities,countries);
+                updateSoldierLocations(cities,countries,diploManager);
                 //TODO, evacuate defeated soldiers to friendly neighbours, or have them surrender
                 for (int n : neighbours)
-                    cities[n].updateSoldierLocations(cities,countries);
+                    cities[n].updateSoldierLocations(cities,countries,diploManager);
                 break;
             }
         }
@@ -273,7 +273,7 @@ void city::updateOwnership(std::vector<city> &cities, std::vector<country> &coun
 }
 
 
-void city::updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries) {
+void city::updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) {
     for (auto& squad : squads) {
         //Most of the time, balls stand in a circle around the city
         bool useCircle = true;
@@ -285,7 +285,7 @@ void city::updateSoldierLocations(const std::vector<city>& cities, const std::ve
             //The id of the hostile front, and how many soldiers we have already assigned to it
             std::map<int,int> hostileFrontsDistibution;
             for (const auto& front : frontlines) {
-                if (countries[owner].atWarWith(cities[front.first].getOwner())) {
+                if (countries[owner].atWarWith(cities[front.first].getOwner(),diploManager)) {
                     nHostileFronts++;
                     hostileFrontsDistibution.emplace(front.first,0);
                 }
@@ -331,7 +331,7 @@ void city::updateSoldierLocations(const std::vector<city>& cities, const std::ve
                 //When expression is happy, countryballs point away from the aim-point (they don't want to hurt it)
                 squad.second[i]->setAimpoint(x,y);
 
-                squad.second[i]->setExpression(countries[squad.first].atWarWith(owner) ? country::ANGRY : country::HAPPY);
+                squad.second[i]->setExpression(countries[squad.first].atWarWith(owner,diploManager) ? country::ANGRY : country::HAPPY);
             }
     }
 }
@@ -401,10 +401,15 @@ double city::getShortestNeighbourDistance(const std::vector<city> &cities) const
     return shortestDistance;
 }
 
-void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city> &cities, const std::vector<country>& countries, std::list<ticket>& tickets) {
+void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city> &cities, const std::vector<country>& countries, std::list<ticket>& tickets,const diplomacyManager& diploManager) {
     //If some idiot want to find the path to an undefined city, tell them to cool off
     if (target==-1)
         return;
+
+    //If we are not at war, and don't have permission we can't go there
+    if (!countries[allegiance].hasAccess(cities[target].getOwner()) && !countries[allegiance].atWarWith(cities[target].getOwner(),diploManager)) {
+        return;
+    }
 
 
     bool foundAsNeighbour = false;
@@ -417,6 +422,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
     if (squads.contains(allegiance) && squads[allegiance].size()>0)
     {
         if (foundAsNeighbour) {
+            //If we have access (is not at war) we will take a train
             if (countries[allegiance].hasAccess(owner) && countries[allegiance].hasAccess(cities[target].getOwner())) {
                 std::vector<int> stops {myId , target};
                 tickets.emplace_back(allegiance,stops);
@@ -454,7 +460,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
                             count++;
                         }
                 }
-                updateSoldierLocations(cities,countries);
+                updateSoldierLocations(cities,countries,diploManager);
             }
             else {
                 auto& squad = squads[allegiance];
@@ -462,7 +468,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
                 if (all) {
                     //Update soldier base and add to new base
                     for (auto& s : squad) {
-                        cities[target].addCountryball(s,cities,countries);
+                        cities[target].addCountryball(s,cities,countries,diploManager);
                     }
                     //Everything has been reassigned, remove from this
                     squads.erase(allegiance);
@@ -475,7 +481,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
 
                         if (s->getTargetCity()==target) {
                             auto& s = *it;
-                            cities[target].addCountryball(s,cities,countries);
+                            cities[target].addCountryball(s,cities,countries,diploManager);
                             it = squad.erase(it);
                             --toMove;
                             if (toMove <= 0) {
@@ -496,7 +502,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
                             //Since we start at 0, we effectively round UP if there is an odd number, that is intentional
                             if (count%2==0) {
                                 auto& s = *it;
-                                cities[target].addCountryball(s,cities,countries);
+                                cities[target].addCountryball(s,cities,countries,diploManager);
                                 it = squad.erase(it);
                                 --toMove;
                                 if (toMove <= 0) {
@@ -509,7 +515,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
                             count++;
                         }
                 }
-                updateSoldierLocations(cities,countries);
+                updateSoldierLocations(cities,countries,diploManager);
             }
         }
         else {
@@ -552,7 +558,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
                                 count++;
                             }
                     }
-                    updateSoldierLocations(cities,countries);
+                    updateSoldierLocations(cities,countries,diploManager);
                 }
             }
         }
@@ -561,7 +567,7 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
 
 
 //TODO, this is NOT thread-safe, please, for the love of god, make it threadsafe!!!
-void city::transferSoldiersTo(int allegiance, int numberToMove, const std::vector<int>& path, std::vector<city> &cities, const std::vector<country> &countries, std::list<ticket> &tickets) {
+void city::transferSoldiersTo(int allegiance, int numberToMove, const std::vector<int>& path, std::vector<city> &cities, const std::vector<country> &countries, std::list<ticket> &tickets, const diplomacyManager& diploManager) {
 
     if (!path.empty()) {
         tickets.emplace_back(allegiance,path);
@@ -581,7 +587,7 @@ void city::transferSoldiersTo(int allegiance, int numberToMove, const std::vecto
                 }
        }
 
-        updateSoldierLocations(cities,countries);
+        updateSoldierLocations(cities,countries,diploManager);
     }
 }
 
@@ -684,11 +690,11 @@ bool city::updateRecruitment(unsigned int dtGameTime) {
     return false;
 }
 
-int city::getHostileNeighbours(const std::vector<city> &cities, const std::vector<country> &countries) const {
+int city::getHostileNeighbours(const std::vector<city> &cities, const std::vector<country> &countries,const diplomacyManager& diploManager) const {
 
     int result = 0;
     for (int n : neighbours) {
-        if (countries[owner].atWarWith(cities[n].getOwner()))
+        if (countries[owner].atWarWith(cities[n].getOwner(),diploManager))
             ++result;
     }
     return result;

@@ -17,7 +17,7 @@ public:
     ///Add a passenger, if the current step is different from 0, the passenger is teleported aboard
     void addPassenger(const std::vector<city>& cities, std::shared_ptr<countryball>& passenger);
 
-    void update(std::vector<city>& cities, const std::vector<country>& countries, double dt);
+    void update(std::vector<city>& cities, const std::vector<country>& countries, double dt, const diplomacyManager& diploManager);
 
     [[nodiscard]] bool isDone() const{return  stopped || currentStep>=stops.size() ;}
 

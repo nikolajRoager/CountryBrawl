@@ -5,6 +5,7 @@ cities 7
 difficulty hard
 description The Libyan Government of National Stability is an unrecognized rebel government which controls half of Libya
 malus Authoritarian regime: -20% province income
+malus Rebel government: Poor relation with most people
 malus Civil war: Starts at war with a rival government
 bonus Win the civil war: conquer the rival Libyan government to gain their cores
 gun akm

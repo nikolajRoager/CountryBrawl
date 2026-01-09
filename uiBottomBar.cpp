@@ -24,6 +24,14 @@ void UIBottomBar::display(SDL_Renderer *renderer, int mouseX, int mouseY,  int w
         x-=width;
         component->display(x,windowHeight-background.getHeight(),renderer,number_renderer);
     }
+
+    x = 0;
+    for (const auto& component : leftComponents) {
+        int width = component->getWidth();
+        component->display(x,windowHeight-background.getHeight(),renderer,number_renderer);
+        x+=width;
+    }
+
     //The mouse over text must overlap everything else
     x = windowWidth;
     for (const auto& component : rightComponents) {
@@ -33,10 +41,25 @@ void UIBottomBar::display(SDL_Renderer *renderer, int mouseX, int mouseY,  int w
             component->displayMouseOverText(mouseX,mouseY,windowWidth,windowHeight,renderer,small_number_renderer);
         }
     }
+
+    //The mouse over text must overlap everything else
+    x = 0;
+    for (const auto& component : leftComponents) {
+        int width = component->getWidth();
+        if (mouseX>x && mouseX<x+width && mouseY>windowHeight-component->getHeight() && mouseY<windowHeight) {
+            component->displayMouseOverText(mouseX,mouseY,windowWidth,windowHeight,renderer,small_number_renderer);
+        }
+        x+=width;
+    }
+
 }
 
 void UIBottomBar::addRightComponent(const std::shared_ptr<uiBarComponent> &component) {
     rightComponents.push_back(component);
+}
+
+void UIBottomBar::addLeftComponent(const std::shared_ptr<uiBarComponent> &component) {
+    leftComponents.push_back(component);
 }
 
 void UIBottomBar::updateMouse(int mouseX, int mouseY, bool leftMouseClick, bool rightMouseClick, int windowWidth, int windowHeight) {
@@ -45,5 +68,11 @@ void UIBottomBar::updateMouse(int mouseX, int mouseY, bool leftMouseClick, bool 
         int width = component->getWidth();
         x-=width;
         component->updateMouse(x,windowHeight-background.getHeight(), mouseX, mouseY, leftMouseClick, rightMouseClick);
+    }
+    x=0;
+    for (auto& component : leftComponents) {
+        int width = component->getWidth();
+        component->updateMouse(x,windowHeight-background.getHeight(), mouseX, mouseY, leftMouseClick, rightMouseClick);
+        x+=width;
     }
 }

@@ -41,6 +41,8 @@ Original lyrics by Max Schneckenburger 1840, composition by Karl Wilhelm 1854 (I
 
 Performer of the recording is unknown, but it is dated to 1907 (In public domain)
 
+Original link: https://en.wikipedia.org/wiki/File:Die_Wacht_am_Rhein_-_German_Patriotic_Anthem_(Old_Recording).wav
+
 Uploaded to Wikipedia by user "Malmyname" in 2025
 
 

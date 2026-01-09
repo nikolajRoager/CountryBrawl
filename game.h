@@ -11,6 +11,7 @@
 #include "city.h"
 #include "country.h"
 #include "countryball.h"
+#include "diplomacyManager.h"
 #include "lingeringShot.h"
 #include "mapData.h"
 #include "numberRenderer.h"
@@ -73,6 +74,8 @@ private:
     std::shared_ptr<uiExpandableMenu> autoRecruitMenu;
     std::shared_ptr<uiExpandableMenu> stanceMenu;
     std::shared_ptr<uiButton> autoBalanceButton;
+    std::shared_ptr<uiButton> musicManagerButton;
+    std::shared_ptr<uiButton> diplomacyButton;
 
     std::set<int> selectedCities;
     int primarySelectedCity;
@@ -151,6 +154,13 @@ private:
     std::deque<lingeringShot> smallArmsShots;
 
     double msPerFrame;
+
+    bool musicManagerOpen;
+    bool diploMenuOpen;
+
+    int diploNegotiatingWith;
+
+    std::unique_ptr<diplomacyManager > diploManager;
 
 
     std::vector<int> selectedPath;

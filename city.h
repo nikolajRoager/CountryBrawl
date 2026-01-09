@@ -45,7 +45,7 @@ public:
     void setName(const std::string &newName) {this->name = newName;}
     void setProvinceName(const std::string &newName) {this->provinceName = newName;}
 
-    void updateOwnership(std::vector<city>& cities,std::vector<country>& countries);
+    void updateOwnership(std::vector<city>& cities,std::vector<country>& countries,const diplomacyManager& diploManager);
 
     void addNeighbour(int newNeighbour);
 
@@ -61,7 +61,7 @@ public:
 
     [[nodiscard]] double getShortestNeighbourDistance(const std::vector<city>& cities) const;
 
-    void addCountryball(std::shared_ptr<countryball> newCountryball, const std::vector<city>& cities, const std::vector<country>& countries);
+    void addCountryball(std::shared_ptr<countryball> newCountryball, const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager);
 
     void generateNameTexture(TTF_Font* font, SDL_Renderer* renderer) {
         cityNameTexture=std::make_unique<texwrap>(name,renderer,font);
@@ -73,12 +73,12 @@ public:
 
 
     //Order all or half the soldiers to walk to a neighbouring base
-    void moveSoldiersTo(int allegiance,int target,bool all,std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets);
+    void moveSoldiersTo(int allegiance,int target,bool all,std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets,const diplomacyManager& diploManager);
 
     //Transfer a specific number of soldiers somewhere else using a pre-calculated path
-    void transferSoldiersTo(int allegiance,int numberToMove, const std::vector<int>& path, std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets);
+    void transferSoldiersTo(int allegiance,int numberToMove, const std::vector<int>& path, std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets, const diplomacyManager& diploManager);
 
-    void removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries);
+    void removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager);
 
     void updateNeighbourhood(std::vector<city>& cities);
     [[nodiscard]] const std::set<int>& getNeighbourhood() const {return neighbourhood;}
@@ -89,7 +89,7 @@ public:
     //Update ongoing recruitment, return true if a soldier needs to spawn
     bool updateRecruitment(unsigned int dtGameTime);
 
-    [[nodiscard]] int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries) const;
+    [[nodiscard]] int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) const;
 
     [[nodiscard]] int getSoldiers(int allegiance) {
         return squads.contains(allegiance) ? squads[allegiance].size() : 0;
@@ -103,6 +103,9 @@ public:
     [[nodiscard]] double getNeighbourDistance(int n) const {
         return neighbourDistances.at(n);
     }
+
+
+    void updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager);
 
 private:
     bool isRecruiting;
@@ -151,7 +154,6 @@ private:
     //List of squads of soldiers with different allegiances positioned around this city, indexed by country they belong to
     std::map<int, std::vector<std::shared_ptr<countryball> > > squads;
 
-    void updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries);
 
 };
 

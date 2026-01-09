@@ -6,6 +6,8 @@ difficulty medium
 description Czechia is a medium-sized country in central Europe, it boasts an impressive industry and a decent population.
 bonus Czechoslovak legacy: Conquer Slovakia to gain their cores
 bonus Strong democracy: +10% province income
+bonus Bohemian legacy: Can defenestrate ambassadors
 gun 805bren
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
+defenestration true

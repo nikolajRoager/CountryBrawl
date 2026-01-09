@@ -20,13 +20,17 @@ public:
 
     void addRightComponent(const std::shared_ptr<uiBarComponent>& component);
 
+    void addLeftComponent(const std::shared_ptr<uiBarComponent>& component);
+
     void updateMouse(int mouseX, int mouseY, bool leftMouseClick, bool rightMouseClick,  int windowWidth, int windowHeight);
+
 
 private:
     const texwrap background;
 
     //Right aligned components
     std::vector<std::shared_ptr<uiBarComponent>> rightComponents;
+    std::vector<std::shared_ptr<uiBarComponent>> leftComponents;
 };
 
 

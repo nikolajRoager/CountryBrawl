@@ -11,6 +11,7 @@
 #include <vector>
 #include <SDL2/SDL_render.h>
 
+#include "diplomacyManager.h"
 #include "texwrap.h"
 
 namespace fs = std::filesystem;
@@ -23,7 +24,7 @@ public:
 
     enum offensiveStance {DEFENSIVE, CAUTIOUS, AGGRESSIVE};
 
-    country(int id, const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead, const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer);
+    country(int id, const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead, const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer,TTF_Font* smallFont,TTF_Font* midFont);
     void display(double x, double y, bool inWater, countryExpression expression, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=0) const;
     void display(int x, int y, bool inWater, countryExpression expression, double scale, SDL_Renderer* renderer,bool faceRight=true, double angle=M_PI) const;
 
@@ -57,10 +58,9 @@ public:
     [[nodiscard]] int getTextureWidth() const {return texture.getWidth();}
 
 
-    //TODO, this is very much a temporary thing, replace with an actual diplomacy system
     ///Are we currently in a state of war with this country
-    [[nodiscard]] bool atWarWith(int otherCountryId) const {
-        return otherCountryId != id;
+    [[nodiscard]] bool atWarWith(int otherCountryId, const diplomacyManager& diploManager) const {
+        return  diploManager.getTension(otherCountryId ,id) ==diplomacyManager::WAR;
     }
     //TODO, this is very much a temporary thing, replace with an actual diplomacy system
     ///Do we have access to this countries transportation infrastructure
@@ -113,8 +113,20 @@ public:
     void setOffensiveStance(offensiveStance _stance) {
         stance = _stance;
     };
+
+
+    [[nodiscard]] const texwrap& getNameTexture() const {return *nameTextureMid;}
+    [[nodiscard]] const texwrap& getNameTextureSmall() const {return *nameTextureSmall;}
+
+    [[nodiscard]] bool getCanDefenestrate() const {return canDefenestrate;}
+
+    //If this country is not able to do anything, it is dead
+    [[nodiscard]] bool isDead() const {return coreCities==0 && occupiedCities==0 && armySize==0;}
 private:
+
     int id;
+
+    bool canDefenestrate;
 
     ///E.g. Denmark
     std::string name;
@@ -140,6 +152,10 @@ private:
     std::string genitive;
     texwrap texture;
     texwrap flag;
+
+    std::unique_ptr<texwrap> nameTextureMid;
+    std::unique_ptr<texwrap> nameTextureSmall;
+
     ///References to countryball accessories
     const texwrap& ballInWater;
     const texwrap& angry;

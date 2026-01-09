@@ -35,7 +35,8 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     numbererMid(0, midFont, renderer),
     pausedText("Paused", renderer, midFont),
     topBar(renderer),
-    bottomBar(renderer){
+    bottomBar(renderer)
+{
     std::cout << "Loading new game" << std::endl;
     //First, set up loading of everything we will be loading asynchronously
 
@@ -163,7 +164,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
         for (int i = 0; i < countryPaths.size(); i++) {
             const auto &entry = countryPaths[i];
             fs::path countryPath = entry.path();
-            countries.emplace_back(i, countryPath, ballInWater, angryBall, happyBall, deadBall, guns, renderer);
+            countries.emplace_back(i, countryPath, ballInWater, angryBall, happyBall, deadBall, guns, renderer,smallFont,midFont);
             if (countries[i].getName() == playerCountry) {
                 playerCountryId = i;
             }
@@ -230,6 +231,8 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
         for (auto &tile: tiles) {
             tile->finalize();
         }
+
+        diploManager=std::make_unique<diplomacyManager>(assetsPath()/"startingMap"/"tensions.csv",countries,renderer,smallFont,midFont);
     }
 
     //Then do the things which require the things we just loaded to exist
@@ -250,15 +253,15 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
         //TODO this is temporary
         //Add 5 soldier to every city
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries);
+        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries);
+        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries);
+        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries);
+        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries);
+        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
     }
     if (playerCities>0) {
         cameraCentreX /= playerCities;
@@ -274,6 +277,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
 
     std::cout << "Loaded " << countries.size() << " countries " << cities.size() << " cities and " << soldiers.size() <<
             " soldiers " << std::endl;
+
 
     //Count the number of core and occupied cities of each nation
     for (auto &country: countries) {
@@ -309,11 +313,17 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     autoRecruitMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"recruitInfantry","recruitArtillery","recruitmentOff"});
     bottomBar.addRightComponent(autoRecruitMenu);
 
-    autoBalanceButton = std::make_shared<uiButton>(renderer, smallFont,"autoBalanceButton");
+    autoBalanceButton = std::make_shared<uiButton>(renderer, smallFont,"autoBalanceButton","Auto balance Front-Lines");
     bottomBar.addRightComponent(autoBalanceButton);
 
     stanceMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"defensiveStance","cautiousAdvance","aggressiveAdvance"});
     bottomBar.addRightComponent(stanceMenu);
+
+    musicManagerButton = std::make_shared<uiButton>(renderer, smallFont,"musicButton","Open music manager");
+    bottomBar.addLeftComponent(musicManagerButton);
+
+    diplomacyButton = std::make_shared<uiButton>(renderer, smallFont,"diplomacyButton","Open diplomacy menu");
+    bottomBar.addLeftComponent(diplomacyButton);
 
     std::cout << "Created successfully" << std::endl;
 
@@ -333,14 +343,20 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     msPerFrame = 17;
 
     paused = true;
+    musicManagerOpen = false;
+    diploMenuOpen=false;
+
     //TODO, this should be loadable from a file
-    timewarpFactor = 43200; //1 month per minute
+    timewarpFactor = 43200; //1 month per minute, roughly 1 day per 2 seconds
 
     previousGameTime = gameEpoch;
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
                   const inputData &userInputs, unsigned int millis, unsigned int pmillis, musicManager& muse) const {
+
+    double backgroundScale = std::max(screenWidth/double(loadingBackground.getWidth()),screenHeight /double(loadingBackground.getHeight()));
+
     for (const auto &tile: tiles) {
         tile->draw(static_cast<int>(screenMinX), static_cast<int>(screenMinY), scale, renderer);
     }
@@ -412,17 +428,29 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                    numbererSmall);
 
     if (paused)
-        pausedText.render(screenWidth * 0.5, screenHeight * 0.5, renderer, 1.0, true, true);
+        pausedText.render(screenWidth * 0.5, screenHeight * 0.5, renderer, backgroundScale, true, true);
+
+    if (musicManagerOpen)
+        muse.displayManager(renderer, userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale);
+    if (diploMenuOpen) {
+        if (diploNegotiatingWith==-1)
+            diploManager->displayMenu(playerCountryId,renderer,countries,userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale);
+        else
+            diploManager->displayNegotiations(playerCountryId,diploNegotiatingWith,renderer,countries,userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale);
+    }
 }
 
 void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
                   const inputData &userInputs, unsigned int millis, unsigned int pmillis, TTF_Font *smallFont,
                   TTF_Font *midFont, TTF_Font *largeFont, std::default_random_engine& generator, musicManager& muse) {
+
+    double backgroundScale = std::max(screenWidth/double(loadingBackground.getWidth()),screenHeight /double(loadingBackground.getHeight()));
+
     //Do this before we update time, so it effects time this frame
     if (userInputs.spacePressed && !userInputs.prevSpacePressed) {
         togglePause();
     }
-    unsigned int dmillis = firstUpdate || paused ? 0 : millis - pmillis;
+    unsigned int dmillis = firstUpdate || (paused || musicManagerOpen || diploMenuOpen) ? 0 : millis - pmillis;
     gameRealTime += dmillis;
 
     std::chrono::milliseconds realElapsed{gameRealTime};
@@ -580,7 +608,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         //First try to move soldiers to direct neighbours
         for (int i: selectedCities) {
             auto &city = cities[i];
-            city.moveSoldiersTo(playerCountryId, hoveredCity, userInputs.shiftPressed, cities, countries, tickets);
+            city.moveSoldiersTo(playerCountryId, hoveredCity, userInputs.shiftPressed, cities, countries, tickets,*diploManager);
         }
     }
 
@@ -622,7 +650,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     //Update logistics (trains with passengers or goods)
     for (auto &ticket: tickets) {
-        ticket.update(cities, countries, dt);
+        ticket.update(cities, countries, dt,*diploManager);
     }
 
 
@@ -631,14 +659,14 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     std::vector<std::shared_ptr<countryball> > shotBalls;
     for (auto &ball: soldiers) {
         ball->move(dt, movementPenalties, watermap);
-        ball->shoot(shotBalls, smallArmsShots, soldiers, cities, generator, dt);
+        ball->shoot(shotBalls, smallArmsShots, soldiers, cities, generator, dt,*diploManager);
     }
 
     for (auto &ball: shotBalls) {
         ball->kill(countries);
         int base = ball->getBase();
         if (base >= 0 && base < cities.size())
-            cities[base].removeDeadSoldiers(cities, countries);
+            cities[base].removeDeadSoldiers(cities, countries,*diploManager);
     }
 
     for (int i = soldiers.size() - 1; i >= 0; i--) {
@@ -647,11 +675,11 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     }
 
     for (auto &city: cities) {
-        city.updateOwnership(cities, countries);
+        city.updateOwnership(cities, countries,*diploManager);
         if (city.updateRecruitment(dtGameTime)) {
             countries[city.getOwner()].decrementRecruitingSoldiers();
             soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-            city.addCountryball(soldiers.back(), cities, countries);
+            city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         }
     }
 
@@ -733,6 +761,20 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         balanceFrontLines(playerCountryId);
     }
 
+    if (musicManagerButton->getIsClicked()) {
+        musicManagerOpen = !musicManagerOpen;
+        if (musicManagerOpen)
+            diploMenuOpen = false;
+        diploNegotiatingWith=-1;
+    }
+
+    if (diplomacyButton->getIsClicked()) {
+        diploMenuOpen = !diploMenuOpen;
+        if (diploMenuOpen)
+            musicManagerOpen = false;
+        diploNegotiatingWith=-1;
+    }
+
     auto previousDayIndex = floor<std::chrono::days>((previousGameTime)-gameEpoch).count();
     auto currentDayIndex = floor<std::chrono::days>((currentGameTime)-gameEpoch).count();
 
@@ -741,6 +783,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     //AI auto-balances front-lines every 5 day
     if ((prev5Days!=curr5Days) || firstUpdate) {
+        diploManager->resetCooldown();
         std::cout <<"Balancing front-lines "<< std::endl;
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < countries.size(); ++i) {
@@ -774,11 +817,11 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                 for (int n : city.getNeighbours()) {
                     int ourSoldiers = city.getSoldiers(owner);
                     int theirOwner = cities[n].getOwner();
-                    if (countries[owner].atWarWith(theirOwner)) {
+                    if (countries[owner].atWarWith(theirOwner,*diploManager)) {
                         int theirSoldiers = cities[n].getSoldiers(theirOwner);
                         bool shouldAttack= (stance == country::AGGRESSIVE && theirSoldiers*2<ourSoldiers) || (stance == country::CAUTIOUS && theirSoldiers*4<ourSoldiers);
                         if (shouldAttack)
-                            city.moveSoldiersTo(owner,n,false,cities,countries,tickets);
+                            city.moveSoldiersTo(owner,n,false,cities,countries,tickets,*diploManager);
                     }
                 }
             }
@@ -796,6 +839,28 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                              countries[playerCountryId].getArmyCapOccupied());
     fundsTracker->setValues(countries[playerCountryId]);
 
+    //Update music manager, if it is open
+    if (musicManagerOpen) {
+        muse.updateManager(userInputs.mouseXPx,userInputs.mouseYPx,userInputs.leftMouseDown,userInputs.leftMouseDown && !userInputs.prevLeftMouseDown,screenWidth,screenHeight,backgroundScale);
+    }
+    //Update diplomacy menu, if that thing is open
+    if (diploMenuOpen) {
+        if (diploNegotiatingWith==-1)
+            diploNegotiatingWith=diploManager->updateMenu(playerCountryId,countries,userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.mouseXPx, userInputs.mouseYPx,screenWidth,screenHeight,backgroundScale);
+        else
+            if (diploManager->updateNegotiations(playerCountryId,diploNegotiatingWith,countries,userInputs.leftMouseDown && !userInputs.prevLeftMouseDown,userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale)) {
+                for (auto &city: cities) {
+                    city.updateSoldierLocations(cities,countries,*diploManager);
+                }
+            }
+
+    }
+
+    if (userInputs.escapePressed) {
+        musicManagerOpen = false;
+        diploMenuOpen = false;
+        diploNegotiatingWith=-1;
+    }
 
 
     if (framesSinceFPSprint >= 100) {
@@ -831,7 +896,7 @@ void game::balanceFrontLines(int targetCountry) {
         const auto &city = cities[i];
         //TODO, we also need to consider soldiers in other cities than my own
         if (city.getOwner() == targetCountry) {
-            int hostiles = city.getHostileNeighbours(cities,countries);
+            int hostiles = city.getHostileNeighbours(cities,countries,*diploManager);
             totalHostileNeighbours+=hostiles;
             //We also insert cities with 0 hostile neighbours, because we will loop over them too
             citiesWithHostileNeighbours.emplace(i,hostiles);
@@ -873,7 +938,7 @@ void game::balanceFrontLines(int targetCountry) {
                     for (int i =city; i!=-1; i=frontlinePathByCountry[targetCountry][i]) {
                         path.push_back(i);
                     }
-                    cities[city].transferSoldiersTo(targetCountry,-requestedSoldiers ,path,cities,countries,tickets);
+                    cities[city].transferSoldiersTo(targetCountry,-requestedSoldiers ,path,cities,countries,tickets,*diploManager);
                 }
             }
         }
