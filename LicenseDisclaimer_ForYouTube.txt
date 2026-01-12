@@ -1,0 +1,47 @@
+This is a sample license and copyright disclaimer for YouTube video descriptions,
+it credits all creators of third party music and sounds in the game.
+
+Copy this into the description of your videos:
+
+This video includes in-game music and/or sound effects from Country Brawl
+
+Music:
+
+"Ode to Joy", Piano arrangement by S. Odamaki based on Symphony No. 9 by Ludwig van Beethoven, performed and recorded by Gregor Quendel,
+License: Creative Commons - Attribution-NonCommercial 4.0 International
+Original link: https://www.classicals.de/beethoven-ode-to-joy
+
+"Preußens Gloria', by Johann Gottfried Piefke, performed by the Großes Odeon Orchester, digitized by Archive.org  user "jakej";
+License: in public domain (copyright expired)
+Original link: https://archive.org/details/78_preuens-gloria_groes-odeon-orchester-gottfr-piefke_gbia7000033b
+
+"Preobrazhensky Regiment March", by unknown composer, performed by Military Orchestra, digitized by the Museum of Russian Culture, San Francisco on Archive.org
+License: Creative Commons - Attribution-NonCommercial-NoDerivatives 4.0 International: https://creativecommons.org/licenses/by-nc-nd/4.0/
+Original link: https://archive.org/details/odeon-10008-b
+
+"Colonel Bogey March", by Kenneth J. Alford, performed and recorded by the United States Navy Band
+License: public domain (the US navy band music is public domain)
+Original link: https://commons.wikimedia.org/wiki/File:Colonel_Bogey.ogg
+
+"Le Régiment de Sambre et Meuse", by Paul Cézano and Robert Planquette, performed by Pierre d'Assy and an unknown orchestra, Digitization unknown but hosted by Wikipedia as a public domain recording
+License: public domain (copyright expired)
+Original link: https://en.wikipedia.org/wiki/File:Beaufort_regiment_de_sambre_et_1909_cd_1001.ogg
+
+"Marche Loraine", by Louis Ganne , Performed by Conway's Band (Patrick Conway), digitized by Library of Congress
+License: public domain (copyright expired)
+Original link: https://www.loc.gov/item/jukebox-188200/
+
+"Der Hohenfriedberger", composition traditionally credited to King Friedrich der Große or unknown, Victor-Militär-Kapelle, digitized by Library of Congress
+License: public domain (copyright expired)
+Original link:  https://www.loc.gov/item/jukebox-66875/
+
+"Radetzky march", by Johann Strauss senior, performed and recorded by the United States Navy Band
+License: public domain (the US navy band music is public domain)
+Original link: https://en.wikipedia.org/wiki/File:Radetzky_March.ogg
+
+
+Sound effects:
+
+rifle shot, By user SuperPhat on freesound.org, modified by Nikolaj R Christensen.
+license: Creative Commons 0 (dedicated to public domain)
+Original link: https://freesound.org/people/SuperPhat/sounds/404562/

@@ -4,7 +4,14 @@ All the music in here was planned to be used in the game at some point, maybe so
 
 Anyway, it is still included in the project file structure, so the copyright information is here
 
-`OdeToJoy.mp3 Beethoven` - "Ode to Joy" - from Beethoven's Symphony No. 9
+In summary the music includes works licensed under:
+
+* Public domain
+* Creative Commons - Attribution-NonCommercial 4.0 International
+* Creative Commons - Attribution 3.0 Unported
+* Creative Commons - Attribution-NonCommercial-NoDerivatives 4.0 International
+
+`OdeToJoy.mp3 Beethoven` - "ode to joy" - from beethoven's symphony no. 9
 -----
 Original composition by Ludwig van Beethoven (in public domain)
 
@@ -85,7 +92,7 @@ Copyright: In public domain since it is performed by the United States Navy Band
 --------
 Original composition by Paul Cézano and Robert Planquette 1870 (In public domain)
 
-Performed by Pierre d'Assy and an unknown orchestre either in 1905 or 1909 (sources vary) (In public domain)
+Performed by Pierre d'Assy and an unknown orchestra either in 1905 or 1909 (sources vary) (In public domain)
 
 Digitization unknown, the original source is a now defunct French website, (Wikipedia claims public domain file)
 
@@ -115,11 +122,11 @@ Date of recording disputed, it is either 1908 (The year labeled on the picture o
 
 Digitized/digitization hosted by Library of Congress (Library of Congress claims it is In public domain since 2022)
 
-Original link:  https://www.loc.gov/item/jukebox-66875/"
+Original link:  https://www.loc.gov/item/jukebox-66875/
 
 `Radetzky_March.ogg` - Radetzky march
 ------------
-Original composition Johann Strauss (the older) 1848, in public domain
+Original composition Johann Strauss senior 1848, in public domain
 
 Performed by the United States Navy Band
 
