@@ -5,13 +5,17 @@
 #ifndef MAPMOVEMENTDEMO_COUNTRYBALLTYPE_H
 #define MAPMOVEMENTDEMO_COUNTRYBALLTYPE_H
 
+#include <deque>
 #include <string>
 #include <filesystem>
 #include <map>
+#include <random>
+#include <set>
 #include <vector>
 #include <SDL2/SDL_render.h>
 
 #include "diplomacyManager.h"
+#include "eventMessage.h"
 #include "texwrap.h"
 
 namespace fs = std::filesystem;
@@ -121,11 +125,60 @@ public:
     [[nodiscard]] bool getCanDefenestrate() const {return canDefenestrate;}
 
     //If this country is not able to do anything, it is dead
-    [[nodiscard]] bool isDead() const {return coreCities==0 && occupiedCities==0 && armySize==0;}
+    [[nodiscard]] bool isDead() const {return coreCities==0 && occupiedCities==0;}
+
+    [[nodiscard]] const std::set<int>& getNeighbourIds() const {return neighbourIds;}
+    void resetNeighbourIds() {
+        neighbourIds.clear();
+    }
+    void addNeighbourId(int id) {
+        neighbourIds.insert(id);
+    }
+
+    [[nodiscard]] bool isNeighbour (int id) const {
+        return neighbourIds.contains(id);
+    }
+
+    void enqueueMessage(eventMessage message);
+
+    //Returns true if we should recalculate soldier locations
+    bool handleEvents(std::vector<country>& countries, diplomacyManager& diploManager);
+
+    [[nodiscard]] bool willAccept (diplomacyManager::decisionType decision, int sender, const std::vector<country>& countries, const diplomacyManager& diploManager) const;
+
+    [[nodiscard]] bool hasPriorityQueuedEvents() const {return !priorityEventQueue.empty();}
+    [[nodiscard]] bool hasRegularQueuedEvents() const {return !regularEventQueue.empty();}
+
+    //Finalize the first event in the queue for display, presumably this is the player country
+    void finalizePriorityEvents(const std::map<std::string,std::string>& eventMessages,const std::vector<country>& countries,SDL_Renderer* renderer, TTF_Font* font, int windowWidth, int windowHeight);
+
+    void finalizeRegularEvents(const std::map<std::string,std::string>& eventMessages,const std::vector<country>& countries,SDL_Renderer* renderer, TTF_Font* font, int windowWidth, int windowHeight);
+
+    //Returns true if soldiers need to be updated
+    bool aiDiplomacy(const std::map<std::string,std::string>& eventMessages,std::vector<country>& countries,diplomacyManager& diploManager, std::default_random_engine& generator) const;
+
+
+    void displayRegularEvents(SDL_Renderer* renderer, int y) const;
+
+    void showFirstEvent(SDL_Renderer* renderer,int mouseX, int mouseY, int windowWidth, int windowHeight, double scale, const texwrap& messageReceived, const texwrap& ok, const texwrap& yes, const texwrap& no) const;
+    [[nodiscard]] eventMessage::eventReply updateFirstEvent(bool leftMouseClicked, int mouseX, int mouseY, int windowWidth, int windowHeight, double scale, const texwrap& ok, const texwrap& yes, const texwrap& no, std::vector<country>& countries, diplomacyManager& diploManager) const;
+    void handledFirstEvent();
+
+    void dumpRegularEvents() {
+        regularEventQueue.clear();
+    }
+
+
 private:
 
     int id;
 
+    std::set<int> neighbourIds;
+
+    std::deque<eventMessage> priorityEventQueue;
+    std::deque<eventMessage> regularEventQueue;
+
+    ///An important diplomatic technique only few have access to
     bool canDefenestrate;
 
     ///E.g. Denmark

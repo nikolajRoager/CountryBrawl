@@ -9,6 +9,7 @@
 #include <future>
 #include <iostream>
 #include <cmath>
+#include <fstream>
 #include <SDL2/SDL_image.h>
 
 #include "getAssets.h"
@@ -31,17 +32,20 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     trainEnd(assetsPath() / "trainEnd.png", renderer),
     trainSegment(assetsPath() / "trainSegment.png", renderer),
     passengerShip(assetsPath() / "passengerShip.png", renderer),
+    transportPlane(assetsPath() / "transportPlane.png", renderer),
     numbererSmall(0, smallFont, renderer),
     numbererMid(0, midFont, renderer),
     pausedText("Paused", renderer, midFont),
+    receivedMessage("Message received",renderer,midFont),
+    okText("Ok",renderer,midFont),
+    yesText("Yes",renderer,midFont),
+    noText("No",renderer,midFont),
+    shotSound(assetsPath()/"sound"/"shot.wav"),
     topBar(renderer),
     bottomBar(renderer)
 {
     std::cout << "Loading new game" << std::endl;
     //First, set up loading of everything we will be loading asynchronously
-
-
-    //std::vector<std::future<tile>> futureTiles;
 
     //A counter for how much stuff has been loaded
     std::atomic<int> processedAssets{0};
@@ -181,6 +185,54 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
         }
 
 
+        for (const auto &entry: fs::directory_iterator(fs::path("assets") / "eventMessages")) {
+            if (entry.is_regular_file()) {
+                std::ifstream eventFile(entry.path());
+                std::string text;
+                std::string line;
+                std::getline(eventFile, line);
+                text+=line;
+                while (std::getline(eventFile, line)) {
+                    text+="\n"+line;
+                }
+                std::string name = entry.path().stem().filename().string();
+                if (name.starts_with("tensionDown"))
+                    tensionDownEvents.emplace_back(name);
+                if (name.starts_with("tensionUp"))
+                    tensionUpEvents.emplace_back(name);
+                if (name.starts_with("accidentWar"))
+                    accidentalWarEvents.emplace_back(name);
+                eventMessages.emplace(name, text);
+            }
+        }
+
+        for (const auto &entry: fs::directory_iterator(fs::path("assets") / "unions")) {
+            if (entry.is_regular_file()) {
+                std::string name = entry.path().stem().filename().string();
+                std::vector<int> targetCountries;
+                std::ifstream eventFile(entry.path());
+                std::string line;
+                while (std::getline(eventFile, line)) {
+                    bool found=false;
+                    for (int i = 0; i < countries.size(); i++) {
+                        if (countries[i].getName() == line) {
+                            targetCountries.push_back(i);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        throw std::runtime_error("Could not find country " + line+" from unification event "+name);
+                    }
+                }
+                if (!eventMessages.contains(name)) {
+                    throw std::runtime_error("Could not find event message for unification event " + name);
+                }
+                unificationEvents.emplace_back(name, targetCountries);
+            }
+        }
+
+
         //Then display a loading bar
         //Display a loading bar
         int previousProcessedAssets = processedAssets;
@@ -310,13 +362,13 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     topBar.addRightComponent(fundsTracker);
 
 
-    autoRecruitMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"recruitInfantry","recruitArtillery","recruitmentOff"});
+    autoRecruitMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"recruitInfantry","recruitArtillery","recruitmentOff"},"Automatic recruitment settings");
     bottomBar.addRightComponent(autoRecruitMenu);
 
     autoBalanceButton = std::make_shared<uiButton>(renderer, smallFont,"autoBalanceButton","Auto balance Front-Lines");
     bottomBar.addRightComponent(autoBalanceButton);
 
-    stanceMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"defensiveStance","cautiousAdvance","aggressiveAdvance"});
+    stanceMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"defensiveStance","cautiousAdvance","aggressiveAdvance"},"Auto Attack Stance");
     bottomBar.addRightComponent(stanceMenu);
 
     musicManagerButton = std::make_shared<uiButton>(renderer, smallFont,"musicButton","Open music manager");
@@ -345,11 +397,13 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     paused = true;
     musicManagerOpen = false;
     diploMenuOpen=false;
+    diploNegotiatingWith=-1;
 
     //TODO, this should be loadable from a file
     timewarpFactor = 43200; //1 month per minute, roughly 1 day per 2 seconds
 
     previousGameTime = gameEpoch;
+    countryExisted.resize(countries.size(),true);
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
@@ -370,7 +424,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
 
     for (const auto &ticket: tickets) {
-        ticket.display(cities, trainEnd, trainSegment, passengerShip, screenMinX, screenMinY, screenWidth, screenHeight,
+        ticket.display(cities, trainEnd, trainSegment, passengerShip,transportPlane, screenMinX, screenMinY, screenWidth, screenHeight,
                        scale, renderer, watermap);
     }
 
@@ -427,17 +481,27 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     bottomBar.display(renderer, userInputs.mouseXPx, userInputs.mouseYPx, screenWidth, screenHeight, numbererMid,
                    numbererSmall);
 
+    if (countries[playerCountryId].hasRegularQueuedEvents()) {
+        countries[playerCountryId].displayRegularEvents(renderer,screenHeight-bottomBar.getHeight());
+    }
+
     if (paused)
         pausedText.render(screenWidth * 0.5, screenHeight * 0.5, renderer, backgroundScale, true, true);
 
     if (musicManagerOpen)
         muse.displayManager(renderer, userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale);
-    if (diploMenuOpen) {
+    else if (diploMenuOpen) {
         if (diploNegotiatingWith==-1)
             diploManager->displayMenu(playerCountryId,renderer,countries,userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale);
         else
-            diploManager->displayNegotiations(playerCountryId,diploNegotiatingWith,renderer,countries,userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale);
+            diploManager->displayNegotiations(playerCountryId,diploNegotiatingWith,renderer,numbererSmall,countries,userInputs.mouseXPx, userInputs.mouseYPx,  screenWidth, screenHeight, backgroundScale);
     }
+    else if (countries[playerCountryId].hasPriorityQueuedEvents()) {
+        countries[playerCountryId].showFirstEvent(renderer, userInputs.mouseXPx, userInputs.mouseYPx, screenWidth, screenHeight, backgroundScale,receivedMessage,okText,yesText,noText);
+    }
+
+
+
 }
 
 void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
@@ -450,7 +514,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     if (userInputs.spacePressed && !userInputs.prevSpacePressed) {
         togglePause();
     }
-    unsigned int dmillis = firstUpdate || (paused || musicManagerOpen || diploMenuOpen) ? 0 : millis - pmillis;
+    unsigned int dmillis = firstUpdate || (paused || musicManagerOpen || diploMenuOpen || countries[playerCountryId].hasPriorityQueuedEvents()) ? 0 : millis - pmillis;
     gameRealTime += dmillis;
 
     std::chrono::milliseconds realElapsed{gameRealTime};
@@ -492,6 +556,18 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         double centreYWorld = ((screenHeight / 2.0 + screenMinY) / scale);
         scale = std::pow(2.0, scaleExponent);
 
+
+        if (scale>=1) {
+            shotSound.attenuate(1.0);
+        }
+        else if (scale<0.5) {
+            shotSound.attenuate(0.0);
+        }
+        else {
+            shotSound.attenuate(2*(scale-0.5));
+        }
+
+
         //Now we still want
         //windowWidthPx/2= xWorld*scale-screenMinX;
         //So
@@ -515,6 +591,18 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         //So
         screenMinX = centreXWorld * scale - screenWidth / 2.0;
         screenMinY = centreYWorld * scale - screenHeight / 2.0;
+
+
+        if (scale>=1) {
+            shotSound.attenuate(1.0);
+        }
+        else if (scale<0.5) {
+            shotSound.attenuate(0.0);
+        }
+        else {
+            shotSound.attenuate(2*(scale-0.5));
+        }
+
     }
     if (userInputs.homePressed && !userInputs.prevHomePressed) {
         double cameraCentreX = 0;
@@ -658,8 +746,15 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     std::vector<std::shared_ptr<countryball> > shotBalls;
     for (auto &ball: soldiers) {
+        if (countries[ball->getAllegiance()].isDead()) {
+            ball->kill(countries);
+            int base = ball->getBase();
+            if (base >= 0 && base < cities.size())
+                cities[base].removeDeadSoldiers(cities, countries,*diploManager);
+        }
         ball->move(dt, movementPenalties, watermap);
-        ball->shoot(shotBalls, smallArmsShots, soldiers, cities, generator, dt,*diploManager);
+        ball->shoot(shotBalls, smallArmsShots, soldiers, cities, generator, dt,*diploManager,shotSound,screenMinX, screenMinY, screenWidth, screenHeight, scale);
+
     }
 
     for (auto &ball: shotBalls) {
@@ -697,6 +792,8 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             (prevYMD.month() != currYMD.month());
 
     bool dayChanged = monthChanged || (prevYMD.day() != currYMD.day());
+
+
 
     if (monthChanged || firstUpdate) {
         //Update taxes of all countries
@@ -758,7 +855,13 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     //Update auto-balance fronts options
     //The player must manually request an auto-balance
     if (autoBalanceButton->getIsClicked()) {
-        balanceFrontLines(playerCountryId);
+        if (diploManager->isAtWar(playerCountryId,countries)) {
+            balanceFrontLinesWar(playerCountryId);
+        }
+        else {
+
+            balanceFrontLinesPeace(playerCountryId);
+        }
     }
 
     if (musicManagerButton->getIsClicked()) {
@@ -781,14 +884,157 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     auto prev5Days = previousDayIndex/5;
     auto curr5Days = currentDayIndex/5;
 
-    //AI auto-balances front-lines every 5 day
+    //AI does stuff, and random tension changes happen every 5 day
     if ((prev5Days!=curr5Days) || firstUpdate) {
         diploManager->resetCooldown();
+        //For the diplomacy to work, recalculate all neighbours
+        recalculateNeighbours();
+
+        for (country &country : countries) {
+            //Might as well dump events we don't need anymore
+            country.dumpRegularEvents();
+        }
+
+
+        //Check for unification event
+        for (const auto& unification : unificationEvents) {
+            for (int i : unification.second) {
+                //We can unify with someone if we exist, they don't, and we control 80% of their cores
+                if (!countries[i].isDead())
+                    for (int j : unification.second) {
+                        if (i!=j) {
+                            if (countries[j].isDead()) {
+                                //Do the expensive count
+                                int theirTotalCores=0;
+                                int ourOwnedTheirCores=0;
+                                for (const auto& city : cities) {
+                                    if (city.getCore()==j) {
+                                        ++theirTotalCores;
+                                        if (city.getOwner()==i) {
+                                            ++ourOwnedTheirCores;
+                                        }
+                                    }
+                                }
+                                if (ourOwnedTheirCores*10>theirTotalCores*8) {
+                                    for (auto& city : cities) {
+                                        if (city.getCore()==j) {
+                                            city.setCore(i);
+                                            if (city.getOwner()==i) {
+                                                countries[i].decrementOccupiedCities();
+                                                countries[i].incrementCoreCities();
+                                            }
+                                        }
+                                    }
+                                    //Tell literally everyone
+                                    for (auto & country : countries) {
+                                        country.enqueueMessage(eventMessage(unification.first,i,j,true,false));
+                                    }
+                                }
+                            }
+                        }
+                    }
+            }
+        }
+
+        //There is a 1/5 chance of random tension events with any neighbour, for any country, and 1/50 for non-neighbours
+        std::uniform_int_distribution<int> tensionEventChance(0, 10);
+        std::uniform_int_distribution<int> notNEighbourtensionEventChance(0, 100);
+        std::uniform_int_distribution<int> tensionUpDist(0, tensionUpEvents.size()-1);
+        std::uniform_int_distribution<int> tensionDownDist(0, tensionDownEvents.size()-1);
+        std::uniform_int_distribution<int> accidentalWarDist(0, accidentalWarEvents.size()-1);
+
+        //There is a 1/50 chance of random war declaration if tension is "bad"
+        //2/50 if tension us "very_bad"
+        //5/50 if tension is "terrible"
+        std::uniform_int_distribution<int> randomWarChance(0, 49);
+
+        for (int i = 0; i < countries.size(); ++i) {
+            if (countries[i].isDead()) {
+                if (countryExisted[i]) {
+                    //Tell everyone about our tragic demise
+                    for (auto & country : countries) {
+                        country.enqueueMessage(eventMessage("elimination",i,i,true,false));
+                    }
+                }
+                countryExisted[i]=false;
+
+            }
+            else
+                for (int j = i+1; j < countries.size(); ++j) {
+                    if (!countries[j].isDead())
+                    {
+                        if (!countries[i].atWarWith(j,*diploManager)) {
+                            int randomWarRoll = randomWarChance(generator);
+                            bool randomWar = false;
+                            if (countries[i].isNeighbour(j))
+                                switch (diploManager->getTension(i,j)) {
+                                    default:
+                                        break;
+                                    case diplomacyManager::BAD:
+                                        if (randomWarRoll==0)
+                                            randomWar = true;
+                                        break;
+                                    case diplomacyManager::VERY_BAD:
+                                        if (randomWarRoll<=1)
+                                            randomWar = true;
+                                        break;
+                                    case diplomacyManager::TERRIBLE:
+                                        if (randomWarRoll<=4)
+                                            randomWar = true;
+                                        break;
+                                }
+                            if (randomWar) {
+                                int event = accidentalWarDist(generator);
+
+                                countries[i].enqueueMessage(eventMessage(accidentalWarEvents[event],j,i,true,false));
+                                countries[j].enqueueMessage(eventMessage(accidentalWarEvents[event],i,j,true,false));
+                                for (int k = 0; k < countries.size(); ++k) {
+                                    if (k!=i && k!=j) {
+                                        countries[k].enqueueMessage(eventMessage("declareWarAllAccident",i,j,true,false));
+                                    }
+                                }
+
+                                diploManager->setTension(i,j,diplomacyManager::WAR);
+                            }
+                            else {//Only random relation changes if we didn't just go to war
+                                int TensionChange = countries[i].isNeighbour(j)? tensionEventChance(generator) : notNEighbourtensionEventChance(generator);
+                                if (TensionChange ==0) {
+                                    //tension down
+                                    diploManager->decreaseTensions(i,j);
+                                    int event = tensionDownDist(generator);
+                                    countries[i].enqueueMessage(eventMessage(tensionDownEvents[event],j,i,false,false));
+                                    countries[j].enqueueMessage(eventMessage(tensionDownEvents[event],i,j,false,false));
+                                }
+                                else if (TensionChange == 1) {
+                                    //Tension up
+                                    diploManager->increaseTensions(i,j,false);
+                                    int event = tensionUpDist(generator);
+                                    countries[i].enqueueMessage(eventMessage(tensionUpEvents[event],j,i,false,false));
+                                    countries[j].enqueueMessage(eventMessage(tensionUpEvents[event],i,j,false,false));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        //AI diplomacy, and front-line rebalancing
+
+
         std::cout <<"Balancing front-lines "<< std::endl;
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < countries.size(); ++i) {
-            if (i != playerCountryId)
-                balanceFrontLines(i);
+            if (i != playerCountryId) {
+                if (diploManager->isAtWar(i,countries))
+                    balanceFrontLinesWar(i);
+                else
+                    balanceFrontLinesPeace(i);
+                if (countries[i].aiDiplomacy(eventMessages,countries,*diploManager,generator)) {
+                    for (auto &city: cities) {
+                        city.updateSoldierLocations(cities,countries,*diploManager);
+                    }
+                }
+            }
         }
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -803,6 +1049,24 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     }
     else if (stanceMenu->getSelectedMenu()==2) {
         countries[playerCountryId].setOffensiveStance(country::AGGRESSIVE);
+    }
+
+
+    //AI countries check for events and respond every frame
+    for (int i = 0; i < countries.size(); i++) {
+        if (i != playerCountryId)
+        {
+            if (countries[i].handleEvents(countries,*diploManager))
+                for (auto &city: cities) {
+                    city.updateSoldierLocations(cities,countries,*diploManager);
+                }
+        }
+    }
+    if (countries[playerCountryId].hasPriorityQueuedEvents()) {
+        countries[playerCountryId].finalizePriorityEvents(eventMessages,countries,renderer,smallFont,screenWidth,screenHeight);
+    }
+    if (countries[playerCountryId].hasRegularQueuedEvents()) {
+        countries[playerCountryId].finalizeRegularEvents(eventMessages,countries,renderer,smallFont,screenWidth,screenHeight);
     }
 
 
@@ -844,7 +1108,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         muse.updateManager(userInputs.mouseXPx,userInputs.mouseYPx,userInputs.leftMouseDown,userInputs.leftMouseDown && !userInputs.prevLeftMouseDown,screenWidth,screenHeight,backgroundScale);
     }
     //Update diplomacy menu, if that thing is open
-    if (diploMenuOpen) {
+    else if (diploMenuOpen) {
         if (diploNegotiatingWith==-1)
             diploNegotiatingWith=diploManager->updateMenu(playerCountryId,countries,userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.mouseXPx, userInputs.mouseYPx,screenWidth,screenHeight,backgroundScale);
         else
@@ -854,6 +1118,26 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                 }
             }
 
+    }
+    else if (countries[playerCountryId].hasPriorityQueuedEvents()) {
+        switch (countries[playerCountryId].updateFirstEvent(userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.mouseXPx, userInputs.mouseYPx, screenWidth, screenHeight, backgroundScale,okText,yesText,noText,countries,*diploManager)) {
+            case eventMessage::NONE:
+            default:
+                //Nothing, the event is still present
+            break;
+                //TODO, these results are unused, maybe remove them
+            case eventMessage::YES:
+                //Just to be safe, update soldier locations
+                for (auto &city: cities) {
+                    city.updateSoldierLocations(cities,countries,*diploManager);
+                }
+            case eventMessage::OK:
+            case eventMessage::NO:
+                //Pop the event and move on
+                countries[playerCountryId].handledFirstEvent();
+            break;
+
+        }
     }
 
     if (userInputs.escapePressed) {
@@ -885,7 +1169,7 @@ game::~game() {
     //The destructors of my stuff takes care of the cleanup
 }
 
-void game::balanceFrontLines(int targetCountry) {
+void game::balanceFrontLinesWar(int targetCountry) {
     //Loop over all cities belonging to this country
     //Count how many hostile neighbours they have
     //Then we can figure out how many soldiers to put down per front
@@ -942,11 +1226,10 @@ void game::balanceFrontLines(int targetCountry) {
                 }
             }
         }
-
     }
 }
 
-std::map<int, int> game::getReinforcementPaths(const std::map<int, int>& citiesWithRequestedSoldiers, int targetCountry) {
+std::map<int, int> game::getReinforcementPaths(const std::map<int, int>& citiesWithRequestedSoldiers, int targetCountry) const {
 
     //I use a std::map to store the distances and prev we have access to,
     //This is because we only has access to a (hopefully) small subset of all the cities
@@ -1002,26 +1285,47 @@ std::map<int, int> game::getReinforcementPaths(const std::map<int, int>& citiesW
     return prev;
 }
 
+void game::recalculateNeighbours() {
+    for (auto& country : countries) {
+        country.resetNeighbourIds();
+    }
 
-/*
-void game::balanceFrontLines(int targetCountry) {
+    for (const auto& city : cities) {
+        for (int n : city.getNeighbours()) {
+            int neighbourOwner = cities[n].getOwner();
+            int ownOwner = city.getOwner();
+            if (ownOwner!=neighbourOwner) {
+                countries[ownOwner].addNeighbourId(neighbourOwner);
+                countries[neighbourOwner].addNeighbourId(ownOwner);
+            }
+        }
+    }
+}
+
+void game::balanceFrontLinesPeace(int targetCountry) {
     //Loop over all cities belonging to this country
-    //Count how many hostile neighbours they have
+    //Count how many potentially hostile neighbours they have
     //Then we can figure out how many soldiers to put down per front
     int totalHostileNeighbours=0;
     std::map<int,int> citiesWithHostileNeighbours;
     std::set<int> myCities;
     for (int i = 0; i < cities.size(); ++i) {
         const auto &city = cities[i];
-        //TODO, we also need to consider soldiers in other cities than my own
         if (city.getOwner() == targetCountry) {
-            int hostiles = city.getHostileNeighbours(cities,countries);
-            totalHostileNeighbours+=hostiles;
+            int borders=0;
+            for (int n : city.getNeighbours()) {
+                if (cities[n].getOwner() != targetCountry) {
+                    ++borders;
+                }
+            }
+            totalHostileNeighbours+=borders;
             //We also insert cities with 0 hostile neighbours, because we will loop over them too
-            citiesWithHostileNeighbours.emplace(i,hostiles);
+            citiesWithHostileNeighbours.emplace(i,borders);
         }
+        else
+            citiesWithHostileNeighbours.emplace(i,0);
     }
-
+    //No need to re-balance if we have no borders
     if (totalHostileNeighbours==0)
         return;
 
@@ -1030,6 +1334,7 @@ void game::balanceFrontLines(int targetCountry) {
     int averageSoldiersPerFront = armySize /totalHostileNeighbours;
     int remainder = armySize%totalHostileNeighbours;
 
+    int nToMove;
     //This is the desired number of soldiers per each front
     std::map<int,int> citiesWithRequestedSoldiers;
     for (const auto &cityFronts : citiesWithHostileNeighbours) {
@@ -1042,30 +1347,27 @@ void game::balanceFrontLines(int targetCountry) {
         }
         //Excess need will be negative, if we have to many soldiers here
         int excessNeed = nSoldiers - cities[cityFronts.first].getSoldiers(targetCountry);
+
+        nToMove+=std::abs(excessNeed);
         citiesWithRequestedSoldiers.emplace(cityFronts.first, excessNeed);
     }
 
-    for (auto &cityRequest : citiesWithRequestedSoldiers) {
-        if (cityRequest.second < 0) {
-            //We have soldiers to spare
-            int toSend = -cityRequest.second;
+    if (nToMove==0)
+        return;
 
-            //Loop through potential receivers
-            for (auto &destination : citiesWithRequestedSoldiers) {
-                if (destination.second > 0) {
-                    int toSendHere = std::min(toSend, destination.second);
-                    auto path = cities[destination.first].findPathFrom(cityRequest.first,cities,countries);
-                    //Empty path is returned if the journey is not possible (happens when we try to send soldiers to an exclave)
-                    if (!path.empty()) {
-                        cities[cityRequest.first].transferSoldiersTo(targetCountry,toSendHere,path,cities,countries,tickets);
-                        toSend-=toSendHere;
-                        destination.second-=toSendHere;
-                        if (toSend==0)
-                            break;
-                    }
-                }
+    for (auto &cityFront0 : citiesWithRequestedSoldiers) {
+        for (auto &cityFront1 : citiesWithRequestedSoldiers) {
+            if (cityFront0.second<0 && cityFront1.second>0) {
+                int toTransfer = std::min(-cityFront0.second,cityFront1.second);
+
+                std::vector<int> path {cityFront0.first,cityFront1.first};
+
+                cities[cityFront0.first].transferSoldiersTo(targetCountry,toTransfer,path,cities,countries,tickets,*diploManager,true);
+
+                //TODO, do the transfer
+                cityFront0.second+=toTransfer;
+                cityFront1.second-=toTransfer;
             }
         }
     }
 }
-*/

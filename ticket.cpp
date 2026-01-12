@@ -8,13 +8,14 @@
 
 #include "city.h"
 
-ticket::ticket(int issuer, const std::vector<int> &_stops)
+ticket::ticket(int issuer, const std::vector<int> &_stops, bool _usePlane)
 {
     issuingNation = issuer;
     stops=_stops;
     currentStep=0;
     distanceFactor=0.0;
     currentDistance=1.0;
+    usePlane=_usePlane;
     if (stops.empty()) {
         throw std::invalid_argument("attempting to create an empty ticket");
     }
@@ -121,7 +122,7 @@ void ticket::addPassenger(const std::vector<city>& cities, std::shared_ptr<count
     }
 }
 
-void ticket::display(const std::vector<city> &cities, const texwrap &trainEnd, const texwrap &trainSegment, const texwrap& ship,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,const mapData& watermap) const {
+void ticket::display(const std::vector<city> &cities, const texwrap &trainEnd, const texwrap &trainSegment, const texwrap& ship, const texwrap& transportPlane,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,const mapData& watermap) const {
     if (currentStep!=0 && currentStep<stops.size()) {
         double prevX = cities[stops[currentStep-1]].getX();
         double prevY = cities[stops[currentStep-1]].getY();
@@ -138,7 +139,10 @@ void ticket::display(const std::vector<city> &cities, const texwrap &trainEnd, c
 
         int segments = passengers.size()/4;
 
-        if (watermap.getValue(x,y)>128) {
+        if (usePlane) {
+            transportPlane.render(xScreen,yScreen,renderer,scale,true,true,goingRight);
+        }
+        else if (watermap.getValue(x,y)>128) {
             ship.render(xScreen,yScreen,renderer,scale,true,true,goingRight);
         }
         else {

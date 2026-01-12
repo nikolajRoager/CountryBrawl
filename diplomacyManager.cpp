@@ -18,6 +18,9 @@ negotiatingWithText("Negotiating with ",renderer,midFont),
 ourCurrentRelationIsText(", our relations are ",renderer,midFont),
 diplomacyRoom(assetsPath()/"ui"/"diplomacyRoom.png",renderer),
 diplomacyRoomDef(assetsPath()/"ui"/"diplomacyRoomDef.png",renderer),
+citiesText("Cities: ",renderer,smallFont),
+soldiersText("Soldiers: ",renderer,smallFont),
+slash("/",renderer,smallFont),
 disallowedReasonNames{
 texwrap("This text should be impossible to get to render, well done",renderer,smallFont),
 texwrap("Your country can't do this",renderer,smallFont),
@@ -25,6 +28,7 @@ texwrap("Tensions are too high",renderer,smallFont),
 texwrap("Tensions are too low",renderer,smallFont),
 texwrap("We are at war",renderer,smallFont),
 texwrap("We are not at war",renderer,smallFont),
+texwrap("We are not neighbours",renderer,smallFont),
 texwrap("Diplomatic cooldown",renderer,smallFont),
 },
 tensionNamesSmall{
@@ -55,7 +59,8 @@ tensionNamesMid{
     texwrap("Send Compliment (-tension)",renderer,smallFont),
     texwrap("Send Insult (+tension)",renderer,smallFont),
     texwrap("Defenestrate diplomats (+tension)",renderer,smallFont),
-    texwrap("Declare war!",renderer,smallFont)
+    texwrap("Declare war!",renderer,smallFont),
+    texwrap("Request Ceasefire",renderer,smallFont)
     }
 {
     diplomacyMenuFlagPage=0;
@@ -72,7 +77,8 @@ tensionNamesMid{
         nameToId[countries[i].getName()] = i;
         tempIdToName.push_back(countries[i].getName());
     }
-    countriesHaveTakenAction.resize(countries.size(),false);
+    //TODO, whenever we add more decisions, we need to change this
+    countriesHaveTakenAction.resize(countries.size(),std::vector<bool>(CEASEFIRE+1,false));
     defenestratedNations.resize(countries.size(),-1);
     std::vector<int> columnIds;
 
@@ -148,13 +154,13 @@ void diplomacyManager::decreaseTensions(int A, int B) {
     }
 }
 
-void diplomacyManager::increaseTensions(int A, int B) {
+void diplomacyManager::increaseTensions(int A, int B,bool allowWar) {
     if (A<B) {
-        if (tensionMatrix[B][A]<WAR)
+        if (tensionMatrix[B][A]< (allowWar?WAR:TERRIBLE))
             tensionMatrix[B][A]=(tensionState)(tensionMatrix[B][A]+1);
     }
     else if (B<A){
-        if (tensionMatrix[A][B]<WAR)
+        if (tensionMatrix[A][B]<(allowWar?WAR:TERRIBLE))
             tensionMatrix[A][B]=(tensionState)(tensionMatrix[A][B]+1);
     }
 }
@@ -172,7 +178,7 @@ diplomacyManager::tensionState  diplomacyManager::getTension(int A, int B) const
     }
 }
 
-bool diplomacyManager::updateNegotiations(int senderCountry, int receiverCountry, const std::vector<country> &countries, bool leftMouseClicked, int mouseX, int mouseY, int windowWidth, int windowHeight, double scale) {
+bool diplomacyManager::updateNegotiations(int senderCountry, int receiverCountry, std::vector<country> &countries, bool leftMouseClicked, int mouseX, int mouseY, int windowWidth, int windowHeight, double scale) {
 
     //We need to click to do anything
     if (!leftMouseClicked)
@@ -191,35 +197,50 @@ bool diplomacyManager::updateNegotiations(int senderCountry, int receiverCountry
         //TODO update this when decision number changes
         if (mouseI>=0 && mouseI<=CEASEFIRE) {
             auto  decision = (decisionType)mouseI;
-            auto disallowed = allowedToTakeDecision(senderCountry, receiverCountry,decision,countries);
-            if (disallowed==CANDO)
-                switch (decision) {
-                    case COMPLIMENT:
-                        //TODO, the receiving country should get an event
-                        decreaseTensions(senderCountry,receiverCountry);
-                        break;
-                    case INSULT:
-                        increaseTensions(senderCountry,receiverCountry);
-                        break;
-                    case DEFENESTRATE:
-                        increaseTensions(senderCountry,receiverCountry);
-                        defenestratedNations[senderCountry]=receiverCountry;
-                        break;
-                    case DECLARE_WAR:
-                        setTension(senderCountry,receiverCountry,WAR);
-                        return true;
-                    case CEASEFIRE:
-                        setTension(senderCountry,receiverCountry,BAD);
-                        break;
-                }
-            countriesHaveTakenAction[senderCountry]=true;
+            return submitDecision(decision,senderCountry,receiverCountry,countries);
         }
     }
     return false;
 }
 
 
-void diplomacyManager::displayNegotiations(int senderCountry, int receiverCountry, SDL_Renderer *renderer, const std::vector<country> &countries, int mouseX, int mouseY, int windowWidth, int windowHeight, double scale) const {
+bool diplomacyManager::submitDecision(decisionType decision, int senderCountry, int receiverCountry, std::vector<country> &countries) {
+        auto disallowed = allowedToTakeDecision(senderCountry, receiverCountry,decision,countries);
+        if (disallowed==CANDO)
+            switch (decision) {
+                case COMPLIMENT:
+                    decreaseTensions(senderCountry,receiverCountry);
+                    countries[receiverCountry].enqueueMessage(eventMessage("compliment",senderCountry,receiverCountry,true,false));
+                    break;
+                case INSULT:
+                    increaseTensions(senderCountry,receiverCountry);
+                    countries[receiverCountry].enqueueMessage(eventMessage("insult",senderCountry,receiverCountry,true,false));
+                    break;
+                case DEFENESTRATE:
+                    increaseTensions(senderCountry,receiverCountry);
+                    defenestratedNations[senderCountry]=receiverCountry;
+                    countries[receiverCountry].enqueueMessage(eventMessage("defenestration",senderCountry,receiverCountry,true,false));
+                    break;
+                case DECLARE_WAR:
+                    setTension(senderCountry,receiverCountry,WAR);
+                    for (int i = 0; i < countries.size(); i++) {
+                        if (i==receiverCountry)
+                            countries[i].enqueueMessage(eventMessage("declareWar",senderCountry,receiverCountry,true,false));
+                        else if (i!=senderCountry)
+                            countries[i].enqueueMessage(eventMessage("declareWarAll",senderCountry,receiverCountry,true,false));
+                    }
+                    return true;
+                case CEASEFIRE:
+                    countries[receiverCountry].enqueueMessage(eventMessage("ceaseFire",senderCountry,receiverCountry,true,true,CEASEFIRE));
+                    break;
+            }
+        countriesHaveTakenAction[senderCountry][decision]=true;
+    return false;
+}
+
+
+
+void diplomacyManager::displayNegotiations(int senderCountry, int receiverCountry, SDL_Renderer *renderer, const numberRenderer& number_renderer, const std::vector<country> &countries, int mouseX, int mouseY, int windowWidth, int windowHeight, double scale) const {
     int menuX0 = windowWidth/ 8;
     int menuY0 = windowHeight/ 4;
     int menuWidth = (windowWidth*6)/8;
@@ -252,6 +273,19 @@ void diplomacyManager::displayNegotiations(int senderCountry, int receiverCountr
 
     if (defenestratedNations[receiverCountry]!=senderCountry)
         countries[senderCountry].display(menuX0+diplomacyRoom.getWidth()*scale*2-countries[senderCountry].getTextureWidth()*scale,roomY1,false,getTension(senderCountry,receiverCountry)>BAD?country::ANGRY:country::HAPPY,scale*2,renderer,false,0);
+
+    soldiersText.render(menuX0,roomY1,renderer,scale);
+    number_renderer.render(countries[receiverCountry].getArmySize(),menuX0+soldiersText.getWidth()*scale,roomY1,renderer,scale);
+
+    int y =roomY1+soldiersText.getHeight()*scale;
+    citiesText.render(menuX0,y,renderer,scale);
+    int x =  menuX0+citiesText.getWidth()*scale;
+    x+=number_renderer.render(countries[receiverCountry].getOccupiedCities(),x,y,renderer,scale);
+    slash.render(x,y,renderer,scale);
+    x +=slash.getWidth();
+    number_renderer.render(countries[receiverCountry].getCoreCities(),x,y,renderer,scale);
+
+
 
     int decisionButtonsX = menuX0+diplomacyRoom.getWidth()*scale*2;
     int decisionHeight = (decisionTypeNames[0].getHeight())*scale;
@@ -297,7 +331,7 @@ void diplomacyManager::displayNegotiations(int senderCountry, int receiverCountr
 }
 
 diplomacyManager::disallowedReason diplomacyManager::allowedToTakeDecision(int sender, int receiver, decisionType decision, const std::vector<country> &countries) const {
-    if (countriesHaveTakenAction[sender])
+    if (countriesHaveTakenAction[sender][decision])
         return COOLDOWN;
     switch (decision) {
         case COMPLIMENT:
@@ -329,8 +363,9 @@ diplomacyManager::disallowedReason diplomacyManager::allowedToTakeDecision(int s
                 return AT_WAR;
             else if (getTension(sender, receiver) <BAD)
                 return TENSION_TOO_LOW;
-            else
-                return CANDO;
+            else if (!countries[sender].isNeighbour(receiver))
+                return FAR_AWAY;
+            return CANDO;
             break;
         case CEASEFIRE:
             if (getTension(sender, receiver) !=WAR)
@@ -546,4 +581,31 @@ int diplomacyManager::updateMenu(int relativeCountry, const std::vector<country>
     }
 
     return -1;
+}
+
+void diplomacyManager::resetCooldown() {
+    for (int i = 0; i < countriesHaveTakenAction.size(); i++) {
+        for (int j = 0; j < countriesHaveTakenAction[i].size(); j++) {
+            countriesHaveTakenAction[i][j]= false;
+        }
+        defenestratedNations[i]=-1;
+    }
+}
+
+bool diplomacyManager::isAtWar(int countryId,const std::vector<country>& countries) const {
+    for (int i = 0; i < tensionMatrix.size(); i++) {
+        if (getTension(countryId,i)==WAR && !countries[i].isDead()) {
+            return true;
+        }
+    }
+    return false;
+}
+int diplomacyManager::numberWars(int countryId,const std::vector<country>& countries) const {
+    int number = 0;
+    for (int i = 0; i < tensionMatrix.size(); i++) {
+        if (getTension(countryId,i)==WAR && !countries[i].isDead()) {
+            number++;
+        }
+    }
+    return number;
 }

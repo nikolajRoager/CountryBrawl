@@ -25,6 +25,7 @@ public:
     void updateMouse(int mouseX, int mouseY, bool leftMouseClick, bool rightMouseClick,  int windowWidth, int windowHeight);
 
 
+    [[nodiscard]] int getHeight() const {return background.getHeight();}
 private:
     const texwrap background;
 

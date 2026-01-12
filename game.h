@@ -16,6 +16,7 @@
 #include "mapData.h"
 #include "numberRenderer.h"
 #include "scene.h"
+#include "soundWrap.h"
 #include "ticket.h"
 #include "tile.h"
 #include "uiArmyCapCounter.h"
@@ -40,9 +41,17 @@ public:
     void togglePause() {paused = !paused;};
 
 private:
-    void balanceFrontLines(int targetCountry);
+    void balanceFrontLinesWar(int targetCountry);
+    void balanceFrontLinesPeace(int targetCountry);
+    void recalculateNeighbours();
 
-    std::map<int,int> getReinforcementPaths(const std::map<int,int>& citiesWithRequestedSoldiers, int targetCountry);
+    std::map<int,int> getReinforcementPaths(const std::map<int,int>& citiesWithRequestedSoldiers, int targetCountry) const;
+
+    std::map<std::string,std::string> eventMessages;
+    std::vector<std::string> tensionDownEvents;
+    std::vector<std::string> tensionUpEvents;
+    std::vector<std::string> accidentalWarEvents;
+
 
     //millis when we last printed FPS
     unsigned int previousFPSprintMillis;
@@ -130,9 +139,26 @@ private:
     texwrap trainEnd;
     texwrap trainSegment;
     texwrap passengerShip;
+    texwrap transportPlane;
+
+    //Accessories for messages
+    texwrap receivedMessage;
+    texwrap okText;
+    texwrap yesText;
+    texwrap noText;
+
+
+    //Sound effects for fighting
+    soundWrap shotSound;
 
     //The list of countries the player can choose between
     std::vector<country> countries;
+    //The country was there last frame
+    std::vector<bool> countryExisted;
+
+    //Unification events, saved as "name of union" list of countries involved
+    std::vector<std::pair<std::string,std::vector<int>>> unificationEvents;
+
     int playerCountryId= 0;
 
     std::vector<city> cities;

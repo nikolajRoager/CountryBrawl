@@ -12,7 +12,7 @@
 
 class ticket {
 public:
-    ticket(int issuer, const std::vector<int>& stops);
+    ticket(int issuer, const std::vector<int>& stops, bool usePlane=false);
 
     ///Add a passenger, if the current step is different from 0, the passenger is teleported aboard
     void addPassenger(const std::vector<city>& cities, std::shared_ptr<countryball>& passenger);
@@ -21,8 +21,9 @@ public:
 
     [[nodiscard]] bool isDone() const{return  stopped || currentStep>=stops.size() ;}
 
-    void display(const std::vector<city>& cities, const texwrap& trainEnd, const texwrap& trainSegment, const texwrap& ship,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,const mapData& watermap) const;
+    void display(const std::vector<city>& cities, const texwrap& trainEnd, const texwrap& trainSegment, const texwrap& ship, const texwrap& transportPlane,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,const mapData& watermap) const;
 private:
+    bool usePlane;
 
     bool stopped;
 

@@ -13,18 +13,18 @@ musicWrap::musicWrap(const fs::path& path, const std::string& _name) {
     name = _name;
 }
 
-musicWrap::musicWrap(musicWrap &&tex) noexcept {
-    music=tex.music;
-    tex.music=nullptr;
-    length=tex.length;
-    name=tex.name;
+musicWrap::musicWrap(musicWrap &&other) noexcept {
+    music=other.music;
+    other.music=nullptr;
+    length=other.length;
+    name=other.name;
 }
 
-musicWrap& musicWrap::operator=(musicWrap &&tex) noexcept {
-    music=tex.music;
-    tex.music=nullptr;
-    length=tex.length;
-    name=tex.name;
+musicWrap& musicWrap::operator=(musicWrap &&other) noexcept {
+    music=other.music;
+    other.music=nullptr;
+    length=other.length;
+    name=other.name;
     return *this;
 }
 
@@ -32,3 +32,5 @@ musicWrap::~musicWrap() {
     if (music!=nullptr)
         Mix_FreeMusic(music);
 }
+
+

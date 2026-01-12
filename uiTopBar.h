@@ -19,6 +19,8 @@ public:
     void updateMouse(int mouseX, int mouseY, bool leftMouseClick, bool rightMouseClick,  int windowWidth, int windowHeight);
     void addRightComponent(const std::shared_ptr<uiBarComponent>& component);
 
+    [[nodiscard]] int getHeight() const {return background.getHeight();}
+
 private:
     const texwrap background;
 

@@ -234,9 +234,9 @@ void city::updateOwnership(std::vector<city> &cities, std::vector<country> &coun
 
     int ownSoldiers = squads.contains(owner) ? squads[owner].size() : 0;
     int newOwner = owner;
-    //The city will be captured if a larger squad than the defenders have arrived at the city
+    //The city will be captured if a larger hostile squad than the defenders have arrived at the city
     for (const auto& squad : squads) {
-        if (squad.first!=owner && squad.second.size()>ownSoldiers) {
+        if (squad.first!=owner && squad.second.size()>ownSoldiers && diploManager.getTension(squad.first,owner)==diplomacyManager::WAR) {
             bool anyArrived = false;
             for (const auto& soldier : squad.second) {
                 if (soldier->inPosition()) {
@@ -567,10 +567,10 @@ void city::moveSoldiersTo(int allegiance, int target, bool all, std::vector<city
 
 
 //TODO, this is NOT thread-safe, please, for the love of god, make it threadsafe!!!
-void city::transferSoldiersTo(int allegiance, int numberToMove, const std::vector<int>& path, std::vector<city> &cities, const std::vector<country> &countries, std::list<ticket> &tickets, const diplomacyManager& diploManager) {
+void city::transferSoldiersTo(int allegiance, int numberToMove, const std::vector<int>& path, std::vector<city> &cities, const std::vector<country> &countries, std::list<ticket> &tickets, const diplomacyManager& diploManager,bool usePlane) {
 
     if (!path.empty()) {
-        tickets.emplace_back(allegiance,path);
+        tickets.emplace_back(allegiance,path,usePlane);
         //Some duplicate code to select the balls
         auto& squad = squads[allegiance];
 

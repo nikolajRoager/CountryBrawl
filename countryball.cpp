@@ -67,7 +67,7 @@ void countryball::move(double dt,const mapData& movementPenalties, const mapData
 }
 
 
-void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager) {
+void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager, const soundWrap& shot, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale) {
 
     if (!alive || isRidingTrain || myBase<0 || myBase>=cities.size())
         return;
@@ -128,7 +128,9 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
             const auto& target =targets[targetPicker(randomEngine)];
             //The lingering shot line both handles the graphical effect of the shot
             lingeringShots.emplace_back(x,y-myType.getTextureHeight()*0.125,target->x,target->y-myType.getTextureHeight()*0.125);
+
             shotBalls.emplace_back(target);
+            shot.play(x,y,screenMinX,screenMinY,screenWidth,screenHeight,scale);
         }
     }
 }

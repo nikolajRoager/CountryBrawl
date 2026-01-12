@@ -6,6 +6,8 @@
 #include<sstream>
 #include "country.h"
 
+#include <iostream>
+
 country::country(int _id,const fs::path& path, const texwrap& _ballInWater, const texwrap& _angry,const texwrap& _happy,const texwrap& _dead,const std::map<std::string,texwrap>& guns, SDL_Renderer* renderer,TTF_Font* smallFont,TTF_Font* midFont): texture(path/"ball.png",renderer), ballInWater(_ballInWater), angry(_angry), happy(_happy), dead(_dead), flag(path/"flag.png",renderer)  {
     id=_id;
     name="null";
@@ -251,4 +253,292 @@ void country::addFunds(double thisCoreIncome, double thisOccupiedIncome, double 
     lastMonthSoldierUpkeepCost+=thisSoldierUpkeepCost;
     lastMonthIncome+=thisCoreIncome+thisOccupiedIncome-thisSoldierUpkeepCost;
     funds+=thisCoreIncome+thisOccupiedIncome-thisSoldierUpkeepCost;
+}
+
+bool country::handleEvents(std::vector<country>& countries, diplomacyManager& diploManager) {
+    bool out = false;
+    while (!priorityEventQueue.empty()) {
+        auto& e = priorityEventQueue.front();
+        if (e.isYesNo()) {
+            auto decision = e.getDecision();
+            switch (decision) {
+                default:
+                    break;
+                    //TODO, when we add more decisions, we need to update here
+                case diplomacyManager::CEASEFIRE:
+                    int senderId = e.getSenderId();
+                    if (willAccept(decision,senderId,countries,diploManager)) {
+                        countries[senderId].enqueueMessage(eventMessage("ceaseFireAccept",id,senderId,true,false));
+                        diploManager.setTension(id,senderId,diplomacyManager::VERY_BAD);
+                        for (auto & country : countries) {
+                            country.enqueueMessage(eventMessage("ceaseFireAll",senderId,id,true,false));
+                        }
+                        out = true;
+                    }
+                    else {
+                        countries[senderId].enqueueMessage(eventMessage("ceaseFireReject",id,senderId,true,false));
+                    }
+                    break;
+            }
+        }
+        else {
+            //Simply discard things we can do nothing about, the effect has already been registered elsewhere
+
+            //Uncomment to get acknowledgement
+            //std::cout<<"The "<<genitive<<" AI acknowledges event \""<<e.getEvent()<<"\" from "<<countries[e.getSenderId()].getName()<<" to "<<countries[e.getReceiverId()].getName()<<std::endl;
+        }
+        priorityEventQueue.pop_front();
+    }
+    return out;
+}
+
+bool country::willAccept(diplomacyManager::decisionType decision, int sender, const std::vector<country> &countries, const diplomacyManager& diploManager) const {
+    switch (decision) {
+        default:
+            return false;
+        case diplomacyManager::CEASEFIRE:
+            //We always accept if we physically can't reach them
+            if (!neighbourIds.contains(sender)) {
+
+                return true;
+            }
+            //The AI HATES being in a multi-front war, and will do everything in its power to end it
+            else if (diploManager.numberWars(id,countries)>=3) {
+                return true;
+            }
+            //It will overestimate enemy armies by a factor of 2 if already in a war
+            else if (diploManager.numberWars(id,countries)==2 && countries[sender].getArmySize()*2>armySize) {
+                return true;
+            }
+            //Accept if they are more powerful than us
+            else if (countries[sender].getArmySize()>armySize) {
+                    return true;
+                }
+            else {
+                return false;
+            }
+    }
+    return false;
+}
+
+
+void country::enqueueMessage(eventMessage message) {
+    if (message.getPriority())
+        priorityEventQueue.push_back(std::move(message));
+    else {
+        regularEventQueue.push_back(std::move(message));
+    }
+}
+
+void country::finalizePriorityEvents(const std::map<std::string, std::string> &eventMessages, const std::vector<country> &countries, SDL_Renderer *renderer, TTF_Font* font, int windowWidth, int windowHeight) {
+    auto& e = priorityEventQueue.front();
+
+    if (!e.textureIsGenerated()) {
+        e.finalizeTexture(eventMessages, countries, renderer, font, windowWidth, windowHeight);
+    }
+}
+
+void country::finalizeRegularEvents(const std::map<std::string, std::string> &eventMessages, const std::vector<country> &countries, SDL_Renderer *renderer, TTF_Font *font, int windowWidth, int windowHeight) {
+    for (auto& e : regularEventQueue) {
+        if (!e.textureIsGenerated()) {
+            e.finalizeTexture(eventMessages, countries, renderer, font, windowWidth, windowHeight);
+        }
+    }
+}
+
+
+
+void country::showFirstEvent(SDL_Renderer *renderer, int mouseX, int mouseY, int windowWidth, int windowHeight, double scale, const texwrap& messageReceived, const texwrap& ok, const texwrap& yes, const texwrap& no) const {
+    const auto& e = priorityEventQueue.front();
+    if (e.textureIsGenerated())
+        e.display(renderer, mouseX, mouseY, windowWidth, windowHeight, scale,messageReceived,ok,yes,no);
+}
+
+ eventMessage::eventReply country::updateFirstEvent(bool leftMouseClicked, int mouseX, int mouseY, int windowWidth, int windowHeight, double scale, const texwrap& ok, const texwrap& yes, const texwrap& no, std::vector<country>& countries, diplomacyManager& diploManager) const {
+    const auto& e = priorityEventQueue.front();
+    eventMessage::eventReply reply = e.update(leftMouseClicked,mouseX, mouseY, windowWidth, windowHeight, scale,ok,yes,no);
+    if (reply==eventMessage::YES) {
+        auto decision = e.getDecision();
+        switch (decision) {
+            default:
+                break;
+                //TODO, when we add more decisions, we need to update here
+            case diplomacyManager::CEASEFIRE:
+                int senderId = e.getSenderId();
+                countries[senderId].enqueueMessage(eventMessage("ceaseFireAccept",id,senderId,true,false));
+                diploManager.setTension(id,senderId,diplomacyManager::VERY_BAD);
+                for (auto & country : countries) {
+                    country.enqueueMessage(eventMessage("ceaseFireAll",senderId,id,true,false));
+                }
+                break;
+        }
+    }
+    return reply;
+}
+
+void country::handledFirstEvent() {
+    priorityEventQueue.pop_front();
+}
+
+void country::displayRegularEvents(SDL_Renderer* renderer, int y) const {
+    for (const auto& e : regularEventQueue) {
+        y-=e.displaySidebar(renderer,y)+2;
+    }
+}
+
+
+bool country::aiDiplomacy(const std::map<std::string, std::string> &eventMessages, std::vector<country> &countries, diplomacyManager &diploManager, std::default_random_engine& generator) const {
+    //We can make one of each decision each 5-day turn
+    /*COMPLIMENT
+     *INSULT
+     *DEFENESTRATE
+     *DECLARE_WAR
+     *CEASEFIRE
+     */
+
+    bool out=false;
+
+    //Dead countries don't negotiate
+    if (isDead())
+        return false;
+
+
+    //These AI weights control AI personality, maybe we should make them variable from country to country
+    int doNotComplimentWeight = 50;
+    int doNotInsultWeight = 50;
+    int doNotDeclareWarWeight = 100;
+    int threatComplimentWeight = 10;
+    int opportunityWeight = 10;
+    //+10 weight for each time they outnumber us
+    int weAreOutnumberedComplimentWeight = 10;
+    int weOutnumberedThemWeight = 10;
+
+    //These are neighbour id to act on, and weighted chance of acting
+    std::vector<std::pair<int,int>> neighboursByComplimentOpportunity;
+    std::vector<std::pair<int,int>> neighboursByInsultOpportunity;
+    std::vector<std::pair<int,int>> warTargetsByOpportunity;
+
+    neighboursByComplimentOpportunity.emplace_back(-1,doNotComplimentWeight);
+    neighboursByInsultOpportunity.emplace_back(-1,doNotInsultWeight);
+    warTargetsByOpportunity.emplace_back(-1,doNotDeclareWarWeight);
+
+    int totalComplimentWeight = doNotComplimentWeight;
+    int totalInsultWeight = doNotInsultWeight;
+    int totalDeclareWarWeight = doNotDeclareWarWeight;
+
+    int ourSoldiers = getArmySize();
+
+    //Being at war changes our calculus considerably
+    bool atWar = diploManager.isAtWar(id,countries);
+    for (int n : neighbourIds) {
+        int theirSoldiers = countries[n].getArmySize();
+
+        auto tension = diploManager.getTension(id,n);
+        //We view someone as a threat if our relations are not great, and they either could beat us OR they are approaching our strength and we are already fighting in another war (the AI HATES multi-front wars)
+        bool threat = ( (atWar &&  theirSoldiers*2 >= ourSoldiers) || (theirSoldiers >= ourSoldiers) ) && (tension >= diplomacyManager::POOR);
+        //We will not throw around insults while at war
+        bool opportunity = (!atWar && (theirSoldiers < ourSoldiers) && tension>=diplomacyManager::DECENT);
+
+        if (diplomacyManager::CANDO == diploManager.allowedToTakeDecision(id,n,diplomacyManager::COMPLIMENT,countries)) {
+            int weight=1;
+            if (threat) {
+                weight += threatComplimentWeight;
+            }
+            if (ourSoldiers ==0) {
+                weight += (weAreOutnumberedComplimentWeight*theirSoldiers);
+            }
+            else if (theirSoldiers > ourSoldiers && !atWar) {
+                weight += std::min(weAreOutnumberedComplimentWeight*10,(weAreOutnumberedComplimentWeight*theirSoldiers)/ourSoldiers);
+            }
+            neighboursByComplimentOpportunity.emplace_back(n,weight);
+            totalComplimentWeight+=weight;
+        }
+        if (diplomacyManager::CANDO == diploManager.allowedToTakeDecision(id,n,diplomacyManager::INSULT,countries) || diplomacyManager::CANDO == diploManager.allowedToTakeDecision(id,n,diplomacyManager::DEFENESTRATE,countries)) {
+            int weight=1;
+            if (opportunity) {
+                weight += opportunityWeight;
+            }
+            if (theirSoldiers ==0) {
+                weight += (weOutnumberedThemWeight*ourSoldiers);
+            }
+            else if (theirSoldiers < ourSoldiers) {
+                weight += std::min(weOutnumberedThemWeight*10,(weOutnumberedThemWeight*ourSoldiers)/theirSoldiers);
+            }
+            neighboursByInsultOpportunity.emplace_back(n,weight);
+            totalInsultWeight+=weight;
+        }
+        //The AI will not, and can not declare war if already at war
+        if (diplomacyManager::CANDO == diploManager.allowedToTakeDecision(id,n,diplomacyManager::DECLARE_WAR,countries) && !atWar) {
+            int weight=1;
+            if (opportunity) {
+                weight += opportunityWeight;
+            }
+            if (theirSoldiers ==0) {
+                weight += (weOutnumberedThemWeight*ourSoldiers);
+            }
+            else if (theirSoldiers < ourSoldiers) {
+                weight += std::min(weOutnumberedThemWeight*10,(weOutnumberedThemWeight*ourSoldiers)/theirSoldiers);
+            }
+            warTargetsByOpportunity.emplace_back(n,weight);
+            totalDeclareWarWeight+=weight;
+        }
+    }
+
+    std::uniform_int_distribution<> insultDistribution(0,totalInsultWeight);
+    std::uniform_int_distribution<> complimentDistribution(0,totalComplimentWeight);
+    std::uniform_int_distribution<> declareWarDistribution(0,totalDeclareWarWeight);
+
+    int insultRoll = insultDistribution(generator);
+    int complimentRoll = complimentDistribution(generator);
+    int declareWarRoll = declareWarDistribution(generator);
+
+    for (const auto& pair : neighboursByComplimentOpportunity) {
+        complimentRoll-=pair.second;
+        if (complimentRoll< 0) {
+            if (pair.first!=-1)
+                out =diploManager.submitDecision(diplomacyManager::COMPLIMENT,id, pair.first,countries) || out;
+            break;
+        }
+    }
+    for (const auto& pair : neighboursByInsultOpportunity) {
+        insultRoll-=pair.second;
+        if (insultRoll < 0) {
+            if (pair.first!=-1)
+                out = diploManager.submitDecision(diplomacyManager::INSULT,id, pair.first,countries) || out;
+            break;
+        }
+    }
+
+    if (canDefenestrate) {
+        for (const auto& pair : neighboursByInsultOpportunity) {
+            insultRoll-=pair.second;
+            if (insultRoll < 0) {
+                if (pair.first!=-1)
+                    out = diploManager.submitDecision(diplomacyManager::DEFENESTRATE,id, pair.first,countries) || out;
+                break;
+            }
+        }
+
+    }
+    for (const auto& pair : warTargetsByOpportunity) {
+        declareWarRoll-=pair.second;
+        if (declareWarRoll < 0) {
+            if (pair.first!=-1)
+                out = diploManager.submitDecision(diplomacyManager::DECLARE_WAR,id, pair.first,countries) || out;
+            break;
+        }
+    }
+
+    if (diploManager.isAtWar(id,countries)) {
+        for (int i = 0; i < countries.size(); ++i) {
+            if (diploManager.getTension(id,i)==diplomacyManager::WAR && !countries[i].isDead()) {
+                //If we would accept a ceasefire, and we would accept if we were in their position, send one of
+                if (willAccept(diplomacyManager::CEASEFIRE,i,countries,diploManager) && countries[i].willAccept(diplomacyManager::CEASEFIRE,id,countries,diploManager)) {
+                    diploManager.submitDecision(diplomacyManager::CEASEFIRE,id,i,countries);
+                }
+            }
+        }
+    }
+
+    return out;
 }

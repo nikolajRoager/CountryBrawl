@@ -11,6 +11,7 @@
 #include "country.h"
 #include "lingeringShot.h"
 #include "mapData.h"
+#include "soundWrap.h"
 
 class city;
 
@@ -50,7 +51,7 @@ public:
     [[nodiscard]] int getBase() const {return myBase;}
 
     //Randomly launch small-arms fire at enemy countryballs
-    void shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager);
+    void shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager, const soundWrap& shot, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale);
 
     void setRidingTrain(bool riding) {
         isRidingTrain = riding;

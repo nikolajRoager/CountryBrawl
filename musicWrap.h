@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 class musicWrap {
 public:
     musicWrap(const fs::path& path, const std::string& name);
-    musicWrap(musicWrap&& tex) noexcept ;
+    musicWrap(musicWrap&& other) noexcept ;
     musicWrap& operator=(musicWrap&& other) noexcept ;
     ~musicWrap();
 
@@ -27,7 +27,6 @@ private:
     Mix_Music* music;
     double length;
     std::string name;
-
 };
 
 

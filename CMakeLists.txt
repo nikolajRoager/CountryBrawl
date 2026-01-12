@@ -93,4 +93,8 @@ add_executable(CountryBrawl main.cpp
         musicwrap.cpp
         musicWrap.h
         diplomacyManager.cpp
-        diplomacyManager.h)
+        diplomacyManager.h
+        eventMessage.cpp
+        eventMessage.h
+        soundWrap.cpp
+        soundWrap.h)

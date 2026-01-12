@@ -1010,7 +1010,7 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-day 22, 8-1-2026, workload 10 hours
+day 23, 8-1-2026, workload 10 hours
 =======
 
 note
@@ -1124,7 +1124,7 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-day 23, 9-1-2026
+day 24, 9-1-2026
 =======
 
 plan
@@ -1143,12 +1143,234 @@ Remove dead countries from the diplomacy menu Done
 
 NO AI DIPLOMACY YET Done, (I have NOT added AI diplomacy, thus fulfilling this objective)
 
-Implement small names in country (Done)
+Implement small names in country Done
 
 Implement defenestration Done
 
-Implement display of event messages
+Implement display of event messages Failed (out of time, and requires a lot more thinking)
 
-Implement a simple script for event messages, so you can easily add them
+... wouldn't it be fun if you added unification events already Failed (out of time)
 
-... wouldn't it be fun if you added unification events already
+Legal/copyright issues
+------
+Check if non-derivatives clause prevents me from using the Preobrazhensky march in game
+
+Check if non-commercial clause is problematic
+
+issues
+--------------
+We need defenestration sound effects
+
+Bug where soldiers can walk through the front-line and get behind the lines
+
+Russia keeps beating Ukraine in a few weeks, that isn't realistic
+
+Music manager requires multiple pages
+
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 25, 10-1-2026, workload 12 hours
+=======
+
+Post work note
+-----
+The game is actually fun, in a comedic way, I just spent about an our observing the game, as Czechia and Slovakia teamed up to eliminate Russia from the map, and Belgium almost annihilated France, only for both sides to get Anschlussed
+
+
+
+Thinking about event messages
+---------
+Event messages have a text message, a sender, and a receiver.
+
+When created, the event renders the text, replacing the word SENDER and RECEIVER with sender and receiver
+
+Event messages should only be created if they are directed at the player
+
+plan
+---
+Fix cooldown to be on a per-decision basis Done
+
+Make neighbour recognition Done
+
+Make war declaration neighbour only Done
+
+Load all event texts Done
+
+Write event texts for unification event
+
+Create eventMessage class Done
+
+Launch events from the diplomacy menu (as a test) Done
+
+Receive and display eventMessages Done
+
+Implement random tension changes Done, but it SUCKS! it is annoying to get interrupted every 5 days by football hooligans... We need some tiny little sidebar for non-blocking events
+
+Implement random accidental war Done, it is hillarious!, Czechia and Slovakia just took out Russia
+
+Implement AI-Diplomacy
+
+Implement unification events
+* Kalmar union
+* Benelux
+* Romania-Moldova
+* Libya
+* Czechoslovakia/Slovakoczechia
+* Anschluss
+* Hashimite union
+
+Things we need sound effects for
+--------
+Shots
+
+Defenestrations
+
+War being declared
+
+Breaking messages
+-----
+War declarations
+
+War betwixt other countries?
+
+Issues
+----
+We need automatic rebalancing of fronts when at peace
+
+Bug where soldiers get trapped in neutral territory when multiple attack the same city
+
+Bug where neutral soldiers captures cities
+
+We need defenestration sound effects
+
+Bug where soldiers can walk through the front-line and get behind the lines
+
+Russia keeps beating Ukraine in a few weeks, that isn't realistic
+
+Music manager requires multiple pages
+
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 26, 11-1-2026 workload 11 hours
+=======
+
+plan
+----
+Auto-balance in peace-time: get which cities need which soldiers, and from where Done
+
+Auto-balance in peace-time: transfer soldiers directly to where they are needed Done
+
+Show cores, cities, soldiers in diplomacy menu Done
+
+Other queue for low-priority events Done
+
+Display low-priority events Done
+
+AI Diplomacy: should be able to send basic interactions Done
+
+AI Diplomacy: should be able to respond to cease-fire negotiations Done
+
+AI Diplomacy: Should be able to send cease-fire requests
+
+Fix neutral capture bug Done
+
+Fix Ghost nation bug Done
+
+
+
+Things we need sound effects for
+--------
+Shots
+
+Defenestrations
+
+War being declared
+
+issues
+-----
+Recruitment doesn't happen in gained core territory
+
+We need defenestration sound effects
+
+Bug where soldiers can walk through the front-line and get behind the lines
+
+Russia keeps beating Ukraine in a few weeks, that isn't realistic
+
+Music manager requires multiple pages
+
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+day 27, 12-1-2026 Workload, less than 4 hours
+=======
+
+note
+----
+I have decided to take a break today, I will try to work less than 4 hours
+
+plan
+----
+Add some music Done
+
+Add rifle sounds
+
+Record a let's play

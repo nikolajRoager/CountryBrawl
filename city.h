@@ -76,7 +76,7 @@ public:
     void moveSoldiersTo(int allegiance,int target,bool all,std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets,const diplomacyManager& diploManager);
 
     //Transfer a specific number of soldiers somewhere else using a pre-calculated path
-    void transferSoldiersTo(int allegiance,int numberToMove, const std::vector<int>& path, std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets, const diplomacyManager& diploManager);
+    void transferSoldiersTo(int allegiance,int numberToMove, const std::vector<int>& path, std::vector<city>& cities, const std::vector<country>& countries, std::list<ticket>& tickets, const diplomacyManager& diploManager,bool usePlane=false);
 
     void removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager);
 

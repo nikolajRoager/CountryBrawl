@@ -8,12 +8,12 @@
 
 #include "getAssets.h"
 
-uiExpandableMenu::uiExpandableMenu(SDL_Renderer *renderer, TTF_Font *smallFont,std::vector<std::string> menuNames):
+uiExpandableMenu::uiExpandableMenu(SDL_Renderer *renderer, TTF_Font *smallFont,std::vector<std::string> menuNames, const std::string& mouseOverText):
 uiBarComponent(
     //A very awkward way of creating the lines, necessary since line is not copyable
-[renderer,smallFont] {
+[renderer,smallFont,&mouseOverText] {
     std::vector<uiMouseOverText::line> lines;
-    lines.emplace_back("Automatic recruitment settings",false,0,renderer,smallFont);
+    lines.emplace_back(mouseOverText,false,0,renderer,smallFont);
     return lines;
 }()
 ),
