@@ -97,23 +97,10 @@ void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector
 
 
 
-void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
+void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, const std::vector<city>& cities, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
 
     int xScreen = x*scale-screenMinX;
     int yScreen = y*scale-screenMinY;
-
-    /*
-    for (int n : neighbours) {
-        if (n < bases.size()) {
-            int theirXScreen = bases[n].getX()*scale-screenMinX;
-            int theirYScreen = bases[n].getY()*scale-screenMinY;
-
-            SDL_SetRenderDrawColor(renderer, 64, 0, 0, 64);
-            SDL_RenderDrawLine(renderer,xScreen,yScreen,theirXScreen,theirYScreen);
-
-        }
-    }
-*/
 
     if (xScreen+cityTexture.getWidth()>0 && xScreen <= screenWidthPx+cityTexture.getWidth() && yScreen>0 && yScreen <= screenHeightPx+cityTexture.getHeight())
     {
@@ -189,6 +176,17 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, c
             SDL_RenderDrawLine(renderer, locationScreenX0, locationScreenY0, locationScreenX1, locationScreenY1);
         }
         */
+
+
+        //TODO temp
+        for (int n : potentialSupplyHubs) {
+            int theirXScreen = cities[n].getX()*scale-screenMinX;
+            int theirYScreen = cities[n].getY()*scale-screenMinY;
+
+            SDL_SetRenderDrawColor(renderer, 0, 128, 255, 64);
+            SDL_RenderDrawLine(renderer,xScreen,yScreen,theirXScreen,theirYScreen);
+        }
+
     }
 }
 

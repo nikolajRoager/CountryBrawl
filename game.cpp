@@ -420,7 +420,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     for (int i = 0; i < cities.size(); i++) {
         const city &city = cities[i];
         city.display(cityTexture, selectedCityTexture, supplyHubTexture, selectedCities.contains(i), i == primarySelectedCity,
-                     countries, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall);
+                     countries, cities, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall);
     }
 
 

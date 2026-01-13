@@ -19,7 +19,7 @@
 class city {
 public:
     city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y);
-    void display(const texwrap& baseTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
+    void display(const texwrap& baseTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries, const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
 
     ///Highlight the path to a direct neighbour
     void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis) const;
