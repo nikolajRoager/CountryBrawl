@@ -13,6 +13,7 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     name="null";
     //Default values
     speed=100.0;
+    maxBullets=5;
     trainSpeed=300.0;
     infantryRange=200.0;
     infantryFireRate=5;
@@ -61,6 +62,9 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
             if (ss>>variable && ss>>value) {
                 if (variable =="movementSpeed") {
                     speed=std::stof(value);
+                }
+                if (variable =="maxBullets") {
+                    maxBullets=std::stoi(value);
                 }
                 else if (variable =="movementSpeedMultiplier") {
                     speed*=std::stof(value);

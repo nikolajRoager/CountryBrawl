@@ -27,6 +27,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     angryBall(assetsPath() / "countryballAccessories" / "angry.png", renderer),
     deadBall(assetsPath() / "countryballAccessories" / "dead.png", renderer),
     cityTexture(assetsPath() / "city.png", renderer),
+    supplyHubTexture(assetsPath() / "supplyHub.png", renderer),
     selectedCityTexture(assetsPath() / "selectedCity.png", renderer),
     arrowTexture(assetsPath() / "arrow.png", renderer),
     trainEnd(assetsPath() / "trainEnd.png", renderer),
@@ -418,7 +419,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     for (int i = 0; i < cities.size(); i++) {
         const city &city = cities[i];
-        city.display(cityTexture, selectedCityTexture, selectedCities.contains(i), i == primarySelectedCity,
+        city.display(cityTexture, selectedCityTexture, supplyHubTexture, selectedCities.contains(i), i == primarySelectedCity,
                      countries, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall);
     }
 

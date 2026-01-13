@@ -44,15 +44,17 @@ struct loadableBase {
     ///Who currently controls the base and the province (De Facto owner)
     std::string owner;
     ///My id in the list of bases, used for making sure my neighbours delete me safely
-    int id;
+    int id=0;
     std::string name;
     std::string provinceName;
     ///Who can access 100% of this base and province resources (De Jure owner)
     std::string core;
     ///Location
-    double x,y;
+    double x=0,y=0;
     ///Monthly income in millions of Euros
-    int income;
+    int income=0;
+
+    bool isSupplyHub = false;
 
     ///Neighbour, saved as index to be safe when the vector containing us get resized
     std::set<int> neighbours;
@@ -71,6 +73,7 @@ void from_json(const nlohmann::json& j, loadableBase& b) {
     j.at("y").get_to(b.y);
     j.at("income").get_to(b.income);
     j.at("neighbours").get_to(b.neighbours);
+    b.isSupplyHub= j.value("isSupplyHub", false);
 }
 
 
@@ -105,7 +108,7 @@ void jsonClient::load(std::vector<city>& bases,const std::vector<country>& count
         int ownerId = ownerIt- countries.begin();
         int coreId = coreIt- countries.begin();
 
-        bases.emplace_back(ownerId,coreId,i++,base.name,base.provinceName,base.x,base.y,base.income,base.neighbours);
+        bases.emplace_back(ownerId,coreId,i++,base.name,base.provinceName,base.x,base.y,base.income,base.neighbours,base.isSupplyHub);
     }
 }
 

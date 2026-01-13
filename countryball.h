@@ -70,6 +70,8 @@ private:
     double targetX;
     double targetY;
 
+    int bullets;
+
     //What we should aim at
     double aimX, aimY;
     int targetCity=-1;

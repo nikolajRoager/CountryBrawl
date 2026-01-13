@@ -28,7 +28,7 @@ city::city(int _owner, int _myId, const std::string &_name, const std::string &_
     recruitmentLength=0;
 }
 
-city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, int _income, const std::set<int> &_neighbours) {
+city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, int _income, const std::set<int> &_neighbours, bool _isSupplyHub) {
     owner = _owner;
     core = _core;
     myId = _myId;
@@ -39,6 +39,7 @@ city::city(int _owner, int _core, int _myId, const std::string &_name, const std
     provinceName = _provinceName;
     neighbours = _neighbours;
     cityNameTexture=nullptr;
+    isSupplyHub = _isSupplyHub;
 
 
     isRecruiting=false;
@@ -66,12 +67,18 @@ void city::updateNeighbourhood(std::vector<city> &cities) {
     for (int n : neighbours) {
         //My neighbours
         neighbourhood.insert(n);
+        if (cities[n].getIsSupplyHub())
+            potentialSupplyHubs.insert(n);
         for (int m : cities[n].neighbours) {
             //And their neighbours
             neighbourhood.insert(m);
+            if (cities[m].getIsSupplyHub())
+                potentialSupplyHubs.insert(m);
             for (int o : cities[m].neighbours) {
                 //And their neighbours
                 neighbourhood.insert(o);
+                if (cities[o].getIsSupplyHub())
+                    potentialSupplyHubs.insert(o);
             }
         }
     }
@@ -90,7 +97,7 @@ void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector
 
 
 
-void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
+void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
 
     int xScreen = x*scale-screenMinX;
     int yScreen = y*scale-screenMinY;
@@ -120,6 +127,8 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, b
 
 
         cityTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
+        if (isSupplyHub)
+            supplyHubTexture.render(xScreen+scale*((cityTexture.getWidth()+supplyHubTexture.getWidth())/2),yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
 
         countries[owner].getFlag().render(xScreen-thisScale*(cityTexture.getWidth()/2-3),yScreen-thisScale*cityTexture.getHeight(),renderer,thisScale);
 

@@ -19,7 +19,7 @@
 class city {
 public:
     city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y);
-    void display(const texwrap& baseTexture, const texwrap& selectedTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
+    void display(const texwrap& baseTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
 
     ///Highlight the path to a direct neighbour
     void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis) const;
@@ -55,7 +55,7 @@ public:
 
 
     ///For loading from file
-    city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, int _income, const std::set<int>& _neighbours);
+    city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, int _income, const std::set<int>& _neighbours, bool isSupplyHub);
 
     void updateFrontlinesAndNeighbourDistances(const std::vector<city>& cities,const mapData& watermap);
 
@@ -107,7 +107,9 @@ public:
 
     void updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager);
 
+    [[nodiscard]] bool getIsSupplyHub() const {return isSupplyHub;}
 private:
+    bool isSupplyHub = false;
     bool isRecruiting;
     unsigned int recruitmentTimer;
     unsigned int recruitmentLength;
@@ -115,6 +117,9 @@ private:
 
     //A list of nearby cities (me, my neighbours, their neighbours, maybe more)
     std::set<int> neighbourhood;
+
+    //Which supply hubs would be in range of me, if we had diplomatic access
+    std::set<int> potentialSupplyHubs;
 
     std::unique_ptr<texwrap> cityNameTexture;
 

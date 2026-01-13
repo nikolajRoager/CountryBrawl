@@ -108,6 +108,7 @@ public:
     [[nodiscard]] double getLastMonthOccupiedIncome() const {return lastMonthOccupiedIncome;}
     [[nodiscard]] double getLastMonthSoldierUpkeepCost() const {return lastMonthSoldierUpkeepCost;}
     [[nodiscard]] double getLastMonthIncome() const {return lastMonthIncome;}
+    [[nodiscard]] int getMaxBullets() const {return maxBullets;}
 
     void addCoreId(int cid) {coreIdList.emplace_back(cid);}
     [[nodiscard]] const std::vector<int>& getCoreIds() const {return coreIdList;}
@@ -219,6 +220,8 @@ private:
 
     //National stats
     double speed;
+    int maxBullets;
+
     double trainSpeed;
     double infantryRange;
     //Chance of firing a shot at any target every second

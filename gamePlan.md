@@ -1,7 +1,7 @@
 Plan for the game
 =========
 
-Short summary
+Short summary, before the MVP
 --------------
 
 A real-time strategy game, inspired by "capture the base" game's like Solarmax, "Logistics games" like Creeper World, and war games with front-line like HoI
@@ -55,3 +55,75 @@ Key features, in order of implementation
   * Soldiers go to their post on the front-line
   * Soldiers shoot at each other
   * AI "balances" its own borders
+
+Expanded game 
+======
+With the MVP done, it is time to think about the expanded game, there are a couple of categories we can work on:
+
+* Tactical Combat
+* Strategic warfare
+* Buildings
+* Economy
+* Rebalancing
+
+Tactical combat
+------
+
+* police fire
+* Defenders advantage (higher fire-rate, more health maybe) (can be boosted by buildings)
+* Drones and Grenades
+* Artillery (Are we still doing this?!)
+* Tactical missiles (from buildings)
+* Ammo system (Requires supply lines)
+* Airplanes
+
+Buildings
+--------
+Buildings can be upgraded along different paths:
+
+* supply hub (for supply line mechanic)
+* Missile base
+* Factory
+* airbase
+
+On the other hand, maybe supply hubs and factories should not be mutually exclusive, 
+
+Anti-air and fortification can freely be added to all bases
+
+Strategic warfare
+------------
+Missiles and airplanes can target and disable cities, it takes time for cities to be repaired
+
+Supply lines
+------------
+Factories produce stuff:
+* bullets
+* grenades
+* drones
+* cruise missiles
+* SAM
+
+Factories have a small capacity for storing stuff
+
+Supply hubs absorb stuff from nearby factories (possibly automatically, possibly using trucks/trains)
+
+Supply hubs have a large capacity for storing stuff
+
+All cities consume stuff on behalf of soldiers associated with them
+
+Soldiers create demand for stuff in their associated cities, demand is met by nearest supply hub which can satisfy demand
+
+Demand may be met from further away supply hubs in the network
+
+Supply networks recalculate every time a city is captured
+
+Come to think about it, we may have supply network follow city network, or have set range... city network is better
+
+We need a new city editor, or to upgrade the old one, to place down supply hubs
+
+Rebalancing
+------
+
+* Welfare spending (max money)
+* Recruitment should be a lot slower
+* Police

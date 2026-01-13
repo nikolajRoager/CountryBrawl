@@ -16,6 +16,7 @@ countryball::countryball(country &_myType, double _x, double _y): myType(_myType
     alive=true;
     despawnTimer=1.0;
     isRidingTrain=false;
+    bullets=myType.getMaxBullets();
     _myType.incrementArmySize();
 }
 
@@ -76,11 +77,14 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
     if (dt==0.0)
         return;
 
+    if (bullets<=0)
+        return;
+
     //It is FAR better for performance to calculate the number of shots first (since most soldiers don't shoot each frame)
     double mean = dt*myType.getInfantryFireRate();
     std::poisson_distribution<int> poisson_distribution(mean);
 
-    int shotsThisFrame = poisson_distribution(randomEngine);
+    int shotsThisFrame = std::min(poisson_distribution(randomEngine),bullets);
 
     if (shotsThisFrame==0)
         return;
@@ -126,11 +130,16 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
         std::uniform_int_distribution<int> targetPicker(0,targets.size()-1);
         for (int i = 1; i < shotsThisFrame; ++i) {
             const auto& target =targets[targetPicker(randomEngine)];
-            //The lingering shot line both handles the graphical effect of the shot
+            //The lingering shot line is the graphical effect
             lingeringShots.emplace_back(x,y-myType.getTextureHeight()*0.125,target->x,target->y-myType.getTextureHeight()*0.125);
 
+            //This handles the damage
             shotBalls.emplace_back(target);
+            //This plays the sound when on-screen
             shot.play(x,y,screenMinX,screenMinY,screenWidth,screenHeight,scale);
+            //And there is one less arrow in the quiver, figuratively speaking
+            //TODO: un-comment this line, for now while the supply system isn't working, everyone has infinite ammo
+            //--bullets;
         }
     }
 }
@@ -148,4 +157,18 @@ void countryball::display(double screenMinX, double screenMinY, int screenWidth,
 
     //If we are happy, we point the gun away from the target (we are likely guarding our own city)
     myType.display(x,y,inWater,alive? myExpression:country::DEAD,screenMinX,screenMinY,screenWidth,screenHeight,scale,renderer,myExpression==country::ANGRY?x<aimX:x>aimX,myExpression==country::ANGRY? (x<aimX ? angle : M_PI+angle) : 0 );
+
+    //Display quad indicating our number of bullets
+    {
+
+        int xScreen = static_cast<int>(x*scale-screenMinX);
+        int yScreen = static_cast<int>(y*scale-screenMinY);
+
+        int x0 = xScreen+0.25*scale*myType.getTextureWidth()/2;
+        int h = (0.25*scale*myType.getTextureHeight()*bullets)/myType.getMaxBullets();
+        int w = 4*scale;
+        SDL_Rect rect {x0,yScreen-h,w,h};
+        SDL_SetRenderDrawColor(renderer,200,165,0,255);
+        SDL_RenderFillRect(renderer,&rect);
+    }
 }

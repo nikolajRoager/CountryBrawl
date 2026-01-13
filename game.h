@@ -132,6 +132,7 @@ private:
 
     //Accessories for city rendering
     texwrap cityTexture;
+    texwrap supplyHubTexture;
     texwrap selectedCityTexture;
     texwrap arrowTexture;
 

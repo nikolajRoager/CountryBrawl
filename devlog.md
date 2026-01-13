@@ -1360,7 +1360,7 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-day 27, 12-1-2026 Workload, less than 4 hours
+day 26.5, 12-1-2026 Workload, less than 4 hours
 =======
 
 note
@@ -1371,6 +1371,25 @@ plan
 ----
 Add some music Done
 
-Add rifle sounds
+Add rifle sounds Done
 
-Record a let's play
+Record a let's play Done
+
+day 27, 13-1-2026 Workload, less than 4 hours
+=======
+
+note
+---
+This is another "break" day
+
+plan
+-----
+Make a plan for what to do next Done
+
+Plan out supply lines, not quite Done, but enough to do a little bit
+
+Make soldiers limited in bullet Done
+
+Think about where to put down factories and supply hubs, and how many, and how they should work.
+
+Add supply hubs, at the very least graphically, so we can see where they are. For now, supply hubs ignore borders
