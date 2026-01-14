@@ -1,0 +1,10 @@
+* Tirana
+* Pristina
+* Skopje
+* Podgorica
+* Belgrade
+* Sarajevo
+* Zagreb
+* Ljubljana
+* Thessaloniki
+* Athens

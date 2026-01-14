@@ -1390,6 +1390,16 @@ Plan out supply lines, not quite Done, but enough to do a little bit
 
 Make soldiers limited in bullet Done
 
-Think about where to put down factories and supply hubs, and how many, and how they should work.
+Think about where to put down factories and supply hubs, and how many, and how they should work. Done
 
-Add supply hubs, at the very least graphically, so we can see where they are. For now, supply hubs ignore borders
+Add supply hubs, at the very least graphically, so we can see where they are. For now, supply hubs ignore borders. Done
+
+day 28, 14-1-2026
+======
+
+plan
+----
+Create list of supply hubs, in general
+* All cities should be in range of at least 1 supply hub
+* Supply hubs should in general be 6 cities away
+* Each nation has at least 1 supply hub
