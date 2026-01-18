@@ -7,3 +7,4 @@ difficulty veryhard
 bonus Unite our people: conquer Romania to gain their cores
 malus Small country: Has only three cities
 gun akm
+malus Very poor: Has very low city development

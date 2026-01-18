@@ -14,3 +14,4 @@ gun hk416
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 trainSpeedMultiplier 1.1
+bonus good economy: Has quite high city development

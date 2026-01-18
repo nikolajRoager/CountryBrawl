@@ -36,8 +36,8 @@ public:
     [[nodiscard]] double getInfantryRange() const {return infantryRange;}
     [[nodiscard]] double getInfantryFireRate() const {return infantryFireRate;}
     [[nodiscard]] double getTrainSpeed() const {return trainSpeed;}
-    [[nodiscard]] double getArmyCapPerCity() const {return armyCapPerCore;}
-    [[nodiscard]] double getArmyCapPerOccupiedCity() const {return armyCapPerOccupiedCity;}
+    //[[nodiscard]] double getArmyCapPerCity() const {return armyCapPerCore;}
+    //[[nodiscard]] double getArmyCapPerOccupiedCity() const {return armyCapPerOccupiedCity;}
     [[nodiscard]] double getCoreIncomeMultiplier() const {return coreIncomeMultiplier;}
     [[nodiscard]] double getOccupiedIncomeMultiplier() const {return occupiedIncomeMultiplier;}
     [[nodiscard]] double getSoldierUpkeepCost() const {return soldierUpkeepCost;}
@@ -72,9 +72,19 @@ public:
         return otherCountryId == id;
     }
 
-    [[nodiscard]] int getArmyCap() const {return occupiedCities*armyCapPerOccupiedCity+coreCities*armyCapPerCore;}
-    [[nodiscard]] int getArmyCapCores() const {return coreCities*armyCapPerCore;}
-    [[nodiscard]] int getArmyCapOccupied() const {return occupiedCities*armyCapPerOccupiedCity;}
+    void resetArmyCap () {
+        armyCapCores=0;
+        armyCapOccupied=0;
+    }
+
+    void addArmyCap(int core, int occ) {
+        armyCapCores+=core;
+        armyCapOccupied+=occ;
+    }
+
+    [[nodiscard]] int getArmyCap() const {return armyCapCores*armyCapPerCoreMultiplier+armyCapOccupied*armyCapPerOccupiedMultiplier;}
+    [[nodiscard]] int getArmyCapCores() const {return armyCapCores*armyCapPerCoreMultiplier;}
+    [[nodiscard]] int getArmyCapOccupied() const {return armyCapOccupied*armyCapPerOccupiedMultiplier;}
 
 
 
@@ -102,6 +112,13 @@ public:
     void spendFunds(double amount) {
         funds -= amount;
     }
+    bool limitFunds() {
+        if (funds>lastMonthIncome*3 && lastMonthIncome>0) {
+            funds = lastMonthIncome*3;
+            return true;
+        }
+        return false;
+    }
 
     [[nodiscard]] double getFunds() const {return funds;}
     [[nodiscard]] double getLastMonthCoreIncome() const {return lastMonthCoreIncome;}
@@ -109,6 +126,7 @@ public:
     [[nodiscard]] double getLastMonthSoldierUpkeepCost() const {return lastMonthSoldierUpkeepCost;}
     [[nodiscard]] double getLastMonthIncome() const {return lastMonthIncome;}
     [[nodiscard]] int getMaxBullets() const {return maxBullets;}
+    [[nodiscard]] double getProductionMultiplier() const {return productionMultiplier;}
 
     void addCoreId(int cid) {coreIdList.emplace_back(cid);}
     [[nodiscard]] const std::vector<int>& getCoreIds() const {return coreIdList;}
@@ -226,14 +244,21 @@ private:
     double infantryRange;
     //Chance of firing a shot at any target every second
     double infantryFireRate;
-    double armyCapPerCore;
-    double armyCapPerOccupiedCity;
+
+    double armyCapPerCoreMultiplier;
+    double armyCapPerOccupiedMultiplier;
+    int armyCapCores;
+    int armyCapOccupied;
+
     double coreIncomeMultiplier;
     double occupiedIncomeMultiplier;
     double soldierUpkeepCost;
     double infantryRecruitmentCost;
     //Time to recruit a new infantry soldier, in ms in-game time
     unsigned int infantryRecruitmentTime;
+
+    //Multiplied unto the number of stuff produced by factories each day
+    double productionMultiplier;
 
     //Current stats
     int coreCities;

@@ -9,3 +9,4 @@ bonus Large country: Has a lot of cities
 gun akm
 coreIncomeMultiplier 0.8
 occupiedIncomeMultiplier 0.8
+malus Very poor: Has very low city development

@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <ranges>
 #include <SDL2/SDL_image.h>
 
 #include "getAssets.h"
@@ -27,11 +28,14 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     angryBall(assetsPath() / "countryballAccessories" / "angry.png", renderer),
     deadBall(assetsPath() / "countryballAccessories" / "dead.png", renderer),
     cityTexture(assetsPath() / "city.png", renderer),
+    factoryTexture(assetsPath()/"factory.png",renderer),
     supplyHubTexture(assetsPath() / "supplyHub.png", renderer),
     selectedCityTexture(assetsPath() / "selectedCity.png", renderer),
     arrowTexture(assetsPath() / "arrow.png", renderer),
     trainEnd(assetsPath() / "trainEnd.png", renderer),
     trainSegment(assetsPath() / "trainSegment.png", renderer),
+    cargoTrain(assetsPath() / "cargoTrain.png", renderer),
+    cargoShip(assetsPath() / "cargoShip.png", renderer),
     passengerShip(assetsPath() / "passengerShip.png", renderer),
     transportPlane(assetsPath() / "transportPlane.png", renderer),
     numbererSmall(0, smallFont, renderer),
@@ -41,7 +45,26 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     okText("Ok",renderer,midFont),
     yesText("Yes",renderer,midFont),
     noText("No",renderer,midFont),
-    shotSound(assetsPath()/"sound"/"shot.wav"),
+
+    cityColonTexture("City: ",renderer,smallFont),
+    provinceColonTexture("Province: ",renderer,smallFont),
+    coreColonTexture("Core: ",renderer,smallFont),
+    ownerColonTexture("Owner: ",renderer,smallFont),
+    developmentColonTexture("Development: ",renderer,smallFont),
+    developTexture(assetsPath()/"ui"/"develop.png",renderer),
+    specializationColonTexture("Specialization: ",renderer,smallFont),
+    stockpileColonTexture("Stockpile:",renderer,smallFont),
+    factoryTextTexture("Factory",renderer,smallFont),
+    noneTextTexture("None",renderer,smallFont),
+    incomeColonTexture("Income: ",renderer,smallFont),
+    euroTexture("€",renderer,smallFont),
+    armyCapColonTexture("Army Cap: ",renderer,smallFont),
+    productionColonTexture("Production: ",renderer,smallFont),
+    bulletsTexture(assetsPath()/"ui"/"bullets.png",renderer),
+
+developMouseOverText("Develop, €",renderer,smallFont),
+developMaxMouseOverText("Max developed already",renderer,smallFont),
+shotSound(assetsPath()/"sound"/"shot.wav"),
     topBar(renderer),
     bottomBar(renderer)
 {
@@ -179,7 +202,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
         {
             jsonClient importer(assetsPath() / "startingMap" / "cities.json");
             try {
-                importer.load(cities, countries);
+                importer.load(cities, countries, supplyHubs);
             } catch (std::exception &e) {
                 throw std::runtime_error("Could not load cities, error: " + std::string(e.what()));
             }
@@ -304,7 +327,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
             playerCities++;
         }
         //TODO this is temporary
-        //Add 5 soldier to every city
+        /*//Add 5 soldier to every city
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
         city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
@@ -315,6 +338,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
         city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
         city.addCountryball(soldiers.back(), cities, countries,*diploManager);
+        */
     }
     if (playerCities>0) {
         cameraCentreX /= playerCities;
@@ -325,6 +349,31 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     screenMinX = cameraCentreX * scale - windowWidthPx / 2.0;
     screenMinY = cameraCentreY * scale - windowHeightPx / 2.0;
 
+    for (auto &hub: supplyHubs | std::views::values) {
+        hub.recalculate(cities,countries,supplyHubs);
+    }
+
+    //Calculate which hubs can potentially be neighbours
+
+    for (const auto& city : cities) {
+        const auto& potentialHubs = city.getPotentialSupplyHubs();
+        for (int i : potentialHubs) {
+            for (int j : potentialHubs) {
+                if (i!=j) {
+                    supplyHubs.at(i).addSupplyHubNeighbour(j);
+                    supplyHubs.at(j).addSupplyHubNeighbour(i);
+                }
+            }
+        }
+    }
+
+    //TODO, this is temp remove it again
+    for (const auto &hub: supplyHubs | std::views::values) {
+        std::cout<<"The "<<cities[hub.getCityId()].getName()<<" Supply network has the following neighbours:"<<std::endl;
+        for (int i : hub.getNeighbours()) {
+            std::cout<<'\t'<<cities[i].getName()<<std::endl;
+        }
+    }
 
     frontlinePathByCountry.resize(countries.size());
 
@@ -419,13 +468,18 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     for (int i = 0; i < cities.size(); i++) {
         const city &city = cities[i];
-        city.display(cityTexture, selectedCityTexture, supplyHubTexture, selectedCities.contains(i), i == primarySelectedCity,
-                     countries, cities, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall);
+        city.display(cityTexture,factoryTexture, selectedCityTexture, supplyHubTexture, selectedCities.contains(i), i == primarySelectedCity,
+                     countries, cities, supplyHubs, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall);
     }
 
 
     for (const auto &ticket: tickets) {
         ticket.display(cities, trainEnd, trainSegment, passengerShip,transportPlane, screenMinX, screenMinY, screenWidth, screenHeight,
+                       scale, renderer, watermap);
+    }
+
+    for (const auto &ticket: cargoTickets) {
+        ticket->display(cities, cargoTrain, cargoShip, screenMinX, screenMinY, screenWidth, screenHeight,
                        scale, renderer, watermap);
     }
 
@@ -475,6 +529,30 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         SDL_Rect quad = {x0Screen, y0Screen, width, height};
 
         SDL_RenderDrawRect(renderer, &quad);
+    }
+
+    if (primarySelectedCity!=-1 && cities[primarySelectedCity].getOwner()==playerCountryId) {
+        cities[primarySelectedCity].displayInfobox(cityColonTexture,
+            provinceColonTexture,
+            coreColonTexture,
+            ownerColonTexture,
+            developmentColonTexture,
+            developTexture,
+            specializationColonTexture,
+            incomeColonTexture,
+            euroTexture,
+            armyCapColonTexture,
+            stockpileColonTexture,
+            productionColonTexture,
+            factoryTextTexture,
+            noneTextTexture,
+            bulletsTexture,
+            developMouseOverText,
+            developMaxMouseOverText,
+            countries,
+            numbererSmall,
+            userInputs.mouseXPx, userInputs.mouseYPx,
+            screenWidth,screenHeight,backgroundScale,renderer);
     }
 
     topBar.display(renderer, userInputs.mouseXPx, userInputs.mouseYPx, screenWidth, screenHeight, numbererMid,
@@ -632,10 +710,44 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     double mouseYWorld = ((userInputs.mouseYPx + screenMinY) / scale);
 
 
+
+    //If we make a development click, we shouldn't deselect the city
+    bool madeDevClick=false;
+    if (primarySelectedCity!=-1 && cities[primarySelectedCity].getOwner()==playerCountryId) {
+        if (cities[primarySelectedCity].hasClickedDevelop(
+            cityColonTexture,
+            provinceColonTexture,
+            coreColonTexture,
+            ownerColonTexture,
+            developmentColonTexture,
+            developTexture,
+            specializationColonTexture,
+            incomeColonTexture,
+            euroTexture,
+            armyCapColonTexture,
+            stockpileColonTexture,
+            productionColonTexture,
+            factoryTextTexture,
+            noneTextTexture,
+            bulletsTexture,
+            countries,
+            numbererSmall,
+            userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.mouseXPx, userInputs.mouseYPx,
+            screenWidth,screenHeight,backgroundScale)) {
+            if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getDevCost()) {
+                countries[playerCountryId].spendFunds(cities[primarySelectedCity].getDevCost());
+                cities[primarySelectedCity].incrementDevelopment();
+            }
+            madeDevClick=true;
+            }
+    }
+
+
+
     //Update which cities are selected by the player
     int prevPrimarySelectedCity = primarySelectedCity;
     //Left click to select cities
-    if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown) {
+    if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown && !madeDevClick) {
         //You need shift click to keep the selection
         if (!userInputs.shiftPressed) {
             primarySelectedCity = -1;
@@ -719,6 +831,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     } else if (!selectedPath.empty())
         selectedPath.clear();
 
+
     topBar.updateMouse(userInputs.mouseXPx, userInputs.mouseYPx, userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.rightMouseDown && !userInputs.prevRightMouseDown, screenWidth, screenHeight);
     bottomBar.updateMouse(userInputs.mouseXPx, userInputs.mouseYPx, userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.rightMouseDown && !userInputs.prevRightMouseDown, screenWidth, screenHeight);
 
@@ -741,9 +854,11 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     for (auto &ticket: tickets) {
         ticket.update(cities, countries, dt,*diploManager);
     }
-
-
+    for (auto &ticket: cargoTickets) {
+        ticket->update(cities, countries, dt,*diploManager);
+    }
     tickets.remove_if([](const ticket &ticket) { return ticket.isDone(); });
+    cargoTickets.remove_if([](const std::shared_ptr<cargoTicket> &ticket) { return ticket->isDone(); });
 
     std::vector<std::shared_ptr<countryball> > shotBalls;
     for (auto &ball: soldiers) {
@@ -755,6 +870,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         }
         ball->move(dt, movementPenalties, watermap);
         ball->shoot(shotBalls, smallArmsShots, soldiers, cities, generator, dt,*diploManager,shotSound,screenMinX, screenMinY, screenWidth, screenHeight, scale);
+        ball->reload(cities);
 
     }
 
@@ -771,10 +887,10 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     }
 
     for (auto &city: cities) {
-        city.updateOwnership(cities, countries,*diploManager);
+        city.updateOwnership(cities, countries,supplyHubs,*diploManager);
         if (city.updateRecruitment(dtGameTime)) {
             countries[city.getOwner()].decrementRecruitingSoldiers();
-            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
+            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY(),0));
             city.addCountryball(soldiers.back(), cities, countries,*diploManager);
         }
     }
@@ -811,11 +927,18 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                 thisContry.addFunds(0, city.getIncome() * thisContry.getOccupiedIncomeMultiplier(), 0);
             }
         }
-        //Then subtract soldier upkeep cost
-        for (auto &country: countries) {
+        //Then subtract soldier upkeep cost, and limit to max funds
+        for (int i = 0; i < countries.size(); ++i) {
+            auto &country = countries[i];
             //TODO, replace with different types of soldiers ... maybe
             country.addFunds(0, 0, country.getArmySize() * country.getSoldierUpkeepCost());
+
+            if (country.limitFunds()) {
+                country.enqueueMessage(eventMessage("welfare",i,i,true,false));
+            }
         }
+
+
     }
 
 
@@ -1071,9 +1194,32 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     }
 
 
-    //Attack decisions are taken daily, leading to maximum chaos
+    //Attack decisions are taken daily, leading to maximum chaos, we also update army capacity daily
     if (dayChanged || firstUpdate)
     {
+        //Recalculate army capacity every day
+        for (auto& country : countries) {
+            country.resetArmyCap();
+        }
+        for (auto &city: cities) {
+            int owner = city.getOwner();
+            if (owner == city.getCore())
+                countries[owner].addArmyCap(city.getArmyCapacity(),0);
+            else
+                countries[owner].addArmyCap(0,city.getArmyCapacity());
+        }
+
+        //Update production in factories
+        for (auto &city : cities) {
+            city.updateDailyProduction(countries);
+        }
+
+        for (auto &supplyHub: supplyHubs | std::views::values) {
+            supplyHub.supplyTick(cities,countries,supplyHubs,cargoTickets);
+           // std::cout<<"There are "<<cargoTickets.size()<<" cargo tickets active"<<std::endl;
+        }
+
+
         //Update which cities should auto-attack which neighbours
         for (auto &city: cities) {
             int owner= city.getOwner();
@@ -1357,18 +1503,18 @@ void game::balanceFrontLinesPeace(int targetCountry) {
         return;
 
     for (auto &cityFront0 : citiesWithRequestedSoldiers) {
-        for (auto &cityFront1 : citiesWithRequestedSoldiers) {
-            if (cityFront0.second<0 && cityFront1.second>0) {
-                int toTransfer = std::min(-cityFront0.second,cityFront1.second);
+        if (cityFront0.second<0)
+            for (auto &cityFront1 : citiesWithRequestedSoldiers) {
+                if (cityFront0.second<0 && cityFront1.second>0) {
+                    int toTransfer = std::min(-cityFront0.second,cityFront1.second);
 
-                std::vector<int> path {cityFront0.first,cityFront1.first};
+                    std::vector<int> path {cityFront0.first,cityFront1.first};
 
-                cities[cityFront0.first].transferSoldiersTo(targetCountry,toTransfer,path,cities,countries,tickets,*diploManager,true);
+                    cities[cityFront0.first].transferSoldiersTo(targetCountry,toTransfer,path,cities,countries,tickets,*diploManager,true);
 
-                //TODO, do the transfer
-                cityFront0.second+=toTransfer;
-                cityFront1.second-=toTransfer;
+                    cityFront0.second+=toTransfer;
+                    cityFront1.second-=toTransfer;
+                }
             }
-        }
     }
 }

@@ -29,7 +29,6 @@ int numberRenderer::getHeight() const {
     return digits[0].getHeight();
 }
 
-//TODO fix this
 int numberRenderer::getWidth(int number) const {
 
     int width = 0;

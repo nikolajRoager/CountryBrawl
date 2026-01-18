@@ -6,3 +6,4 @@ description Montenegro is a very small Balkan nation, may I suggest picking anot
 difficulty veryhard
 malus Microstate: Has only one city
 gun akm
+malus poor: Has low city development

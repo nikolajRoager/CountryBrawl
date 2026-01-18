@@ -10,3 +10,4 @@ bonus Strong democracy: +10% province income
 gun hkg3
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
+malus small economy: Has middling city development

@@ -7,13 +7,14 @@
 #include <fstream>
 #include <iostream>
 
+#include "supplyHub.h"
 #include"thirdPartyLibraryInclude/json.hpp"
 
 jsonClient::jsonClient(const fs::path& path) {
     jsonFilePath = path;
 }
 
-void jsonClient::save(const std::vector<city> &bases,const std::vector<country>& countries) {
+void jsonClient::save(const std::vector<city> &bases,const std::vector<country>& countries) const {
     nlohmann::json result = nlohmann::json::array();
 
     for (const auto& base : bases) {
@@ -51,13 +52,14 @@ struct loadableBase {
     std::string core;
     ///Location
     double x=0,y=0;
-    ///Monthly income in millions of Euros
-    int income=0;
 
     bool isSupplyHub = false;
 
     ///Neighbour, saved as index to be safe when the vector containing us get resized
     std::set<int> neighbours;
+
+    city::specialization mySpecialization;
+    int development;
 };
 
 
@@ -68,16 +70,22 @@ void from_json(const nlohmann::json& j, loadableBase& b) {
     j.at("name").get_to(b.name);
     j.at("provinceName").get_to(b.provinceName);
     j.at("core").get_to(b.core);
-    j.at("income").get_to(b.income);
     j.at("x").get_to(b.x);
     j.at("y").get_to(b.y);
-    j.at("income").get_to(b.income);
     j.at("neighbours").get_to(b.neighbours);
     b.isSupplyHub= j.value("isSupplyHub", false);
+    b.development= j.value("development", 0);
+    std::string spec = j.value("specialization", "NONE");
+    if (spec == "FACTORY") {
+        b.mySpecialization=city::FACTORY;
+    }
+    else {
+        b.mySpecialization=city::NONE;
+    }
 }
 
 
-void jsonClient::load(std::vector<city>& bases,const std::vector<country>& countries) {
+void jsonClient::load(std::vector<city>& bases,const std::vector<country>& countries, std::map<int,supplyHub>& supplyHubs) {
     std::ifstream file(jsonFilePath);
     if (!file.is_open()) {
         throw std::runtime_error("Can't open "+jsonFilePath.string());
@@ -108,7 +116,13 @@ void jsonClient::load(std::vector<city>& bases,const std::vector<country>& count
         int ownerId = ownerIt- countries.begin();
         int coreId = coreIt- countries.begin();
 
-        bases.emplace_back(ownerId,coreId,i++,base.name,base.provinceName,base.x,base.y,base.income,base.neighbours,base.isSupplyHub);
+        //We will finalize the supply hubs later, when all cities are loaded
+        if (base.isSupplyHub) {
+            supplyHubs.emplace(i,supplyHub(i,ownerId));
+        }
+
+
+        bases.emplace_back(ownerId,coreId,i++,base.name,base.provinceName,base.x,base.y,base.neighbours,base.isSupplyHub,base.mySpecialization,base.development);
     }
 }
 

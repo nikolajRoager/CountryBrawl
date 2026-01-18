@@ -7,3 +7,4 @@ difficulty hard
 malus Small country: Has only 3 cities
 bonus Unite our people: Annex Kosovo to form a union and gain their cores
 gun akm
+malus Very poor: Has very low city development

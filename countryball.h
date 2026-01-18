@@ -17,7 +17,7 @@ class city;
 
 class countryball {
 public:
-    countryball(country& _myType, double _x, double _y);
+    countryball(country& _myType, double _x, double _y, int bullets=0);
 
     void display(double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer) const;
     void move(double dt,const mapData& movementPenalties, const mapData& watermap);
@@ -52,6 +52,7 @@ public:
 
     //Randomly launch small-arms fire at enemy countryballs
     void shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager, const soundWrap& shot, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale);
+    void reload(std::vector<city>& cities);
 
     void setRidingTrain(bool riding) {
         isRidingTrain = riding;

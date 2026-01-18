@@ -9,3 +9,4 @@ malus Flawed democracy: -10% province income
 gun akm
 coreIncomeMultiplier 0.9
 occupiedIncomeMultiplier 0.9
+malus War ravaged: Has very low city development

@@ -9,3 +9,4 @@ malus Weird dialect: very hard to understand
 gun sg550
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
+bonus obscenely rich: Has absurdly high city development

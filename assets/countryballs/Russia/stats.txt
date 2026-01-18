@@ -6,7 +6,7 @@ description Russia is the great boogeyman of Eastern Europe, a vile revanchist s
 difficulty easy
 malus Authoritarian regime: -20% province income
 malus Depoliticized population: +20% recruitment time
-malus Endemic corruption: equipment +20% production time
+malus Endemic corruption: -20% production output
 malus Post-Truth propaganda: a terrible place to live
 malus Pariah: has poor relations with almost everyone
 malus Special military operation: starts at war with Ukraine
@@ -20,3 +20,5 @@ coreIncomeMultiplier 0.8
 occupiedIncomeMultiplier 0.8
 infantryRecruitmentTimeMultiplier 1.2
 defenestration true
+productionMultiplier 0.8
+malus poor: Has low city development

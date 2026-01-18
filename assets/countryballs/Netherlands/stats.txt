@@ -11,3 +11,4 @@ gun c7
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 trainSpeedMultiplier 1.1
+bonus very rich: Has very high city development

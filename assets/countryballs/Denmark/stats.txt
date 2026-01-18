@@ -11,3 +11,4 @@ gun m16
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 movementSpeedMultiplier 1.05
+very rich: Has very high city development

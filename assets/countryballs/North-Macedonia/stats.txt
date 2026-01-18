@@ -6,3 +6,4 @@ description North Macedonia used to ambitiously be called Macedonia, implicitly 
 difficulty veryhard
 malus Small country: Has only two cities
 gun akm
+malus Very poor: Has very low city development

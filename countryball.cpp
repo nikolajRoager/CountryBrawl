@@ -10,13 +10,13 @@
 #include "city.h"
 
 
-countryball::countryball(country &_myType, double _x, double _y): myType(_myType), x(_x), y(_y), targetX(_x), targetY(_y), aimX(_x), aimY(_y) {
+countryball::countryball(country &_myType, double _x, double _y, int _bullets): myType(_myType), x(_x), y(_y), targetX(_x), targetY(_y), aimX(_x), aimY(_y) {
     inWater=false;
     myExpression=country::HAPPY;
     alive=true;
     despawnTimer=1.0;
     isRidingTrain=false;
-    bullets=myType.getMaxBullets();
+    bullets=std::min( myType.getMaxBullets(),_bullets);
     _myType.incrementArmySize();
 }
 
@@ -102,10 +102,6 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
         for (const auto& squad : cities[c].getSquads())
             //And if we are at war with that squad (the first index is their allegiance) we will loop over all the soldiers
             if (myType.atWarWith(squad.first,diploManager)) {
-
-                //7512.64,5952.25
-
-
                 for (const auto& soldier :squad.second)
                 {
                     //Bail early if they are obviously to far away
@@ -139,8 +135,19 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
             shot.play(x,y,screenMinX,screenMinY,screenWidth,screenHeight,scale);
             //And there is one less arrow in the quiver, figuratively speaking
             //TODO: un-comment this line, for now while the supply system isn't working, everyone has infinite ammo
-            //--bullets;
+            --bullets;
         }
+    }
+
+
+}
+
+void countryball::reload(std::vector<city> &cities) {
+    if (myBase<0 || myBase>=cities.size() || isRidingTrain)
+        return;
+
+    if (cities[myBase].getOwner()==getAllegiance() && bullets<myType.getMaxBullets()) {
+        bullets += cities[myBase].transferBullets(myType.getMaxBullets()-bullets);
     }
 }
 
@@ -160,7 +167,6 @@ void countryball::display(double screenMinX, double screenMinY, int screenWidth,
 
     //Display quad indicating our number of bullets
     {
-
         int xScreen = static_cast<int>(x*scale-screenMinX);
         int yScreen = static_cast<int>(y*scale-screenMinY);
 

@@ -12,14 +12,68 @@
 #include "country.h"
 #include "countryball.h"
 #include "numberRenderer.h"
+#include "stockpile.h"
 #include "texwrap.h"
 #include "ticket.h"
 
+#define MAX_DEVELOPMENT 15
+
+class supplyHub;
 
 class city {
 public:
-    city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y);
-    void display(const texwrap& baseTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries, const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
+    enum specialization {
+        NONE,
+        FACTORY
+    };
+
+    city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y,specialization mySpecialization,int development);
+    void display(const texwrap& baseTexture, const texwrap& factoryTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
+
+
+    void displayInfobox(
+    const texwrap& cityColonTexture,
+    const texwrap& provinceColonTexture,
+    const texwrap& coreColonTexture,
+    const texwrap& ownerColonTexture,
+    const texwrap& developmentColonTexture,
+    const texwrap& developTexture,
+    const texwrap& specializationColonTexture,
+    const texwrap& incomeColonTexture,
+    const texwrap& euroTexture,
+    const texwrap& armyCapColonTexture,
+    const texwrap& stockpileColonTexture,
+    const texwrap& productionColonTexture,
+    const texwrap& FactoryTextTexture,
+    const texwrap& NoneTextTexture,
+    const texwrap &bulletsTexture,
+    const texwrap& developMouseOverText,
+    const texwrap& developMaxMouseOverText,
+    const std::vector<country>& countries,
+    const numberRenderer& numberer, int mouseX, int mouseY, int screenWidthPx, int screenHeightPx, double scale,SDL_Renderer* renderer) const;
+
+
+    //Is the little button to develop a city clicked, we need all those textures to figure out where the button goes
+    [[nodiscard]] bool hasClickedDevelop(const texwrap &cityColonTexture,
+    const texwrap &provinceColonTexture,
+    const texwrap &coreColonTexture,
+    const texwrap &ownerColonTexture,
+    const texwrap &developmentColonTexture,
+    const texwrap &developTexture,
+    const texwrap &specializationColonTexture,
+    const texwrap &incomeColonTexture,
+    const texwrap &euroTexture,
+    const texwrap &armyCapColonTexture,
+    const texwrap &stockpileColonTexture,
+    const texwrap &productionColonTexture,
+    const texwrap &FactoryTextTexture,
+    const texwrap &NoneTextTexture,
+    const texwrap &bulletsTexture,
+    const std::vector<country> &countries, const numberRenderer &numberer, bool leftCLick, int mouseX, int mouseY, int screenWidthPx,
+                             int screenHeightPx, double scale
+) const;
+
+
 
     ///Highlight the path to a direct neighbour
     void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis) const;
@@ -32,7 +86,10 @@ public:
 
     [[nodiscard]] bool isSelected (const texwrap& baseTexture, int mouseX, int mouseY,int screenMinX, int screenMinY, double scale) const;
 
-    [[nodiscard]] int getIncome() const {return income;}
+    [[nodiscard]] int getIncome() const {return baseIncome+devIncome*development;}
+    [[nodiscard]] int getDevCost() const {return getIncome()*3;}
+    [[nodiscard]] int getArmyCapacity() const {return baseArmyCapacity+devArmyCapacity*development;}
+
 
     [[nodiscard]] const std::string& getName() const {return name;}
     [[nodiscard]] const std::string& getProvinceName() const {return provinceName;}
@@ -45,7 +102,10 @@ public:
     void setName(const std::string &newName) {this->name = newName;}
     void setProvinceName(const std::string &newName) {this->provinceName = newName;}
 
-    void updateOwnership(std::vector<city>& cities,std::vector<country>& countries,const diplomacyManager& diploManager);
+    void updateOwnership(std::vector<city>& cities,std::vector<country>& countries,std::map<int,supplyHub>& supplyHubs,const diplomacyManager& diploManager);
+
+    ///To be called once per day, add our daily production output
+    void updateDailyProduction(const std::vector<country>& countries);
 
     void addNeighbour(int newNeighbour);
 
@@ -54,8 +114,14 @@ public:
     [[nodiscard]] const std::set<int>& getNeighbours() const {return neighbours;}
 
 
+    void incrementDevelopment() {
+        if (development<MAX_DEVELOPMENT) {
+            ++development;
+        }
+    }
+
     ///For loading from file
-    city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, int _income, const std::set<int>& _neighbours, bool isSupplyHub);
+    city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, const std::set<int>& _neighbours, bool isSupplyHub,specialization mySpecialization,int development);
 
     void updateFrontlinesAndNeighbourDistances(const std::vector<city>& cities,const mapData& watermap);
 
@@ -65,6 +131,7 @@ public:
 
     void generateNameTexture(TTF_Font* font, SDL_Renderer* renderer) {
         cityNameTexture=std::make_unique<texwrap>(name,renderer,font);
+        provinceNameTexture=std::make_unique<texwrap>(provinceName,renderer,font);
     }
 
     [[nodiscard]] std::vector<int> findPathFrom(int source, const std::vector<city>& cities, const std::vector<country>& countries) const;
@@ -95,6 +162,12 @@ public:
         return squads.contains(allegiance) ? squads[allegiance].size() : 0;
     }
 
+    [[nodiscard]] specialization getSpecialization() const {return mySpecialization;}
+
+    [[nodiscard]] bool hasFriendlySoldiers() {
+        return getSoldiers(owner)>0;
+    }
+
     [[nodiscard]] const std::map<int,double>& getNeighbourDistances() const {
         return neighbourDistances;
     }
@@ -108,8 +181,61 @@ public:
     void updateSoldierLocations(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager);
 
     [[nodiscard]] bool getIsSupplyHub() const {return isSupplyHub;}
+
+
+    void recalcNearestSupplyhub(const std::map<int, supplyHub>& supplyHubs,const std::vector<city>& cities);
+    [[nodiscard]] int getNearestSupplyHub() const {return nearestSupplyHub;}
+
+    [[nodiscard]] bool isOutOfSupply() const {return nearestSupplyHub==-1;}
+
+
+    [[nodiscard]] stockpile getStockpile() const {return myStockpile;}
+
+    //We may create bullets out of thin air, if we try to remove stuff which isn't there, we have to check for that elsewhere
+    void removeStuff(const stockpile& stuff) {
+        myStockpile.bullets=std::max(0,myStockpile.bullets-stuff.bullets);
+    }
+
+    void addStuff(const stockpile& stuff) {
+        myStockpile.bullets+=stuff.bullets;
+    }
+
+    ///Try to remove the requested number of bullets from the stockpile, return how many was actually taken
+    int transferBullets(int request) {
+        if (request<=myStockpile.bullets) {
+            myStockpile.bullets -= request;
+            return request;
+        }
+        else {
+            request = myStockpile.bullets;
+            myStockpile.bullets = 0;
+            return request;
+        }
+    }
+
+    [[nodiscard]] const std::set<int>& getPotentialSupplyHubs() const {return potentialSupplyHubs;}
 private:
+
+    specialization mySpecialization;
+
+    ///Currently stored ammo
+    stockpile myStockpile;
+    ///The most I can store,
+    stockpile maxStockpile;
+    ///For factories, what is the base production everyone has
+    stockpile baseProduction;
+    ///And what do we get per level of dev
+    stockpile devProduction;
+
+    int development;
+
+
     bool isSupplyHub = false;
+
+
+    int nearestSupplyHub;
+
+
     bool isRecruiting;
     unsigned int recruitmentTimer;
     unsigned int recruitmentLength;
@@ -122,6 +248,7 @@ private:
     std::set<int> potentialSupplyHubs;
 
     std::unique_ptr<texwrap> cityNameTexture;
+    std::unique_ptr<texwrap> provinceNameTexture;
 
     ///Who currently controls the base and the province (De Facto owner)
     int owner;
@@ -134,7 +261,11 @@ private:
     ///Location
     double x,y;
     ///Monthly income in millions of Euros
-    int income;
+    int baseIncome;
+    int devIncome;
+
+    int baseArmyCapacity;
+    int devArmyCapacity;
 
     ///Neighbour, saved as index to be safe when the vector containing us get resized
     std::set<int> neighbours;

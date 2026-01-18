@@ -8,6 +8,7 @@
 #include <random>
 #include <vector>
 
+#include "cargoTicket.h"
 #include "city.h"
 #include "country.h"
 #include "countryball.h"
@@ -17,6 +18,7 @@
 #include "numberRenderer.h"
 #include "scene.h"
 #include "soundWrap.h"
+#include "supplyHub.h"
 #include "ticket.h"
 #include "tile.h"
 #include "uiArmyCapCounter.h"
@@ -45,7 +47,7 @@ private:
     void balanceFrontLinesPeace(int targetCountry);
     void recalculateNeighbours();
 
-    std::map<int,int> getReinforcementPaths(const std::map<int,int>& citiesWithRequestedSoldiers, int targetCountry) const;
+    [[nodiscard]] std::map<int,int> getReinforcementPaths(const std::map<int,int>& citiesWithRequestedSoldiers, int targetCountry) const;
 
     std::map<std::string,std::string> eventMessages;
     std::vector<std::string> tensionDownEvents;
@@ -132,15 +134,45 @@ private:
 
     //Accessories for city rendering
     texwrap cityTexture;
+    texwrap factoryTexture;
     texwrap supplyHubTexture;
     texwrap selectedCityTexture;
     texwrap arrowTexture;
+
+    //Accessories for rendering city information box
+    /*City: Oslo
+     *province: Østlandet
+     *Core: Norway
+     *Owner: Norway
+     *Development: 11
+     *Specialization: Factory
+     *Stockpile: 100 B 50 D 10 g
+     */
+    texwrap cityColonTexture;
+    texwrap provinceColonTexture;
+    texwrap coreColonTexture;
+    texwrap ownerColonTexture;
+    texwrap developmentColonTexture;
+    texwrap developTexture;
+    texwrap specializationColonTexture;
+    texwrap stockpileColonTexture;
+    texwrap productionColonTexture;
+    texwrap incomeColonTexture;
+    texwrap euroTexture;
+    texwrap armyCapColonTexture;
+    texwrap factoryTextTexture;
+    texwrap noneTextTexture;
+    texwrap developMouseOverText;
+    texwrap developMaxMouseOverText;
+    texwrap bulletsTexture;
 
     //Accessories for trains
     texwrap trainEnd;
     texwrap trainSegment;
     texwrap passengerShip;
     texwrap transportPlane;
+    texwrap cargoTrain;
+    texwrap cargoShip;
 
     //Accessories for messages
     texwrap receivedMessage;
@@ -163,8 +195,11 @@ private:
     int playerCountryId= 0;
 
     std::vector<city> cities;
+    //Supply hubs, indexed by the city id they are associated with
+    std::map<int,supplyHub> supplyHubs;
 
     std::list<ticket> tickets;
+    std::list<std::shared_ptr<cargoTicket>> cargoTickets;
 
     std::vector<std::unique_ptr<tile>> tiles;
     numberRenderer numbererSmall;

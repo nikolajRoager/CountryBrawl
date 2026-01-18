@@ -1394,12 +1394,154 @@ Think about where to put down factories and supply hubs, and how many, and how t
 
 Add supply hubs, at the very least graphically, so we can see where they are. For now, supply hubs ignore borders. Done
 
-day 28, 14-1-2026
+day 28, 14-1-2026, workload 8 hours
 ======
+
+Note
+----
+I forgot to write in the devlog while working today, so the "plan" is more like a summary of what I did
 
 plan
 ----
-Create list of supply hubs, in general
-* All cities should be in range of at least 1 supply hub
-* Supply hubs should in general be 6 cities away
-* Each nation has at least 1 supply hub
+Create supply hub handling system and classes Done
+
+Add list of supply hubs Done
+
+Calculate the paths to every supply hub Done
+
+Automatically update supply network when ownership changes Done
+
+Day 29, 15-1-2026, workload 7 hours
+=======
+
+Plan
+-----
+Create other program, which loads the city network Done
+
+Use the other program to randomly place down factories Done
+
+Use the other program (or make yet another one) to assign "province development" to cities based on: HDI or GDP per capita of countries, user input city size DONE, that took like forever
+
+Implement display of both factories and development
+
+plus a bunch more things I didn't have time to do, which have been moved to the next day, because adding population to cities took FOREVER
+
+
+
+Day 30, 16-1-2026, workload 9 hours
+=======
+
+Note
+----
+I accidentally deleted ALL supply hubs in the game... oops
+
+Plan
+-----
+
+Implement openable UI box for cities with: development, name, province, stats: income, army cap, ammo stored, ammo production DONE (Except production and stockpile)
+
+Make income dependent on development Done
+
+Make army cap dependent on development Done
+
+Try to play the game with these new restrictions Done
+
+Implement button to dev cities for 3 tax income Done
+
+Look into how you can implement the 3 income limit Failed (out of time)
+
+Some more items failed due to out of time
+
+
+
+Day 31, 17-1-2026, workload 12 hours
+=======
+
+A think about how the supply ticks should work
+------
+Honestly, I have no idea how this should work, and I have been putting it off for days.
+
+I guess the supply hub first registers how much stored stuff it has, then it figures out who needs what amount of stuff (prioritizing cities with friendly soldiers)
+
+Nah, for a start, just divide stuff evenly
+
+Then the supply hubs gives orders to redistribute stuff accordingly,
+
+the orders spawn transportTickets which exist both in a global list, and locally owned by the supply hubs
+
+Stuff in transit are counted towards stuff at each location
+
+We should be careful to not move stuff which isn't there yet.
+
+
+plan
+----
+
+Implement 3 income limit Done
+
+Fix bug allowing selection and development of non-owned provinces Done
+
+Add the supply hubs back Done (that took like forever)
+
+Implement daily ammo production and ammo storage in cities Done
+
+Think about how the supply tick should work Done
+
+Implement supply-tick in theory where supply hubs try to rebalance cities in their network (but without actually sending stuff) Done
+
+Implement transport tickets in practice Done
+
+Implement visual trucks or trains transporting ammo Done
+
+Re-implement ammo consumption by soldiers, and resupply from cities Done (But the impact on the game is minimal, even without cross-network resupply, nobody is running out of ammo)
+
+Make "map-mode" for supply hubs Failed (Out of time)
+
+Make "map-mode" for neighbours Failed (Out of time)
+
+issues
+-----
+Re-balance factory production so ammunition is harder to come by
+
+Recruitment doesn't happen in gained core territory
+
+We need a development sound effect
+
+We need defenestration sound effects
+
+Bug where soldiers can walk through the front-line and get behind the lines
+
+Russia keeps beating Ukraine in a few weeks, that isn't realistic
+
+Music manager requires multiple pages
+
+Limit ingame timer to pass half a day when the game is lagging
+
+Switch all time over from dt, to ingame timer
+
+Train should "rotate" to point the right way
+
+trains and their passengers shouldn't be immortal
+
+We need higher resolution train
+
+defeated soldiers should retreat or surrender
+
+Add or kill soldier, and train arrivals shouldn't "reshuffle" soldiers, instead it should add to the front which needs the most and only shuffle that
+
+Issue, it is possible to "Outflank" cities by rapidly switching attack vectors, this should not be possible, or we need to find a way to defend against it
+
+We need to highlight all neighbours of cities
+
+Visualize the neighbouring cities of the selected city ... or just the hovered city ... or all of them
+
+Implement the bonuses for the nations
+
+Day 32, 18-1-2026, workload 12 hours
+=======
+
+Note
+----
+I have no idea what I should do today, I finished the supply system in less than an hour, and I haven't really thought about what to do next.
+
+

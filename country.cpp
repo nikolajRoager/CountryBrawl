@@ -13,12 +13,18 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     name="null";
     //Default values
     speed=100.0;
-    maxBullets=5;
+    maxBullets=3;
     trainSpeed=300.0;
     infantryRange=200.0;
-    infantryFireRate=5;
-    armyCapPerCore=5;
-    armyCapPerOccupiedCity=2;
+    infantryFireRate=20;
+
+    armyCapCores=0;
+    armyCapOccupied=0;
+
+    armyCapPerCoreMultiplier=1.0;
+    armyCapPerOccupiedMultiplier=0.5;
+    productionMultiplier=1.0;
+
     coreIncomeMultiplier=1.0;
     occupiedIncomeMultiplier=0.25;
     soldierUpkeepCost=1.0;
@@ -84,18 +90,15 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
                 else if (variable =="infantryFireRate") {
                     infantryFireRate=std::stof(value);
                 }
+                else if (variable =="productionMultiplier") {
+                    productionMultiplier=std::stof(value);
+                }
                 else if (variable == "infantryRecruitmentTimeMultiplier") {
                     infantryRecruitmentTime*=std::stof(value);
                 }
-                else if (variable =="armyCapPerCore") {
-                    armyCapPerCore=std::stof(value);
-                }
-                else if (variable =="armyCapPerOccupiedCity") {
-                    armyCapPerOccupiedCity=std::stof(value);
-                }
                 else if (variable =="armyCapMultiplier") {
-                    armyCapPerCore*=std::stof(value);
-                    armyCapPerOccupiedCity*=std::stof(value);
+                    armyCapPerCoreMultiplier*=std::stof(value);
+                    armyCapPerOccupiedMultiplier*=std::stof(value);
                 }
                 else if (variable =="coreIncomeMultiplier") {
                    coreIncomeMultiplier*=std::stof(value);

@@ -63,10 +63,20 @@ void ticket::update(std::vector<city> &cities, const std::vector<country> &count
         if (!countries[issuingNation].hasAccess(currentStepOwner)) {
             //Emergency disembark
             stopped = true;
+
+            double prevX = cities[stops[currentStep-1]].getX();
+            double prevY = cities[stops[currentStep-1]].getY();
+            double currentX = cities[stops[currentStep]].getX();
+            double currentY = cities[stops[currentStep]].getY();
+
+            double x = prevX*(1-distanceFactor) + currentX*distanceFactor;
+            double y = prevY*(1-distanceFactor) + currentY*distanceFactor;
+
+
             for (auto& p : passengers) {
                 p->setRidingTrain(false);
                 cities[stops[currentStep-1]].addCountryball(p,cities,countries,diploManager);
-                p->setLocation(cities[stops[currentStep-1]].getX(),cities[stops[currentStep-1]].getY());
+                p->setLocation(x,y);
             }
         }
         else {
@@ -137,7 +147,7 @@ void ticket::display(const std::vector<city> &cities, const texwrap &trainEnd, c
         int xScreen = x*scale-screenMinX;
         int yScreen = y*scale-screenMinY;
 
-        int segments = passengers.size()/4;
+        int segments = std::min((int)(passengers.size()/4),4);
 
         if (usePlane) {
             transportPlane.render(xScreen,yScreen,renderer,scale,true,true,goingRight);
@@ -165,8 +175,6 @@ void ticket::display(const std::vector<city> &cities, const texwrap &trainEnd, c
                 trainEnd.render(xScreen+(trainEnd.getWidth()+offset)*scale,yScreen,renderer,scale,false,true,!goingRight);
             }
         }
-
-
     }
 }
 

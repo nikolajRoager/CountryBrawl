@@ -11,3 +11,4 @@ gun 805bren
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 defenestration true
+malus small economy: Has middling city development

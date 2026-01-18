@@ -9,3 +9,4 @@ bonus Large country: Has a lot of cities
 gun hk416
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
+malus decent economy Has average city development

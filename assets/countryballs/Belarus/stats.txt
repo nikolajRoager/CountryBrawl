@@ -5,8 +5,10 @@ cities 9
 description Belarus is ... well Belarus; May I suggest literally any other country.
 difficulty hard
 malus Authoritarian regime: -20% province income
-malus Endemic corruption: equipment +20% production time
+malus Endemic corruption: -20% production output
 malus Russian vassal: Excellent relations with russia, poor relations with everybody else
 gun akm
 coreIncomeMultiplier 0.8
 occupiedIncomeMultiplier 0.8
+productionMultiplier 0.8
+malus Very poor: Has very low city development

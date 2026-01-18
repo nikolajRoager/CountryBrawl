@@ -9,3 +9,4 @@ malus Cut-off: half of Saudi Arabia is not in game
 gun m4
 coreIncomeMultiplier 0.8
 occupiedIncomeMultiplier 0.8
+malus small economy: Has middling city development

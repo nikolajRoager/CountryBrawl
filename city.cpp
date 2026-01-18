@@ -10,36 +10,62 @@
 #include <cmath>
 #include <queue>
 
-city::city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y) {
+#include "supplyHub.h"
+
+city::city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y,specialization _mySpecialization,int _development):
+myStockpile(0),
+maxStockpile(50),
+baseProduction(2),
+devProduction(1)
+{
     owner = _owner;
     myId = _myId;
     x = _x;
     y = _y;
-    income = 10;
+    baseIncome = 5;
+    devIncome = 2;
+    baseArmyCapacity = 2;
+    devArmyCapacity = 1;
     core=owner;
     name = _name;
     provinceName = _provinceName;
     cityNameTexture=nullptr;
+    provinceNameTexture=nullptr;
+    development=_development;
+    mySpecialization = _mySpecialization;
 
 
     isRecruiting=false;
     recruitmentTimer=0;
     //Will be set when we know what we are supposed to recruit
     recruitmentLength=0;
+
+    nearestSupplyHub=-1;
 }
 
-city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, int _income, const std::set<int> &_neighbours, bool _isSupplyHub) {
+city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, const std::set<int> &_neighbours, bool _isSupplyHub,specialization _mySpecialization,int _development):
+myStockpile(0),
+maxStockpile(50),
+baseProduction(2),
+devProduction(1)
+{
     owner = _owner;
     core = _core;
     myId = _myId;
     x = _x;
     y = _y;
-    income = _income;
+    baseIncome = 5;
+    devIncome = 2;
+    baseArmyCapacity = 2;
+    devArmyCapacity = 1;
     name = _name;
     provinceName = _provinceName;
     neighbours = _neighbours;
     cityNameTexture=nullptr;
+    provinceNameTexture=nullptr;
     isSupplyHub = _isSupplyHub;
+    development = _development;
+    mySpecialization = _mySpecialization;
 
 
     isRecruiting=false;
@@ -47,16 +73,24 @@ city::city(int _owner, int _core, int _myId, const std::string &_name, const std
     //Will be set when we know what we are supposed to recruit
     recruitmentLength=0;
 
+    nearestSupplyHub=-1;
+}
+
+void city::updateDailyProduction(const std::vector<country>& countries) {
+    if (mySpecialization!=FACTORY)
+        return;
+    int bulletProduction = baseProduction.bullets+development*devProduction.bullets;
+    double multiplier = countries[owner].getProductionMultiplier();
+    if (owner != core)
+        multiplier *= 0.5;
+    myStockpile.bullets+=bulletProduction*multiplier;
+    myStockpile.bullets=std::min(maxStockpile.bullets,myStockpile.bullets);
+    //TODO, produce more stuff if we add more stuff
 }
 
 
 bool city::hasSoldiersFrom(int country) const {
-    for (const auto &allegiance: squads | std::views::keys) {
-        if (allegiance == country) {
-            return true;
-        }
-    }
-    return false;
+    return (squads.contains(country) && squads.at(country).size()>0);
 }
 
 
@@ -64,6 +98,10 @@ void city::updateNeighbourhood(std::vector<city> &cities) {
 
     //Me
     neighbourhood.insert(myId);
+
+    if (isSupplyHub)
+        potentialSupplyHubs.insert(myId);
+
     for (int n : neighbours) {
         //My neighbours
         neighbourhood.insert(n);
@@ -82,6 +120,7 @@ void city::updateNeighbourhood(std::vector<city> &cities) {
             }
         }
     }
+
 }
 
 void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) {
@@ -96,13 +135,246 @@ void city::removeDeadSoldiers(const std::vector<city>& cities, const std::vector
 }
 
 
+void city::displayInfobox(
+    const texwrap& cityColonTexture,
+    const texwrap& provinceColonTexture,
+    const texwrap& coreColonTexture,
+    const texwrap& ownerColonTexture,
+    const texwrap& developmentColonTexture,
+    const texwrap& developTexture,
+    const texwrap& specializationColonTexture,
+    const texwrap& incomeColonTexture,
+    const texwrap& euroTexture,
+    const texwrap& armyCapColonTexture,
+    const texwrap& stockpileColonTexture,
+    const texwrap& productionColonTexture,
+    const texwrap& FactoryTextTexture,
+    const texwrap& NoneTextTexture,
+    const texwrap& bulletsTexture,
+    const texwrap& developMouseOverText,
+    const texwrap& developMaxMouseOverText,
+    const std::vector<country>& countries,
+    const numberRenderer& numberer, int mouseX, int mouseY, int screenWidthPx, int screenHeightPx, double scale,SDL_Renderer* renderer) const {
 
-void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, const std::vector<city>& cities, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
+    int maxWidthBeforeColon = cityColonTexture.getWidth();
+    maxWidthBeforeColon = std::max(provinceColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(coreColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(ownerColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(developmentColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(specializationColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(stockpileColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(productionColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(incomeColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(armyCapColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon*=scale;
+
+    int income = getIncome();
+    int armyCapacity = getArmyCapacity();
+
+    int bulletProduction = mySpecialization==FACTORY? baseProduction.bullets+development*devProduction.bullets : 0;
+    double multiplier = countries[owner].getProductionMultiplier();
+    if (owner != core)
+        multiplier *= 0.5;
+    bulletProduction *= multiplier;
+
+
+    int maxWidthAfterColon = cityNameTexture->getWidth();
+    maxWidthAfterColon = std::max(provinceNameTexture->getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(countries[owner].getNameTextureSmall().getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(countries[core].getNameTextureSmall().getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(income)+euroTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(armyCapacity), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():NoneTextTexture.getWidth(), maxWidthAfterColon);
+    //TODO, add width from stockpiles
+
+    maxWidthAfterColon *= scale;
+
+
+    //todo TEMP
+    int width = maxWidthBeforeColon+maxWidthAfterColon;
+
+    int height = cityColonTexture.getHeight()+provinceColonTexture.getHeight()+coreColonTexture.getHeight()+ownerColonTexture.getHeight()+developmentColonTexture.getHeight()+specializationColonTexture.getHeight()+stockpileColonTexture.getHeight()+productionColonTexture.getHeight()+incomeColonTexture.getHeight()+armyCapColonTexture.getHeight();
+    height *= scale;
+
+    int y0 = screenHeightPx/2-height/2;
+    int x0 = screenWidthPx-width;
+
+    SDL_Rect quad {x0,y0,width,height};
+    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    SDL_RenderFillRect(renderer, &quad);
+
+    //Do all the line printing
+    int y = y0;
+    cityColonTexture.render(x0,y,renderer,scale);
+    cityNameTexture->render(x0+maxWidthBeforeColon,y,renderer,scale);
+    y+=cityColonTexture.getHeight()*scale;
+    provinceColonTexture.render(x0,y,renderer,scale);
+    provinceNameTexture->render(x0+maxWidthBeforeColon,y,renderer,scale);
+    y+=provinceColonTexture.getHeight()*scale;
+    coreColonTexture.render(x0,y,renderer,scale);
+    countries[core].getNameTextureSmall().render(x0+maxWidthBeforeColon,y,renderer,scale);
+    y+=coreColonTexture.getHeight()*scale;
+    ownerColonTexture.render(x0,y,renderer,scale);
+    countries[owner].getNameTextureSmall().render(x0+maxWidthBeforeColon,y,renderer,scale);
+    y+=ownerColonTexture.getHeight()*scale;
+    developmentColonTexture.render(x0,y,renderer,scale);
+    int wdev=numberer.render(development,x0+maxWidthBeforeColon,y,renderer,scale);
+    developTexture.render(x0+maxWidthBeforeColon+wdev,y,renderer,scale);
+
+    //Print mouse over text for development
+    if (mouseX>x0+maxWidthBeforeColon+wdev && mouseX<x0+maxWidthBeforeColon+wdev+developTexture.getWidth()
+        && mouseY>y && mouseY<y+developTexture.getHeight()) {
+
+        if (development<MAX_DEVELOPMENT) {
+            int devCost=getDevCost();
+            int w = developMouseOverText.getWidth()+numberer.getWidth(devCost);
+            int h = developMouseOverText.getHeight();
+            SDL_Rect background{mouseX-w,mouseY,w,h};
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderFillRect(renderer, &background);
+            developMouseOverText.render(mouseX-w,mouseY,renderer,scale);
+            numberer.render(devCost,mouseX+developMouseOverText.getWidth()-w,mouseY,renderer,scale);
+        }
+        else {
+
+            int w = developMaxMouseOverText.getWidth();
+            int h = developMaxMouseOverText.getHeight();
+            SDL_Rect background{mouseX-w,mouseY,w,h};
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderFillRect(renderer, &background);
+            developMaxMouseOverText.render(mouseX-w,mouseY,renderer,scale);
+        }
+    }
+
+
+    y+=developmentColonTexture.getHeight()*scale;
+    specializationColonTexture.render(x0,y,renderer,scale);
+    if (mySpecialization==FACTORY) {
+        FactoryTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+    }
+    else if (mySpecialization==NONE) {
+        NoneTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+    }
+    y+=specializationColonTexture.getHeight()*scale;
+    incomeColonTexture.render(x0,y,renderer,scale);
+    euroTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+    numberer.render(income,x0+maxWidthBeforeColon+euroTexture.getWidth(),y,renderer,scale);
+    y+=incomeColonTexture.getHeight()*scale;
+    armyCapColonTexture.render(x0,y,renderer,scale);
+    numberer.render(armyCapacity,x0+maxWidthBeforeColon,y,renderer,scale);
+    y+=armyCapColonTexture.getHeight()*scale;
+    stockpileColonTexture.render(x0,y,renderer,scale);
+    int wstock = numberer.render(myStockpile.bullets,x0+maxWidthBeforeColon,y,renderer,scale);
+    bulletsTexture.render(x0+maxWidthBeforeColon+wstock ,y,renderer,scale);
+    y+=stockpileColonTexture.getHeight()*scale;
+    productionColonTexture.render(x0,y,renderer,scale);
+    int wprod = numberer.render(bulletProduction,x0+maxWidthBeforeColon,y,renderer,scale);
+    bulletsTexture.render(x0+maxWidthBeforeColon+wprod,y,renderer,scale);
+
+
+    //TODO render stockpile
+}
+
+bool city::hasClickedDevelop(
+    const texwrap &cityColonTexture,
+    const texwrap &provinceColonTexture,
+    const texwrap &coreColonTexture,
+    const texwrap &ownerColonTexture,
+    const texwrap &developmentColonTexture,
+    const texwrap &developTexture,
+    const texwrap &specializationColonTexture,
+    const texwrap &incomeColonTexture,
+    const texwrap &euroTexture,
+    const texwrap &armyCapColonTexture,
+    const texwrap &stockpileColonTexture,
+    const texwrap &productionColonTexture,
+    const texwrap &FactoryTextTexture,
+    const texwrap &NoneTextTexture,
+    const texwrap& bulletsTexture,
+    const std::vector<country> &countries, const numberRenderer &numberer, bool leftCLick, int mouseX, int mouseY, int screenWidthPx,
+                             int screenHeightPx, double scale) const {
+
+    if (!leftCLick)
+        return false;
+    int maxWidthBeforeColon = cityColonTexture.getWidth();
+    maxWidthBeforeColon = std::max(provinceColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(coreColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(ownerColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(developmentColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(specializationColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(stockpileColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(productionColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(incomeColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(armyCapColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon*=scale;
+
+    int income = getIncome();
+    int armyCapacity = getArmyCapacity();
+
+
+    int bulletProduction = mySpecialization==FACTORY? baseProduction.bullets+development*devProduction.bullets : 0;
+    double multiplier = countries[owner].getProductionMultiplier();
+    if (owner != core)
+        multiplier *= 0.5;
+    bulletProduction *= multiplier;
+
+    int maxWidthAfterColon = cityNameTexture->getWidth();
+    maxWidthAfterColon = std::max(provinceNameTexture->getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(countries[owner].getNameTextureSmall().getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(countries[core].getNameTextureSmall().getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(income)+euroTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(armyCapacity), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():NoneTextTexture.getWidth(), maxWidthAfterColon);
+    //TODO, add width from stockpiles
+
+    maxWidthAfterColon *= scale;
+
+
+    //todo TEMP
+    int width = maxWidthBeforeColon+maxWidthAfterColon;
+
+    int height = cityColonTexture.getHeight()+provinceColonTexture.getHeight()+coreColonTexture.getHeight()+ownerColonTexture.getHeight()+developmentColonTexture.getHeight()+specializationColonTexture.getHeight()+stockpileColonTexture.getHeight()+productionColonTexture.getHeight()+incomeColonTexture.getHeight()+armyCapColonTexture.getHeight();
+    height *= scale;
+
+    int y0 = screenHeightPx/2-height/2;
+    int x0 = screenWidthPx-width;
+
+    //Do all the line printing
+    int y = y0;
+    y+=cityColonTexture.getHeight()*scale;
+    y+=provinceColonTexture.getHeight()*scale;
+    y+=coreColonTexture.getHeight()*scale;
+    y+=ownerColonTexture.getHeight()*scale;
+    int wdev=numberer.getWidth(development)*scale;
+
+    //Print mouse over text for development
+    if (mouseX>x0+maxWidthBeforeColon+wdev && mouseX<x0+maxWidthBeforeColon+wdev+developTexture.getWidth()
+        && mouseY>y && mouseY<y+developTexture.getHeight()) {
+
+        if (development<MAX_DEVELOPMENT) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+
+
+//This is horribly bodged, with me hardcoding in the number of frames, it is fine for a little game but not really
+void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
 
     int xScreen = x*scale-screenMinX;
     int yScreen = y*scale-screenMinY;
 
-    if (xScreen+cityTexture.getWidth()>0 && xScreen <= screenWidthPx+cityTexture.getWidth() && yScreen>0 && yScreen <= screenHeightPx+cityTexture.getHeight())
+    if (xScreen+cityTexture.getWidth()/5>0 && xScreen <= screenWidthPx+cityTexture.getWidth()/5 && yScreen>0 && yScreen <= screenHeightPx+cityTexture.getHeight())
     {
 
 
@@ -113,11 +385,15 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, c
             selectedTexture.render(xScreen,yScreen-thisScale*selectedTexture.getHeight()/2, renderer,thisScale,true,false,false,2,isPrimary?1:0);
 
 
-        cityTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
+        int frame = std::min(development/2,4);
+        if (mySpecialization==FACTORY)
+            factoryTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false,5,frame);
+        else
+            cityTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false,5,frame);
         if (isSupplyHub)
-            supplyHubTexture.render(xScreen+scale*((cityTexture.getWidth()+supplyHubTexture.getWidth())/2),yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
+            supplyHubTexture.render(xScreen+thisScale*((cityTexture.getWidth()/5+supplyHubTexture.getWidth())/2),yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
 
-        countries[owner].getFlag().render(xScreen-thisScale*(cityTexture.getWidth()/2-3),yScreen-thisScale*cityTexture.getHeight(),renderer,thisScale);
+        countries[owner].getFlag().render(xScreen-thisScale*(cityTexture.getWidth()/10-3),yScreen-thisScale*cityTexture.getHeight(),renderer,thisScale);
 
         if (scale>=1.0)
             cityNameTexture->render(xScreen,yScreen,0,0,0, renderer,thisScale,true,false);
@@ -150,7 +426,7 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, c
             SDL_SetRenderDrawColor(renderer,countries[owner].getRed(),countries[owner].getGreen(),countries[owner].getBlue(),255);
 
             int barWidth = 16;
-            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
+            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
             SDL_RenderFillRect(renderer,&quad);
         }
 
@@ -178,17 +454,48 @@ void city::display(const texwrap& cityTexture, const texwrap& selectedTexture, c
         */
 
 
-        //TODO temp
-        for (int n : potentialSupplyHubs) {
-            int theirXScreen = cities[n].getX()*scale-screenMinX;
-            int theirYScreen = cities[n].getY()*scale-screenMinY;
+        if (nearestSupplyHub!=-1) {
+            int nearestSupplyPrev=supplyHubs.at(nearestSupplyHub).getPrev(myId);
 
-            SDL_SetRenderDrawColor(renderer, 0, 128, 255, 64);
-            SDL_RenderDrawLine(renderer,xScreen,yScreen,theirXScreen,theirYScreen);
+            if (nearestSupplyPrev!=-1) {
+                int theirXScreen = cities[nearestSupplyPrev].getX()*scale-screenMinX;
+                int theirYScreen = cities[nearestSupplyPrev].getY()*scale-screenMinY;
+
+                SDL_SetRenderDrawColor(renderer, 0, 128, 255, 64);
+                SDL_RenderDrawLine(renderer,xScreen,yScreen,theirXScreen,theirYScreen);
+            }
         }
+
+        //Display quad indicating our stockpiles
+        {
+            int x0 = xScreen+thisScale*cityTexture.getWidth()/10;
+            int h = (thisScale*cityTexture.getHeight()*myStockpile.bullets)/maxStockpile.bullets;
+            int w = 16*thisScale;
+            SDL_Rect rect {x0,yScreen-h,w,h};
+            SDL_SetRenderDrawColor(renderer,200,165,0,255);
+            SDL_RenderFillRect(renderer,&rect);
+        }
+
 
     }
 }
+
+void city::recalcNearestSupplyhub(const std::map<int, supplyHub>& supplyHubs,const std::vector<city>& cities) {
+    double distance = std::numeric_limits<double>::max();
+    nearestSupplyHub=-1;
+
+
+
+    for (int s : potentialSupplyHubs) {
+        double dist = supplyHubs.at(s).getDistance(myId);
+        if (dist<distance) {
+            distance = dist;
+            nearestSupplyHub=s;
+        }
+    }
+
+}
+
 
 void city::highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,unsigned int millis) const {
     for (const auto& neighbour : neighbours) {
@@ -237,7 +544,7 @@ void city::addCountryball(std::shared_ptr<countryball> ball, const std::vector<c
     updateSoldierLocations(cities,countries,diploManager);
 }
 
-void city::updateOwnership(std::vector<city> &cities, std::vector<country> &countries,const diplomacyManager& diploManager) {
+void city::updateOwnership(std::vector<city> &cities, std::vector<country> &countries,std::map<int,supplyHub>& supplyHubs,const diplomacyManager& diploManager) {
 
     int ownSoldiers = squads.contains(owner) ? squads[owner].size() : 0;
     int newOwner = owner;
@@ -273,6 +580,15 @@ void city::updateOwnership(std::vector<city> &cities, std::vector<country> &coun
                 //TODO, evacuate defeated soldiers to friendly neighbours, or have them surrender
                 for (int n : neighbours)
                     cities[n].updateSoldierLocations(cities,countries,diploManager);
+
+
+
+                for (int s : potentialSupplyHubs) {
+                    supplyHubs.at(s).recalculate(cities,countries,supplyHubs);
+                }
+
+                //TODO, this is a temporary experimental change
+                myStockpile=stockpile(0);//Destroy any left-over bullets
                 break;
             }
         }

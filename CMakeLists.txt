@@ -97,4 +97,9 @@ add_executable(CountryBrawl main.cpp
         eventMessage.cpp
         eventMessage.h
         soundWrap.cpp
-        soundWrap.h)
+        soundWrap.h
+        supplyHub.cpp
+        supplyHub.h
+        stockpile.h
+        cargoTicket.cpp
+        cargoTicket.h)

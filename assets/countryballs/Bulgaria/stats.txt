@@ -5,3 +5,4 @@ cities 3
 description Bulgaria is one of the stronger powers in the balkans, it is however not the strongest, and needs to watch out for Romania and Türkiye.
 difficulty medium
 gun akm
+malus poor: Has low city development

@@ -10,7 +10,7 @@ It is a game, which I am trying to develop in 128 days or less, which is a bit o
 
 In particular, it is an RTS (Real Time Strategy) game about 56 countries trying to conquer Europe
 
-How Do I play the game?
+How Do I install the game?
 -----------
 For now, while the game is actively under development, there is no option to download the game Executable.
 
@@ -20,6 +20,45 @@ The easiest way to do that is to install the [CLion IDE from Jetbrains](https://
 Just clone this project in CLion (google how to do that if you don't know) and hit run... And maybe, just maybe, it will work, but honestly I can't guarantee that.
 
 I don't know if it is possible to build and run using Microsoft Visual Studio (And I am not going to test that), but feel free to try
+
+How to play
+-----------
+This section will be written later, I am just going to put down the headlines, and lists of things I will write later.
+
+**Basics: how to move around**
+* How to move
+* how to zoom
+* How to change/turn off music
+* How to select (multiple ways)
+* How to move soldiers
+* autobalance
+* autorecruitment
+
+**Politics**
+* The diplomacy menu
+* Tensions
+* Random tension events
+* Insults and compliments
+* How to make war, how to make peace
+* How the AI does diplomacy
+
+**War**
+* Front-lines
+* offensives
+* auto-advance
+* exploiting the AI
+
+**The sinews of war: Economy, production and sustainment**
+* Cities
+* cores vs occupied cities
+* Unification events
+* monthly tax income
+* The welfare state
+* development and how to get it
+* Recruitment, sustainment and production costs
+* Factories and their production
+* Supply hubs, and the supply network
+* How the AI does (or doesn't) do economy
 
 License
 -----

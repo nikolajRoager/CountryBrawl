@@ -8,3 +8,4 @@ malus Small country: has only 2 cities
 malus Aftermatch of 1974: The north is occupied by Türkiye.
 bonus Eonosis: Conquer Greece to gain their cores
 gun hkg3
+decent economy Has average city development

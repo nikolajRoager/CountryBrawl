@@ -9,3 +9,4 @@ bonus Strong democracy: +10% province income
 gun auga1
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
+bonus rich: Has high city development

@@ -11,7 +11,7 @@ Nevertheless, all third party assets distributed in this project permit distribu
 
 license, for Country Brawl
 ------------
-MIT LICENSE, Nikolaj R Christensen 2025
+MIT LICENSE, Nikolaj R Christensen 2026
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -25,7 +25,7 @@ Standard C++ libraries by the ISOCPP foundation
 ----------------------
 Standard C++ library has been used, AND this project includes and distributes the MinGW compatible DLL files `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll`
 
-    These libraries are licensed under the GNU General Public License v3 with the GCC Runtime Library Exception:
+These libraries are licensed under the GNU General Public License v3 with the GCC Runtime Library Exception:
 
     Copyright (C) 2009 Free Software Foundation, Inc. <http://fsf.org/>
 
@@ -135,20 +135,6 @@ It is licensed under two different licenses for some reason, full license text:
     ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-Third party music
-========
-OdeToJoy.mp3 Ode to Joy - Symphony No. 9, Op. 125, by L. van Beethoven and S. Odamaki, performed by Gregor Quendel
------
-Recorded, produced, and published by: Gregor Quendel
-The arrangement is based on the notes by: S. Odamaki
-Original composed by Ludwig Van Beethoven.
-
-Original link: https://www.classicals.de/beethoven-ode-to-joy
-
-Copyright (for the arrangement and recording):  Creative Commons - Attribution-NonCommercial 4.0 International
-
-
 Other third party assets
 ====
 
@@ -193,3 +179,142 @@ Developed and owned by the Braile institute, the Atkinson Hyperlegible font is l
 
     THE FONT SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 
+
+Music licenses
+==========
+
+`OdeToJoy.mp3 Beethoven` - "ode to joy" - from beethoven's symphony no. 9
+-----
+Original composition by Ludwig van Beethoven (in public domain)
+
+Recorded, produced, and published by: Gregor Quendel
+The arrangement is based on the notes by: S. Odamaki
+
+Original link: https://www.classicals.de/beethoven-ode-to-joy
+
+Copyright (for the recording):  Creative Commons - Attribution-NonCommercial 4.0 International
+
+`beethoven-symphony-no-7-2nd-movement.mp3` - from Beethoven's Symphony no 7
+--------
+Original composition by Ludwig van Beethoven  (in public domain)
+
+Published by user "TheFealdoProject" (Peter Barbaix) on Pixabay
+
+Original link: https://pixabay.com/music/epic-classical-beethoven-symphony-no-7-2nd-movement-246122/
+
+Copyright (for the recording): Pixabay content license: https://pixabay.com/service/license-summary/
+
+`PreussensGloria.mp3` - Preußens Gloria
+--------
+Original composition by Johann Gottfried Piefke 1871 (In public domain)
+
+Performed by the Großes Odeon Orchester in 1927 (In public domain)
+
+Digitized and added to Archive.org in 2020 by user "jakej", in posting this to Archive.org the user made no claims as to the copyright of the digitization, however Wikipedia uses the file claiming it to be in public domain
+
+Original link: https://archive.org/details/78_preuens-gloria_groes-odeon-orchester-gottfr-piefke_gbia7000033b
+
+Copyright: In public domain
+
+`Die_Wacht_am_Rhein.wav` - Die Wacht am Rhein
+--------
+Original lyrics by Max Schneckenburger 1840, composition by Karl Wilhelm 1854 (In public domain)
+
+Performer of the recording is unknown, but it is dated to 1907 (In public domain)
+
+Original link: https://en.wikipedia.org/wiki/File:Die_Wacht_am_Rhein_-_German_Patriotic_Anthem_(Old_Recording).wav
+
+Uploaded to Wikipedia by user "Malmyname" in 2025
+
+Copyright: In public domain
+
+`Dengang_jeg_drog_af_sted.ogg` - melodi from "Den Tabre Landssoldat"
+--------------------
+Original composition by Emil Horneman 1848 (In public domain)
+
+Performed by Erik Damskier in 2009
+
+Original link: https://da.wikipedia.org/wiki/Fil:Dengang_jeg_drog_af_sted.ogg
+
+Copyright (for the recording):  Creative Commons - Attribution 3.0 Unported: https://creativecommons.org/licenses/by-sa/3.0/deed.en
+
+`Preobrazhensky.mp3` - Preobrazhensky Regiment March
+-------------------------------
+Original composition unknown but certainly in public domain
+
+Performed by the Military Orchestra, unknown date
+
+Digitized by the Museum of Russian Culture, San Francisco and added to the internet archive
+
+Original link: https://archive.org/details/odeon-10008-b
+
+Copyright (explicitly claimed by the Museum of Russian Culture): Creative Commons - Attribution-NonCommercial-NoDerivatives 4.0 International: https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+`Colenel_Bogey.ogg` - Colonel Bogey March
+-----------
+Original composition Kenneth J. Alford 1914 (In public domain)
+
+Performed by the United States Navy Band
+
+Original link: https://commons.wikimedia.org/wiki/File:Colonel_Bogey.ogg
+
+Copyright: In public domain since it is performed by the United States Navy Band
+
+`Beaufort_regiment_de_sambre_et_1909_cd_1001.ogg` - Le Régiment de Sambre et Meuse
+--------
+Original composition by Paul Cézano and Robert Planquette 1870 (In public domain)
+
+Performed by Pierre d'Assy and an unknown orchestra either in 1905 or 1909 (sources vary) (In public domain)
+
+Digitization unknown, the original source is a now defunct website, (Wikipedia claims the file is public domain)
+
+Original link: https://en.wikipedia.org/wiki/File:Beaufort_regiment_de_sambre_et_1909_cd_1001.ogg
+
+Copyright: In public domain
+
+`marcheLoraine.mp3` - Marche Loraine
+---------------
+Original composition Louis Ganne 1892 (In public domain)
+
+Performed by Conway's Band, Patrick Conway 1917 (In public domain)
+
+Digitized/digitization hosted by Library of Congress (Library of Congress claims it is In public domain since 2022)
+
+Original link: https://www.loc.gov/item/jukebox-188200/
+
+Copyright: In public domain since 2022 (according to the Library of Congress)
+
+`Hohenfriedberger.mp3` - Der Hohenfriedberger
+--------
+Original composition, King Friedrich der Große (according to tradition or unknown composer) In public domain
+
+Performed by Victor-Militär-Kapelle
+
+Date of recording disputed, it is either 1908 (The year labeled on the picture of the record) or 1923 (according to the Library of congress) Either way, in public domain since 2022 or 2023 depending
+
+Digitized/digitization hosted by Library of Congress (Library of Congress claims it is In public domain since 2022)
+
+Original link:  https://www.loc.gov/item/jukebox-66875/
+
+`Radetzky_March.ogg` - Radetzky march
+------------
+Original composition Johann Strauss senior 1848, in public domain
+
+Performed by the United States Navy Band
+
+Original link: https://en.wikipedia.org/wiki/File:Radetzky_March.ogg
+
+Copyright: In public domain since it is performed by the United States Navy Band
+
+Sound effects
+======
+
+`shot.wav` Assault Riffle sound effect
+-------
+Original file: `assets/sound/originalUnmoddified/404562__superphat__assaultrifle1.wav`
+
+By user SuperPhat on freesound.org: https://freesound.org/people/SuperPhat/sounds/404562/
+
+Copyright: Creative Commons 0
+
+Modification: I shortened the sound a bit, this is expressly allowed under the copyright

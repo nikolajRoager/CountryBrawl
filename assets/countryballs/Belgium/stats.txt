@@ -11,3 +11,4 @@ gun fnscar
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 trainSpeedMultiplier 0.9
+bonus rich: Has high city development
