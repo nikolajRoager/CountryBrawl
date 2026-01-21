@@ -2,7 +2,7 @@ name Germany
 genitive German
 colour #0A0A0D
 cities 42
-description Whoever controls Berlin controls the Germany, and whoever controls Germany controls Europe: Germany is one of the strongest countries in game.
+description Whoever controls Berlin controls the Germany, and whoever controls Germany controls Europe: Germany is the strongest country in game, by a very large margin.
 difficulty veryeasy
 bonus strong arms sector: -10% equipment production time
 bonus Large country: Has a lot of cities

@@ -8,3 +8,4 @@ malus Small country: Has only 3 cities
 malus Cut-off: half of Georgia is not in game
 gun m4
 malus Very poor: Has very low city development
+bonus High military budget: starts with a large army

@@ -18,7 +18,7 @@ public:
     ~soundWrap();
 
     //Play a sound, if the source is on screen
-    void play(double x, double y,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale) const ;
+    void play(double x, double y,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale,bool silenceAtScaleout=true) const ;
 
     [[nodiscard]] Mix_Chunk* getSound() const {return sound;}
 

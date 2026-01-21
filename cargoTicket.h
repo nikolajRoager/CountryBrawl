@@ -25,6 +25,11 @@ public:
     [[nodiscard]] int getDestination() const{return destination;}
     [[nodiscard]] const stockpile& getCargo() const{return cargo;}
 
+
+    [[nodiscard]] bool isInRangeOf(const std::vector<city>& cities, double x, double y, double range) const;
+
+    void destroy();
+
 private:
 
     int destination;

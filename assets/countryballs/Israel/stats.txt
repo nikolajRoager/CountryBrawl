@@ -3,7 +3,7 @@ genitive Israeli
 colour #0038B8
 cities 9
 difficulty hard
-description The history of Israel, is a history of conflict with the Palestinians, and with everybody else around them.
+description The history of Israel, is a history of conflict: with the Palestinians, and with everybody else around them. US military support is not modeled in game, and as a result Israel tends to get gobbled up by Egypt
 bonus strong arms sector: -10% equipment production time
 bonus extensive conscription: +20% army capacity from cities
 bonus High military budget: starts with a large army

@@ -1537,11 +1537,130 @@ Visualize the neighbouring cities of the selected city ... or just the hovered c
 
 Implement the bonuses for the nations
 
-Day 32, 18-1-2026, workload 12 hours
+Day 32, 18-1-2026, workload 8 hours
 =======
 
 Note
 ----
 I have no idea what I should do today, I finished the supply system in less than an hour, and I haven't really thought about what to do next.
 
+I guess I will do a bunch of small things, and then record a video, I will probably also not work a lot today
 
+
+Plan
+----
+Get supply hubs to redistribute betwixt networks Done (surprisingly easy)
+
+Make bad tension events more likely Done
+
+Add "police" defence of all cities Done
+
+Add starting soldiers to all countries (this will take like forever)  Done (that really did take forever)
+
+Fix no recruitment in gained core territory Done
+
+
+
+Day 32.5, 19-1-2026, workload 4 hours
+=======
+
+plan
+-----
+Map mode to show supply hubs Done
+
+Map mode to show neighbours Done
+
+add sensible neighbours (adriatic, baltic) Done, (twice, because I accidentally deleted it)
+
+record a video Done
+
+Think for a long time about how air-power and missiles should work Done
+
+Add graphics for missile sites
+
+day 33.5, 20-1-2026, workload 9 hours
+==============
+
+plan
+----
+Make missile sites "recruit" missiles, at the cost of money Done
+
+Visually show missile recruitment progress Done
+
+Visually show missile Done
+
+Visibly mark what map mode we are in Done
+
+Make missile map mode M, which: Done
+* Ignores all other mouse button presses Done
+* Visibly show missile paths Done
+* Visibly show target marker Done
+
+Make missile sites able to fire (delete missile from site) Done
+
+Make Missile class for missile in air
+* Displayed Done
+* Move over time towards target Done
+* Is removed when done Done
+
+Make smoke particle class Failed (out of time)
+
+Spawn explosion effect
+
+Explosion effect should kill soldiers
+
+Explosion effect should destroy trains/kill occupants
+
+Explosion effect should also target passengers moving towards trains
+
+Launching missiles at neutrals should be forbidden, use "Voronoi" territories
+
+day 34.5, 21-1-2026, workload 10 hours
+==============
+
+plan
+----
+
+Make graphics for explosion effect Done
+
+Spawn explosion effect Done
+
+Explosion effect should kill soldiers Done
+
+Add building damage which should block:
+* new and ongoing recruitment Done
+* income Done
+* army capacity Done
+* Development Done
+
+Damage should reduce development by 1 Done
+
+Damage should destroy recruitment and all stockpiles Done
+
+Cities should auto-repair at the cost of money Done
+
+Explosion effects should damage buildings Done
+
+Explosion effect should destroy trains/kill occupants Done
+
+Explosion effect should also target passengers moving towards trains Done (was already working)
+
+Need explosion sound effect Done
+
+Limit missiles to within radius, and make radius marker Done
+
+Launching missiles at neutrals should be forbidden, use "Voronoi" territories Done
+
+Try to mathematically solve the auto-targeting problem Done I have done some thinking, and I think the AI should be targeting cities only
+
+
+day 36, 21-1-2026, workload 4 hours
+==============
+
+plan
+----
+Add auto targeting menu
+
+Make auto-targeting system, target large collection of hostile cities which are not destroyed
+
+Option to change specialization

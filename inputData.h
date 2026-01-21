@@ -22,6 +22,12 @@ struct inputData {
     bool sPressed=false;
     bool prevSPressed=false;
 
+    bool nPressed=false;
+    bool prevNPressed=false;
+
+    bool mPressed=false;
+    bool prevMPressed=false;
+
     bool vPressed=false;
     bool prevVPressed=false;
 

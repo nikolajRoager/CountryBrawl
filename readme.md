@@ -51,6 +51,7 @@ This section will be written later, I am just going to put down the headlines, a
 **The sinews of war: Economy, production and sustainment**
 * Cities
 * cores vs occupied cities
+* City damage and repair
 * Unification events
 * monthly tax income
 * The welfare state

@@ -7,3 +7,4 @@ description The Grand Duchy of Lithuania used to rule over central Europe, yet n
 malus Small country: Has only 4 cities
 gun hkg3
 malus small economy: Has middling city development
+bonus High military budget: starts with a large army

@@ -111,6 +111,9 @@ public:
     //Instantly spend saved up funds, this is not counted as part of the monthly budget
     void spendFunds(double amount) {
         funds -= amount;
+        //Funds bottom out at nothing
+        if (funds<0)
+            funds=0;
     }
     bool limitFunds() {
         if (funds>lastMonthIncome*3 && lastMonthIncome>0) {
@@ -187,7 +190,12 @@ public:
         regularEventQueue.clear();
     }
 
+    [[nodiscard]] double getPoliceFireRate() const {return policeFireRate;}
 
+    [[nodiscard]] double getMissileBuildingCost() const {return missileBuildingCost;}
+    [[nodiscard]] unsigned int getMissileBuildingTime() const {return missileBuildingTime;}
+
+    [[nodiscard]] double getMissileSpeed() const {return missileSpeed;}
 private:
 
     int id;
@@ -244,6 +252,7 @@ private:
     double infantryRange;
     //Chance of firing a shot at any target every second
     double infantryFireRate;
+    double policeFireRate;
 
     double armyCapPerCoreMultiplier;
     double armyCapPerOccupiedMultiplier;
@@ -254,8 +263,13 @@ private:
     double occupiedIncomeMultiplier;
     double soldierUpkeepCost;
     double infantryRecruitmentCost;
+
+    double missileSpeed;
     //Time to recruit a new infantry soldier, in ms in-game time
     unsigned int infantryRecruitmentTime;
+
+    double missileBuildingCost;
+    unsigned int missileBuildingTime;
 
     //Multiplied unto the number of stuff produced by factories each day
     double productionMultiplier;

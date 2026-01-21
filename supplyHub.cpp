@@ -231,7 +231,7 @@ void supplyHub::supplyTick(std::vector<city> &cities, const std::vector<country>
             int bulletDifference = theirStock.bullets - ourStock.bullets;
             //Only transfer bullets if we are noticeably behind
             if (bulletDifference > 10) {
-                std::cout<<cities[cityId].getName()<<" orders "<<bulletDifference<<" bullets from "<<cities[n].getName()<<std::endl;
+                //std::cout<<cities[cityId].getName()<<" orders "<<bulletDifference<<" bullets from "<<cities[n].getName()<<std::endl;
 
                 //Use Dijkstra's algorithm, this is slightly more expensive than I would like
                 auto path = cities[cityId].findPathFrom(n,cities,countries);

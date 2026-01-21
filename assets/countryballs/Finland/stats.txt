@@ -9,3 +9,4 @@ gun rk62
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 bonus good economy: Has quite high city development
+bonus High military budget: starts with a large army

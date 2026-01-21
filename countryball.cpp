@@ -134,7 +134,6 @@ void countryball::shoot(std::vector<std::shared_ptr<countryball>>& shotBalls,std
             //This plays the sound when on-screen
             shot.play(x,y,screenMinX,screenMinY,screenWidth,screenHeight,scale);
             //And there is one less arrow in the quiver, figuratively speaking
-            //TODO: un-comment this line, for now while the supply system isn't working, everyone has infinite ammo
             --bullets;
         }
     }

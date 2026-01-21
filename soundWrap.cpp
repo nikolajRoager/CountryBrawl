@@ -4,6 +4,8 @@
 
 #include "soundWrap.h"
 
+#include <iostream>
+
 soundWrap::soundWrap(const fs::path &path) {
     sound = Mix_LoadWAV(path.string().c_str());
     if (!sound) {
@@ -28,12 +30,12 @@ soundWrap::~soundWrap() {
     }
 }
 
-void soundWrap::play(double x, double y, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale) const {
+void soundWrap::play(double x, double y, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale,bool silenceAtScaleout) const {
 
     int xScreen = static_cast<int>(x*scale-screenMinX);
     int yScreen = static_cast<int>(y*scale-screenMinY);
 
-    if (xScreen<0 || xScreen>screenWidth|| yScreen<0 || yScreen>screenHeight || scale<0.5) {
+    if (xScreen<0 || xScreen>screenWidth|| yScreen<0 || yScreen>screenHeight || (silenceAtScaleout && scale<0.5)) {
         return;
     }
 

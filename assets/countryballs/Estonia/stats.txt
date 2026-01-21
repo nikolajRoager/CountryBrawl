@@ -10,3 +10,4 @@ gun hkg3
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 malus small economy: Has middling city development
+bonus High military budget: starts with a large army

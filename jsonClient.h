@@ -18,7 +18,8 @@ public:
 
     explicit jsonClient(const fs::path& path);
     void save(const std::vector<city>& bases,const std::vector<country>& countries) const;
-    void load(std::vector<city>& bases,const std::vector<country>& countries, std::map<int,supplyHub>& supplyHubs);
+    void load(std::vector<city>& bases,const std::vector<country>& countries, std::map<int,supplyHub>& supplyHubs) const;
+    void loadSoldiersAtGamestart(std::vector<std::shared_ptr<countryball>>& soldiers, std::vector<city>& bases,std::vector<country>& countries, const diplomacyManager& diploManager) const;
 private:
 
 

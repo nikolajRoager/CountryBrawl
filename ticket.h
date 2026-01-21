@@ -21,9 +21,14 @@ public:
 
     [[nodiscard]] bool isDone() const{return  stopped || currentStep>=stops.size() ;}
 
+    [[nodiscard]] bool isInRangeOf(const std::vector<city>& cities, double x, double y, double range) const;
+
+    void destroy(std::vector<city>& cities,std::vector<country>& countries, const diplomacyManager& diploManager);
+
     void display(const std::vector<city>& cities, const texwrap& trainEnd, const texwrap& trainSegment, const texwrap& ship, const texwrap& transportPlane,double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale, SDL_Renderer* renderer,const mapData& watermap) const;
 private:
     bool usePlane;
+
 
     bool stopped;
 

@@ -13,8 +13,10 @@
 #include "country.h"
 #include "countryball.h"
 #include "diplomacyManager.h"
+#include "explosion.h"
 #include "lingeringShot.h"
 #include "mapData.h"
+#include "missile.h"
 #include "numberRenderer.h"
 #include "scene.h"
 #include "soundWrap.h"
@@ -133,21 +135,17 @@ private:
 
 
     //Accessories for city rendering
+    texwrap ruinTexture;
     texwrap cityTexture;
     texwrap factoryTexture;
+    texwrap missileSiteTexture;
+    texwrap missileOnSiteTexture;
     texwrap supplyHubTexture;
     texwrap selectedCityTexture;
     texwrap arrowTexture;
+    texwrap circleMarkerTexture;
 
     //Accessories for rendering city information box
-    /*City: Oslo
-     *province: Østlandet
-     *Core: Norway
-     *Owner: Norway
-     *Development: 11
-     *Specialization: Factory
-     *Stockpile: 100 B 50 D 10 g
-     */
     texwrap cityColonTexture;
     texwrap provinceColonTexture;
     texwrap coreColonTexture;
@@ -161,6 +159,7 @@ private:
     texwrap euroTexture;
     texwrap armyCapColonTexture;
     texwrap factoryTextTexture;
+    texwrap missileSiteTextTexture;
     texwrap noneTextTexture;
     texwrap developMouseOverText;
     texwrap developMaxMouseOverText;
@@ -180,9 +179,22 @@ private:
     texwrap yesText;
     texwrap noText;
 
+    //Accessories for map modes
+    texwrap missileMapModeText;
+    texwrap supplyMapModeText;
+    texwrap neighbourMapModeText;
+    texwrap missileAimMarker;
+
+    //Accessories for missiles
+    texwrap missileInAir;
+
+    //Accessories for explosions
+    texwrap bigExplosion;
+
 
     //Sound effects for fighting
     soundWrap shotSound;
+    soundWrap explosionSound;
 
     //The list of countries the player can choose between
     std::vector<country> countries;
@@ -200,6 +212,13 @@ private:
 
     std::list<ticket> tickets;
     std::list<std::shared_ptr<cargoTicket>> cargoTickets;
+
+    //Missiles in the air
+    std::list<missile> missiles;
+    double missileExplosionRadius;
+    double missileRange;
+
+    std::deque<explosion> explosions;
 
     std::vector<std::unique_ptr<tile>> tiles;
     numberRenderer numbererSmall;

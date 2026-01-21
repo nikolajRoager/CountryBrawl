@@ -197,6 +197,12 @@ void engine::run() {
                 else if (event.key.keysym.sym == SDLK_s) {
                     currentInput.sPressed=true;
                 }
+                else if (event.key.keysym.sym == SDLK_n) {
+                    currentInput.nPressed=true;
+                }
+                else if (event.key.keysym.sym == SDLK_m) {
+                    currentInput.mPressed=true;
+                }
                 else if (event.key.keysym.sym == SDLK_v) {
                     currentInput.vPressed=true;
                 }
@@ -234,6 +240,12 @@ void engine::run() {
                 }
                 else if (event.key.keysym.sym == SDLK_s) {
                     currentInput.sPressed=false;
+                }
+                else if (event.key.keysym.sym == SDLK_n) {
+                    currentInput.nPressed=false;
+                }
+                else if (event.key.keysym.sym == SDLK_m) {
+                    currentInput.mPressed=false;
                 }
                 else if (event.key.keysym.sym == SDLK_v) {
                     currentInput.vPressed=false;

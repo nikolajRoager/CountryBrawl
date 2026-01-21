@@ -13,10 +13,14 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     name="null";
     //Default values
     speed=100.0;
+
+    missileSpeed= 10.0/43200.0;
+
     maxBullets=3;
     trainSpeed=300.0;
     infantryRange=200.0;
     infantryFireRate=20;
+    policeFireRate=5;
 
     armyCapCores=0;
     armyCapOccupied=0;
@@ -32,7 +36,11 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     canDefenestrate=false;
 
     //Time to recruit a new infantry soldier, in ms in-game time
-    infantryRecruitmentTime=86400000;//1 day
+    infantryRecruitmentTime=86400000*5;//5 days
+
+
+    missileBuildingCost=10.0;
+    missileBuildingTime=86400000*10;
 
     stance=AGGRESSIVE;
 
@@ -84,11 +92,17 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
                 else if (variable =="infantryRange") {
                     infantryRange=std::stof(value);
                 }
-                else if (variable =="infantryRange") {
-                    infantryRange=std::stof(value);
-                }
                 else if (variable =="infantryFireRate") {
                     infantryFireRate=std::stof(value);
+                }
+                else if (variable =="policeFireRate") {
+                    policeFireRate=std::stof(value);
+                }
+                else if (variable =="infantryFireRateMultiplier") {
+                    infantryFireRate*=std::stof(value);
+                }
+                else if (variable =="policeFireRateMultiplier") {
+                    policeFireRate*=std::stof(value);
                 }
                 else if (variable =="productionMultiplier") {
                     productionMultiplier=std::stof(value);

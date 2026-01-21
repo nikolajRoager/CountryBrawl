@@ -79,13 +79,16 @@ void from_json(const nlohmann::json& j, loadableBase& b) {
     if (spec == "FACTORY") {
         b.mySpecialization=city::FACTORY;
     }
+    else if (spec == "MISSILE_SITE") {
+        b.mySpecialization=city::MISSILE_SITE;
+    }
     else {
         b.mySpecialization=city::NONE;
     }
 }
 
 
-void jsonClient::load(std::vector<city>& bases,const std::vector<country>& countries, std::map<int,supplyHub>& supplyHubs) {
+void jsonClient::load(std::vector<city>& bases,const std::vector<country>& countries, std::map<int,supplyHub>& supplyHubs) const {
     std::ifstream file(jsonFilePath);
     if (!file.is_open()) {
         throw std::runtime_error("Can't open "+jsonFilePath.string());
@@ -126,3 +129,40 @@ void jsonClient::load(std::vector<city>& bases,const std::vector<country>& count
     }
 }
 
+void jsonClient::loadSoldiersAtGamestart(std::vector<std::shared_ptr<countryball>>& soldiers, std::vector<city> &cities, std::vector<country> &countries, const diplomacyManager& diploManager) const {
+    std::ifstream file(jsonFilePath);
+    if (!file.is_open()) {
+        throw std::runtime_error("Can't open "+jsonFilePath.string());
+    }
+    nlohmann::json result;
+    file>>result;
+
+    for (const auto& countryJson : result) {
+        std::string countryName= countryJson.at("country").get<std::string>();
+        auto countryIt = std::find_if(countries.begin(),countries.end(),[&](const country& obj) {
+            return obj.getName()==countryName;
+        });
+        if (countryIt == countries.end()) {
+            throw std::runtime_error("Country "+countryName+" requested in "+jsonFilePath.string()+" not found");
+        }
+        int countryId = countryIt- countries.begin();
+
+        for (const auto& cityJson : countryJson.at("list")) {
+            std::string cityName = cityJson.at("city").get<std::string>();
+            int nsoldiers = cityJson.at("soldiers").get<int>();
+            auto cityIt = std::find_if(cities.begin(),cities.end(),[&](const city& obj) {
+                return obj.getName()==cityName;
+            });
+            if (cityIt == cities.end()) {
+                throw std::runtime_error("City "+cityName+" requested in "+jsonFilePath.string()+" not found");
+            }
+            int cityId = cityIt- cities.begin();
+
+            for (int i = 0; i < nsoldiers; ++i) {
+                soldiers.emplace_back(std::make_shared<countryball>(countries[countryId], cities[cityId].getX(), cities[cityId].getY()));
+                cities[cityId].addCountryball(soldiers.back(), cities, countries,diploManager);
+            }
+        }
+    }
+
+}

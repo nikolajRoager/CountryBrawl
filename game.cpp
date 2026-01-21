@@ -27,11 +27,16 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     happyBall(assetsPath() / "countryballAccessories" / "happy.png", renderer),
     angryBall(assetsPath() / "countryballAccessories" / "angry.png", renderer),
     deadBall(assetsPath() / "countryballAccessories" / "dead.png", renderer),
+    ruinTexture(assetsPath() / "ruin.png", renderer),
     cityTexture(assetsPath() / "city.png", renderer),
     factoryTexture(assetsPath()/"factory.png",renderer),
+    missileSiteTexture(assetsPath()/"missileSite.png",renderer),
+    missileOnSiteTexture(assetsPath()/"missile.png",renderer),
+    missileInAir(assetsPath()/"missileInAir.png",renderer),
     supplyHubTexture(assetsPath() / "supplyHub.png", renderer),
     selectedCityTexture(assetsPath() / "selectedCity.png", renderer),
     arrowTexture(assetsPath() / "arrow.png", renderer),
+    circleMarkerTexture(assetsPath() / "circleMarker.png", renderer),
     trainEnd(assetsPath() / "trainEnd.png", renderer),
     trainSegment(assetsPath() / "trainSegment.png", renderer),
     cargoTrain(assetsPath() / "cargoTrain.png", renderer),
@@ -55,6 +60,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     specializationColonTexture("Specialization: ",renderer,smallFont),
     stockpileColonTexture("Stockpile:",renderer,smallFont),
     factoryTextTexture("Factory",renderer,smallFont),
+    missileSiteTextTexture("Missile Site",renderer,smallFont),
     noneTextTexture("None",renderer,smallFont),
     incomeColonTexture("Income: ",renderer,smallFont),
     euroTexture("€",renderer,smallFont),
@@ -62,9 +68,17 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     productionColonTexture("Production: ",renderer,smallFont),
     bulletsTexture(assetsPath()/"ui"/"bullets.png",renderer),
 
-developMouseOverText("Develop, €",renderer,smallFont),
-developMaxMouseOverText("Max developed already",renderer,smallFont),
-shotSound(assetsPath()/"sound"/"shot.wav"),
+    missileMapModeText("Missile Map Mode",renderer,smallFont),
+    supplyMapModeText("Supply Map Mode",renderer,smallFont),
+    neighbourMapModeText("Neighbour Map Mode",renderer,smallFont),
+    missileAimMarker(assetsPath()/"missileAim.png",renderer),
+
+    bigExplosion(assetsPath()/"explosion.png",renderer),
+
+    developMouseOverText("Develop, €",renderer,smallFont),
+    developMaxMouseOverText("Max developed already",renderer,smallFont),
+    shotSound(assetsPath()/"sound"/"shot.wav"),
+    explosionSound(assetsPath()/"sound"/"explosion.wav"),
     topBar(renderer),
     bottomBar(renderer)
 {
@@ -326,24 +340,23 @@ shotSound(assetsPath()/"sound"/"shot.wav"),
             cameraCentreY += city.getY();
             playerCities++;
         }
-        //TODO this is temporary
-        /*//Add 5 soldier to every city
-        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
-        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
-        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
-        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
-        soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY()));
-        city.addCountryball(soldiers.back(), cities, countries,*diploManager);
-        */
     }
     if (playerCities>0) {
         cameraCentreX /= playerCities;
         cameraCentreY /= playerCities;
     }
+
+
+    //Also load the soldiers
+    {
+        jsonClient importer(assetsPath() / "startingMap" / "startingArmies.json");
+        try {
+            importer.loadSoldiersAtGamestart(soldiers, cities, countries,*diploManager);
+        } catch (std::exception &e) {
+            throw std::runtime_error("Could not load cities, error: " + std::string(e.what()));
+        }
+    }
+
 
     //Centre the camera on the player country
     screenMinX = cameraCentreX * scale - windowWidthPx / 2.0;
@@ -364,14 +377,6 @@ shotSound(assetsPath()/"sound"/"shot.wav"),
                     supplyHubs.at(j).addSupplyHubNeighbour(i);
                 }
             }
-        }
-    }
-
-    //TODO, this is temp remove it again
-    for (const auto &hub: supplyHubs | std::views::values) {
-        std::cout<<"The "<<cities[hub.getCityId()].getName()<<" Supply network has the following neighbours:"<<std::endl;
-        for (int i : hub.getNeighbours()) {
-            std::cout<<'\t'<<cities[i].getName()<<std::endl;
         }
     }
 
@@ -454,6 +459,10 @@ shotSound(assetsPath()/"sound"/"shot.wav"),
 
     previousGameTime = gameEpoch;
     countryExisted.resize(countries.size(),true);
+
+    //The explosion size is taken from the animation
+    missileExplosionRadius=missileAimMarker.getWidth()/2;
+    missileRange=2048;
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
@@ -466,10 +475,22 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     }
 
 
+    bool missileMapMode=false;
+    bool supplyMapMode=false;
+    bool neighbourMapMode=false;
+
+    if (userInputs.mPressed)
+        missileMapMode = true;
+    else if (userInputs.sPressed)
+        supplyMapMode = true;
+    else if (userInputs.nPressed)
+        neighbourMapMode = true;
+
+
     for (int i = 0; i < cities.size(); i++) {
         const city &city = cities[i];
-        city.display(cityTexture,factoryTexture, selectedCityTexture, supplyHubTexture, selectedCities.contains(i), i == primarySelectedCity,
-                     countries, cities, supplyHubs, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall);
+        city.display(cityTexture,factoryTexture,missileSiteTexture,missileOnSiteTexture, ruinTexture, selectedCityTexture, supplyHubTexture,arrowTexture, selectedCities.contains(i), i == primarySelectedCity,
+                     countries, cities, supplyHubs, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall,supplyMapMode,neighbourMapMode,millis);
     }
 
 
@@ -501,6 +522,14 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     for (const auto &soldier: soldiers) {
         soldier->display(screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer);
+    }
+
+    for (const auto &explosion : explosions) {
+        explosion.display(screenMinX, screenMinY, screenWidth, screenHeight,scale,renderer);
+    }
+
+    for (const auto &missile : missiles) {
+        missile.display(screenMinX, screenMinY, screenWidth, screenHeight,scale, renderer);
     }
 
 
@@ -545,6 +574,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             stockpileColonTexture,
             productionColonTexture,
             factoryTextTexture,
+            missileSiteTextTexture,
             noneTextTexture,
             bulletsTexture,
             developMouseOverText,
@@ -553,6 +583,48 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             numbererSmall,
             userInputs.mouseXPx, userInputs.mouseYPx,
             screenWidth,screenHeight,backgroundScale,renderer);
+    }
+
+    //Draw missiles and aiming point, if we have any ready missiles
+    if (missileMapMode) {
+
+
+        double mouseXWorld = ((userInputs.mouseXPx + screenMinX) / scale);
+        double mouseYWorld = ((userInputs.mouseYPx + screenMinY) / scale);
+
+        bool hasMissile=false;
+
+        for (int c : selectedCities) {
+            if (cities[c].getOwner()==playerCountryId && cities[c].getSpecialization()==city::MISSILE_SITE && cities[c].hasMissileReady()) {
+
+
+                double cx = cities[c].getX();
+                double cy = cities[c].getY();
+
+                int cxScreen = cx*scale-screenMinX;
+                int cyScreen = cy*scale-screenMinY;
+
+                double radiusScreen = missileRange*scale;
+                double dtheta=1.0/std::max(1.0,std::floor((scale*64.0)))*M_PI;
+
+                for (double theta = 0; theta<2*M_PI; theta+=dtheta) {
+                    double posX = cxScreen + radiusScreen*cos(theta);
+                    double posY = cyScreen + radiusScreen*sin(theta);
+
+                    circleMarkerTexture.render(posX,posY-circleMarkerTexture.getHeight()*0.5,renderer,1.0,true,false,false,1,0,theta);
+                }
+
+                double dx = mouseXWorld-cx;
+                double dy = mouseYWorld-cy;
+
+                if (dx*dx+dy*dy<missileRange*missileRange) {
+                    cities[c].highlightDirectPathScreen(arrowTexture,userInputs.mouseXPx, userInputs.mouseYPx, screenMinX, screenMinY, screenWidth, screenHeight,scale,renderer,millis,255,0,0);
+                    hasMissile = true;
+                }
+            }
+        }
+        if (hasMissile)
+            missileAimMarker.render(userInputs.mouseXPx-missileAimMarker.getWidth()*0.5*scale,userInputs.mouseYPx-missileAimMarker.getHeight()*0.5*scale,renderer,scale,false,false,false,1,0,millis*0.001);
     }
 
     topBar.display(renderer, userInputs.mouseXPx, userInputs.mouseYPx, screenWidth, screenHeight, numbererMid,
@@ -579,8 +651,12 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         countries[playerCountryId].showFirstEvent(renderer, userInputs.mouseXPx, userInputs.mouseYPx, screenWidth, screenHeight, backgroundScale,receivedMessage,okText,yesText,noText);
     }
 
-
-
+    if (missileMapMode)
+        missileMapModeText.render(0,topBar.getHeight(),255,0,0,renderer,backgroundScale);
+    else if (supplyMapMode)
+        supplyMapModeText.render(0,topBar.getHeight(),128,200,255,renderer,backgroundScale);
+    else if (neighbourMapMode)
+        neighbourMapModeText.render(0,topBar.getHeight(),255,128,0,renderer,backgroundScale);
 }
 
 void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
@@ -709,127 +785,188 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     double mouseXWorld = ((userInputs.mouseXPx + screenMinX) / scale);
     double mouseYWorld = ((userInputs.mouseYPx + screenMinY) / scale);
 
+    bool missileMapMode=false;
+    bool supplyMapMode=false;
+    bool neighbourMapMode=false;
+
+    if (userInputs.mPressed)
+        missileMapMode = true;
+    else if (userInputs.sPressed)
+        supplyMapMode = true;
+    else if (userInputs.nPressed)
+        neighbourMapMode = true;
 
 
-    //If we make a development click, we shouldn't deselect the city
-    bool madeDevClick=false;
-    if (primarySelectedCity!=-1 && cities[primarySelectedCity].getOwner()==playerCountryId) {
-        if (cities[primarySelectedCity].hasClickedDevelop(
-            cityColonTexture,
-            provinceColonTexture,
-            coreColonTexture,
-            ownerColonTexture,
-            developmentColonTexture,
-            developTexture,
-            specializationColonTexture,
-            incomeColonTexture,
-            euroTexture,
-            armyCapColonTexture,
-            stockpileColonTexture,
-            productionColonTexture,
-            factoryTextTexture,
-            noneTextTexture,
-            bulletsTexture,
-            countries,
-            numbererSmall,
-            userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.mouseXPx, userInputs.mouseYPx,
-            screenWidth,screenHeight,backgroundScale)) {
-            if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getDevCost()) {
-                countries[playerCountryId].spendFunds(cities[primarySelectedCity].getDevCost());
-                cities[primarySelectedCity].incrementDevelopment();
+    //If we are in missile map mode, we will NOT be able to select anything
+    if (missileMapMode) {
+        //Manually launch missiles
+        if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown) {
+
+            //Find the nearest city, to see if we are allowed to launch
+            int nearestCity=-1;
+            double nearestCityDistance2=std::numeric_limits<double>::max();
+            for (int i = 0; i < cities.size(); i++) {
+                const auto &city = cities[i];
+                double cx = city.getX();
+                double cy = city.getY();
+                double dx = cx-mouseXWorld;
+                double dy = cy-mouseYWorld;
+                double dist2 = (dx*dx + dy*dy);
+                if (dist2 < nearestCityDistance2) {
+                    nearestCityDistance2=dist2;
+                    nearestCity=i;
+                }
             }
-            madeDevClick=true;
+
+            bool canLaunch=true;
+            if (nearestCity!=-1) {
+                if (cities[nearestCity].getOwner()==playerCountryId) {
+                    //Sure, go for it, if you feel like it
+                    //Maybe there are invading armies about
+                    canLaunch=true;
+                }
+                else if (!countries[playerCountryId].atWarWith(cities[nearestCity].getOwner(),*diploManager)) {
+                    canLaunch=false;
+                    countries[playerCountryId].enqueueMessage(eventMessage("cantLaunchAtNeutral",cities[nearestCity].getOwner(),playerCountryId,true,false));
+                }
             }
-    }
 
+            if (canLaunch)
+                for (int c : selectedCities) {
+                    if (cities[c].getOwner()==playerCountryId && cities[c].getSpecialization()==city::MISSILE_SITE && cities[c].hasMissileReady()) {
 
+                        double dx = mouseXWorld-cities[c].getX();
+                        double dy = mouseYWorld-cities[c].getY();
 
-    //Update which cities are selected by the player
-    int prevPrimarySelectedCity = primarySelectedCity;
-    //Left click to select cities
-    if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown && !madeDevClick) {
-        //You need shift click to keep the selection
-        if (!userInputs.shiftPressed) {
-            primarySelectedCity = -1;
-            selectedCities.clear();
+                        if (dx*dx+dy*dy<missileRange*missileRange) {
+                            cities[c].launchMissile();
+                            missiles.emplace_back(missileInAir,cities[c].getX(),cities[c].getY(),mouseXWorld,mouseYWorld,countries[playerCountryId].getMissileSpeed());
+                        }
+                    }
+                }
+        }
+    } else {
+        //If we make a development click, we shouldn't deselect the city
+        bool madeDevClick=false;
+        if (primarySelectedCity!=-1 && cities[primarySelectedCity].getOwner()==playerCountryId) {
+            if (cities[primarySelectedCity].hasClickedDevelop(
+                cityColonTexture,
+                provinceColonTexture,
+                coreColonTexture,
+                ownerColonTexture,
+                developmentColonTexture,
+                developTexture,
+                specializationColonTexture,
+                incomeColonTexture,
+                euroTexture,
+                armyCapColonTexture,
+                stockpileColonTexture,
+                productionColonTexture,
+                factoryTextTexture,
+                missileSiteTextTexture,
+                noneTextTexture,
+                bulletsTexture,
+                countries,
+                numbererSmall,
+                userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.mouseXPx, userInputs.mouseYPx,
+                screenWidth,screenHeight,backgroundScale)) {
+                if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getDevCost()) {
+                    countries[playerCountryId].spendFunds(cities[primarySelectedCity].getDevCost());
+                    cities[primarySelectedCity].incrementDevelopment();
+                }
+                madeDevClick=true;
+                }
         }
 
-        //Select any city which the mouse is over, and which is either ours or has soldiers loyal to us
+
+
+        //Update which cities are selected by the player
+        int prevPrimarySelectedCity = primarySelectedCity;
+        //Left click to select cities
+        if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown && !madeDevClick) {
+            //You need shift click to keep the selection
+            if (!userInputs.shiftPressed) {
+                primarySelectedCity = -1;
+                selectedCities.clear();
+            }
+
+            //Select any city which the mouse is over, and which is either ours or has soldiers loyal to us
+            for (int i = 0; i < cities.size(); i++) {
+                const auto &city = cities[i];
+                if (city.isSelected(cityTexture, userInputs.mouseXPx, userInputs.mouseYPx, screenMinX, screenMinY, scale)
+                    && (city.getOwner() == playerCountryId || city.hasSoldiersFrom(playerCountryId))
+                ) {
+                    primarySelectedCity = i;
+                    selectedCities.insert(i);
+                }
+            }
+
+            boxSelectionActive = true;
+            boxSelectionX0 = mouseXWorld;
+            boxSelectionY0 = mouseYWorld;
+        }
+
+        //Finish box selection
+        if (userInputs.prevLeftMouseDown && !userInputs.leftMouseDown) {
+            boxSelectionActive = false;
+            //Check if there are any cities to select betwixt these coordinates
+            double minX;
+            double maxX;
+            double minY;
+            double maxY;
+            if (mouseXWorld < boxSelectionX0) {
+                minX = mouseXWorld;
+                maxX = boxSelectionX0;
+            } else {
+                minX = boxSelectionX0;
+                maxX = mouseXWorld;
+            }
+            if (mouseYWorld < boxSelectionY0) {
+                minY = mouseYWorld;
+                maxY = boxSelectionY0;
+            } else {
+                minY = boxSelectionY0;
+                maxY = mouseYWorld;
+            }
+            //Select any city which the mouse is over, and which is either ours or has soldiers loyal to us
+            for (int i = 0; i < cities.size(); i++) {
+                const auto &city = cities[i];
+                if ((city.getX() > minX && city.getX() < maxX && city.getY() > minY && city.getY() < maxY)
+                    && (city.getOwner() == playerCountryId || city.hasSoldiersFrom(playerCountryId))
+                ) {
+                    primarySelectedCity = i;
+                    selectedCities.insert(i);
+                }
+            }
+        }
+
+        //Right click to move
+        if (userInputs.rightMouseDown && !userInputs.prevRightMouseDown) {
+            //First try to move soldiers to direct neighbours
+            for (int i: selectedCities) {
+                auto &city = cities[i];
+                city.moveSoldiersTo(playerCountryId, hoveredCity, userInputs.shiftPressed, cities, countries, tickets,*diploManager);
+            }
+        }
+
+        //In any case, update which city we are hovering over
+        int prevHoveredCity = hoveredCity;
+        hoveredCity = -1;
+
         for (int i = 0; i < cities.size(); i++) {
             const auto &city = cities[i];
-            if (city.isSelected(cityTexture, userInputs.mouseXPx, userInputs.mouseYPx, screenMinX, screenMinY, scale)
-                && (city.getOwner() == playerCountryId || city.hasSoldiersFrom(playerCountryId))
-            ) {
-                primarySelectedCity = i;
-                selectedCities.insert(i);
+            if (city.isSelected(cityTexture, userInputs.mouseXPx, userInputs.mouseYPx, screenMinX, screenMinY, scale)) {
+                hoveredCity = i;
             }
         }
 
-        boxSelectionActive = true;
-        boxSelectionX0 = mouseXWorld;
-        boxSelectionY0 = mouseYWorld;
-    }
-
-    //Finish box selection
-    if (userInputs.prevLeftMouseDown && !userInputs.leftMouseDown) {
-        boxSelectionActive = false;
-        //Check if there are any cities to select betwixt these coordinates
-        double minX;
-        double maxX;
-        double minY;
-        double maxY;
-        if (mouseXWorld < boxSelectionX0) {
-            minX = mouseXWorld;
-            maxX = boxSelectionX0;
-        } else {
-            minX = boxSelectionX0;
-            maxX = mouseXWorld;
-        }
-        if (mouseYWorld < boxSelectionY0) {
-            minY = mouseYWorld;
-            maxY = boxSelectionY0;
-        } else {
-            minY = boxSelectionY0;
-            maxY = mouseYWorld;
-        }
-        //Select any city which the mouse is over, and which is either ours or has soldiers loyal to us
-        for (int i = 0; i < cities.size(); i++) {
-            const auto &city = cities[i];
-            if ((city.getX() > minX && city.getX() < maxX && city.getY() > minY && city.getY() < maxY)
-                && (city.getOwner() == playerCountryId || city.hasSoldiersFrom(playerCountryId))
-            ) {
-                primarySelectedCity = i;
-                selectedCities.insert(i);
+        if (hoveredCity != -1 && primarySelectedCity != -1) {
+            if (prevPrimarySelectedCity != primarySelectedCity || prevHoveredCity != hoveredCity) {
+                selectedPath = cities[hoveredCity].findPathFrom(primarySelectedCity, cities, countries);
             }
-        }
+        } else if (!selectedPath.empty())
+            selectedPath.clear();
     }
-
-    //Right click to move
-    if (userInputs.rightMouseDown && !userInputs.prevRightMouseDown) {
-        //First try to move soldiers to direct neighbours
-        for (int i: selectedCities) {
-            auto &city = cities[i];
-            city.moveSoldiersTo(playerCountryId, hoveredCity, userInputs.shiftPressed, cities, countries, tickets,*diploManager);
-        }
-    }
-
-    //In any case, update which city we are hovering over
-    int prevHoveredCity = hoveredCity;
-    hoveredCity = -1;
-
-    for (int i = 0; i < cities.size(); i++) {
-        const auto &city = cities[i];
-        if (city.isSelected(cityTexture, userInputs.mouseXPx, userInputs.mouseYPx, screenMinX, screenMinY, scale)) {
-            hoveredCity = i;
-        }
-    }
-
-    if (hoveredCity != -1 && primarySelectedCity != -1) {
-        if (prevPrimarySelectedCity != primarySelectedCity || prevHoveredCity != hoveredCity) {
-            selectedPath = cities[hoveredCity].findPathFrom(primarySelectedCity, cities, countries);
-        }
-    } else if (!selectedPath.empty())
-        selectedPath.clear();
 
 
     topBar.updateMouse(userInputs.mouseXPx, userInputs.mouseYPx, userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.rightMouseDown && !userInputs.prevRightMouseDown, screenWidth, screenHeight);
@@ -839,6 +976,8 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     //Update projectiles and particle effects
     for (auto &shot: smallArmsShots)
         shot.update(dt);
+    for (auto& explosion: explosions)
+        explosion.update(dtGameTime);
 
     //Clear away dead particle effects
     //Clear lingering shots, since they are inserted from the back, and have the same lifetime, the expired shots are all up front
@@ -857,6 +996,58 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     for (auto &ticket: cargoTickets) {
         ticket->update(cities, countries, dt,*diploManager);
     }
+
+    for (auto &missile : missiles) {
+        missile.update(dtGameTime);
+        if (missile.hasHit()) {
+            double tx = missile.getTargetX();
+            double ty = missile.getTargetY();
+            explosions.emplace_back(bigExplosion,tx,ty,missileExplosionRadius);
+
+            explosionSound.play(tx,ty,screenMinX,screenMinY,screenWidth,screenHeight,scale,false);
+            //Check what sort of damage we should do (The explosion effect is purely graphical, THIS is where the damage is done)
+            double missileExplosionRadius2= missileExplosionRadius*missileExplosionRadius;
+            for (auto &s : soldiers) {
+                double dx = s->getX()-tx;
+                double dy = s->getY()-ty;
+
+                if (dx*dx+dy*dy <missileExplosionRadius2) {
+                    s->kill(countries);
+                }
+            }
+
+            for (auto &city : cities) {
+                double dx = city.getX()-tx;
+                double dy = city.getY()-ty;
+
+                if (dx*dx+dy*dy <missileExplosionRadius2) {
+                    city.damage(countries);
+                }
+            }
+
+            for (auto &ticket : tickets) {
+                if (ticket.isInRangeOf(cities,tx,ty,missileExplosionRadius)) {
+                    ticket.destroy(cities,countries,*diploManager);
+                }
+            }
+
+            for (auto &ticket : cargoTickets) {
+                if (ticket->isInRangeOf(cities,tx,ty,missileExplosionRadius)) {
+                    ticket->destroy();
+                }
+            }
+
+            for (auto &city : cities) {
+                city.removeDeadSoldiers(cities, countries,*diploManager);
+            }
+        }
+    }
+
+    while (!explosions.empty() && explosions.front().isDead())
+        explosions.pop_front();
+
+
+    missiles.remove_if([](const missile& missile){return missile.isDead();});
     tickets.remove_if([](const ticket &ticket) { return ticket.isDone(); });
     cargoTickets.remove_if([](const std::shared_ptr<cargoTicket> &ticket) { return ticket->isDone(); });
 
@@ -874,6 +1065,26 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     }
 
+    for (auto &city: cities) {
+        city.shoot(countries,shotBalls, smallArmsShots, soldiers, cities, generator, dt,*diploManager,shotSound,screenMinX, screenMinY, screenWidth, screenHeight, scale);
+        city.updateOwnership(cities, countries,supplyHubs,*diploManager);
+        if (city.updateRecruitment(dtGameTime)) {
+            countries[city.getOwner()].decrementRecruitingSoldiers();
+            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY(),0));
+            city.addCountryball(soldiers.back(), cities, countries,*diploManager);
+        }
+        if (city.updateMissileBuilding(dtGameTime)) {
+            //Currently nothing is done on our side
+            //std::cout<<"Build missile in "<<city.getName()<<std::endl;
+        }
+        if (city.canRepair()) {
+            city.repair();
+            //It is not possible to get negative funds, so the repair is essentially free if you are broke
+            countries[city.getOwner()].spendFunds(city.getRepairCost());
+        }
+        city.updateRepair(dtGameTime);
+    }
+
     for (auto &ball: shotBalls) {
         ball->kill(countries);
         int base = ball->getBase();
@@ -886,14 +1097,6 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             soldiers.erase(soldiers.begin() + i);
     }
 
-    for (auto &city: cities) {
-        city.updateOwnership(cities, countries,supplyHubs,*diploManager);
-        if (city.updateRecruitment(dtGameTime)) {
-            countries[city.getOwner()].decrementRecruitingSoldiers();
-            soldiers.emplace_back(std::make_shared<countryball>(countries[city.getOwner()], city.getX(), city.getY(),0));
-            city.addCountryball(soldiers.back(), cities, countries,*diploManager);
-        }
-    }
 
 
     //Update income, if the month has changed
@@ -964,7 +1167,6 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                     //We can only recruit if we can afford it, the core is un-occupied, and not already recruiting
                     if (cities[coreId].getOwner() == country.getId())
                         if (cities[coreId].recruit(countries)) {
-                            //Checks if already recruiting
                             --armyDeficit;
 
                             country.spendFunds(country.getInfantryRecruitmentCost());
@@ -976,6 +1178,20 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             }
         }
     }
+
+    //Update automatic building of missiles, don't bother shuffling, too much hassle
+    for (auto& city : cities) {
+        //TODO, for now, auto build missiles is always on, we need an option to turn it off
+        auto& owner = countries[city.getOwner()];
+        if (owner.getFunds()>owner.getMissileBuildingCost()) {
+            if (city.buildMissile(countries)) {
+                owner.spendFunds(owner.getMissileBuildingCost());
+            }
+        }
+
+    }
+
+
     //Update auto-balance fronts options
     //The player must manually request an auto-balance
     if (autoBalanceButton->getIsClicked()) {
@@ -1043,8 +1259,10 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                                     for (auto& city : cities) {
                                         if (city.getCore()==j) {
                                             city.setCore(i);
+
                                             if (city.getOwner()==i) {
                                                 countries[i].decrementOccupiedCities();
+                                                countries[i].addCoreId(city.getId());
                                                 countries[i].incrementCoreCities();
                                             }
                                         }
@@ -1062,7 +1280,9 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
         //There is a 1/5 chance of random tension events with any neighbour, for any country, and 1/50 for non-neighbours
         std::uniform_int_distribution<int> tensionEventChance(0, 10);
-        std::uniform_int_distribution<int> notNEighbourtensionEventChance(0, 100);
+        //If we get a tension down event, there is an additional chance we will flip it to a tension up event, this bodge has been added to make war more common
+        std::uniform_int_distribution<int> flipToBadChance(0, 1);
+        std::uniform_int_distribution<int> notNeighbourTensionEventChance(0, 100);
         std::uniform_int_distribution<int> tensionUpDist(0, tensionUpEvents.size()-1);
         std::uniform_int_distribution<int> tensionDownDist(0, tensionDownEvents.size()-1);
         std::uniform_int_distribution<int> accidentalWarDist(0, accidentalWarEvents.size()-1);
@@ -1121,13 +1341,25 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                                 diploManager->setTension(i,j,diplomacyManager::WAR);
                             }
                             else {//Only random relation changes if we didn't just go to war
-                                int TensionChange = countries[i].isNeighbour(j)? tensionEventChance(generator) : notNEighbourtensionEventChance(generator);
+                                int TensionChange = countries[i].isNeighbour(j)? tensionEventChance(generator) : notNeighbourTensionEventChance(generator);
                                 if (TensionChange ==0) {
-                                    //tension down
-                                    diploManager->decreaseTensions(i,j);
-                                    int event = tensionDownDist(generator);
-                                    countries[i].enqueueMessage(eventMessage(tensionDownEvents[event],j,i,false,false));
-                                    countries[j].enqueueMessage(eventMessage(tensionDownEvents[event],i,j,false,false));
+
+                                    int makeItBad = flipToBadChance(generator);
+                                    if (makeItBad==0) {
+                                        //tension down
+                                        diploManager->decreaseTensions(i,j);
+                                        int event = tensionDownDist(generator);
+                                        countries[i].enqueueMessage(eventMessage(tensionDownEvents[event],j,i,false,false));
+                                        countries[j].enqueueMessage(eventMessage(tensionDownEvents[event],i,j,false,false));
+                                    }
+                                    else {
+                                        //Tension up
+                                        diploManager->increaseTensions(i,j,false);
+                                        int event = tensionUpDist(generator);
+                                        countries[i].enqueueMessage(eventMessage(tensionUpEvents[event],j,i,false,false));
+                                        countries[j].enqueueMessage(eventMessage(tensionUpEvents[event],i,j,false,false));
+
+                                    }
                                 }
                                 else if (TensionChange == 1) {
                                     //Tension up
@@ -1163,6 +1395,9 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::cout <<"Balance front line took "<< duration.count() << " ms\n"<<std::endl;
+
+
+
     }
 
     if (stanceMenu->getSelectedMenu()==0) {

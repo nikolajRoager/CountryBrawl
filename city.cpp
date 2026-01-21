@@ -41,6 +41,22 @@ devProduction(1)
     recruitmentLength=0;
 
     nearestSupplyHub=-1;
+
+
+
+    isBuildingMissile=false;
+    hasMissile=true;
+    buildingMissileTimer=0;
+    buildingMissileLength=864000000;
+
+
+
+    isRepairing=false;
+    repairTimer=0;
+    repairLength=0;
+
+    damaged=false;
+
 }
 
 city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, const std::set<int> &_neighbours, bool _isSupplyHub,specialization _mySpecialization,int _development):
@@ -73,10 +89,25 @@ devProduction(1)
     //Will be set when we know what we are supposed to recruit
     recruitmentLength=0;
 
+    isBuildingMissile=false;
+    hasMissile=true;
+    buildingMissileTimer=0;
+    buildingMissileLength=0;
+
+    isRepairing=false;
+    repairTimer=0;
+    repairLength=864000000;
+
+
     nearestSupplyHub=-1;
+
+    damaged=false;
 }
 
 void city::updateDailyProduction(const std::vector<country>& countries) {
+    if (damaged)
+        return;
+
     if (mySpecialization!=FACTORY)
         return;
     int bulletProduction = baseProduction.bullets+development*devProduction.bullets;
@@ -149,6 +180,7 @@ void city::displayInfobox(
     const texwrap& stockpileColonTexture,
     const texwrap& productionColonTexture,
     const texwrap& FactoryTextTexture,
+    const texwrap& missileSiteTextTexture,
     const texwrap& NoneTextTexture,
     const texwrap& bulletsTexture,
     const texwrap& developMouseOverText,
@@ -187,7 +219,7 @@ void city::displayInfobox(
     maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
-    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():NoneTextTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():NoneTextTexture.getWidth()), maxWidthAfterColon);
     //TODO, add width from stockpiles
 
     maxWidthAfterColon *= scale;
@@ -222,41 +254,49 @@ void city::displayInfobox(
     y+=ownerColonTexture.getHeight()*scale;
     developmentColonTexture.render(x0,y,renderer,scale);
     int wdev=numberer.render(development,x0+maxWidthBeforeColon,y,renderer,scale);
-    developTexture.render(x0+maxWidthBeforeColon+wdev,y,renderer,scale);
+    if (!damaged) {
+        developTexture.render(x0+maxWidthBeforeColon+wdev,y,renderer,scale);
 
-    //Print mouse over text for development
-    if (mouseX>x0+maxWidthBeforeColon+wdev && mouseX<x0+maxWidthBeforeColon+wdev+developTexture.getWidth()
-        && mouseY>y && mouseY<y+developTexture.getHeight()) {
+        //Print mouse over text for development
+        if (mouseX>x0+maxWidthBeforeColon+wdev && mouseX<x0+maxWidthBeforeColon+wdev+developTexture.getWidth()
+            && mouseY>y && mouseY<y+developTexture.getHeight()) {
 
-        if (development<MAX_DEVELOPMENT) {
-            int devCost=getDevCost();
-            int w = developMouseOverText.getWidth()+numberer.getWidth(devCost);
-            int h = developMouseOverText.getHeight();
-            SDL_Rect background{mouseX-w,mouseY,w,h};
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderFillRect(renderer, &background);
-            developMouseOverText.render(mouseX-w,mouseY,renderer,scale);
-            numberer.render(devCost,mouseX+developMouseOverText.getWidth()-w,mouseY,renderer,scale);
-        }
-        else {
+            if (development<MAX_DEVELOPMENT) {
+                int devCost=getDevCost();
+                int w = developMouseOverText.getWidth()+numberer.getWidth(devCost);
+                int h = developMouseOverText.getHeight();
+                SDL_Rect background{mouseX-w,mouseY,w,h};
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &background);
+                developMouseOverText.render(mouseX-w,mouseY,renderer,scale);
+                numberer.render(devCost,mouseX+developMouseOverText.getWidth()-w,mouseY,renderer,scale);
+            }
+            else {
 
-            int w = developMaxMouseOverText.getWidth();
-            int h = developMaxMouseOverText.getHeight();
-            SDL_Rect background{mouseX-w,mouseY,w,h};
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderFillRect(renderer, &background);
-            developMaxMouseOverText.render(mouseX-w,mouseY,renderer,scale);
-        }
+                int w = developMaxMouseOverText.getWidth();
+                int h = developMaxMouseOverText.getHeight();
+                SDL_Rect background{mouseX-w,mouseY,w,h};
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &background);
+                developMaxMouseOverText.render(mouseX-w,mouseY,renderer,scale);
+            }
+            }
     }
 
 
     y+=developmentColonTexture.getHeight()*scale;
     specializationColonTexture.render(x0,y,renderer,scale);
-    if (mySpecialization==FACTORY) {
-        FactoryTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
-    }
-    else if (mySpecialization==NONE) {
-        NoneTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+
+    switch (mySpecialization) {
+        case NONE:
+            NoneTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+            break;
+        case FACTORY:
+            FactoryTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+            break;
+        case MISSILE_SITE:
+            missileSiteTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+            break;
     }
     y+=specializationColonTexture.getHeight()*scale;
     incomeColonTexture.render(x0,y,renderer,scale);
@@ -292,12 +332,16 @@ bool city::hasClickedDevelop(
     const texwrap &stockpileColonTexture,
     const texwrap &productionColonTexture,
     const texwrap &FactoryTextTexture,
+    const texwrap& missileSiteTextTexture,
     const texwrap &NoneTextTexture,
     const texwrap& bulletsTexture,
     const std::vector<country> &countries, const numberRenderer &numberer, bool leftCLick, int mouseX, int mouseY, int screenWidthPx,
                              int screenHeightPx, double scale) const {
 
     if (!leftCLick)
+        return false;
+
+    if (damaged)
         return false;
     int maxWidthBeforeColon = cityColonTexture.getWidth();
     maxWidthBeforeColon = std::max(provinceColonTexture.getWidth(), maxWidthBeforeColon);
@@ -330,7 +374,7 @@ bool city::hasClickedDevelop(
     maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
-    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():NoneTextTexture.getWidth(), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():NoneTextTexture.getWidth()), maxWidthAfterColon);
     //TODO, add width from stockpiles
 
     maxWidthAfterColon *= scale;
@@ -369,16 +413,13 @@ bool city::hasClickedDevelop(
 
 
 //This is horribly bodged, with me hardcoding in the number of frames, it is fine for a little game but not really
-void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer) const {
+void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, const texwrap& missileSiteTexture, const texwrap& missileOnSiteTexture, const texwrap& ruin, const texwrap& selectedTexture, const texwrap& supplyHubTexture, const texwrap& arrowTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer, bool highlightSupply, bool highlightNeighbours, unsigned int millis) const {
 
     int xScreen = x*scale-screenMinX;
     int yScreen = y*scale-screenMinY;
 
     if (xScreen+cityTexture.getWidth()/5>0 && xScreen <= screenWidthPx+cityTexture.getWidth()/5 && yScreen>0 && yScreen <= screenHeightPx+cityTexture.getHeight())
     {
-
-
-
         double thisScale = std::min(scale,1.0);
 
         if (isSelected)
@@ -386,10 +427,26 @@ void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, co
 
 
         int frame = std::min(development/2,4);
-        if (mySpecialization==FACTORY)
-            factoryTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false,5,frame);
+
+        if (damaged) {
+            ruin.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false);
+        }
         else
-            cityTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false,5,frame);
+            switch (mySpecialization) {
+                case NONE:
+                    cityTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false,5,frame);
+                    break;
+                case FACTORY:
+                    factoryTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false,5,frame);
+                    break;
+                case MISSILE_SITE:
+                    missileSiteTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true,false,5,frame);
+                    if (hasMissile)
+                        missileOnSiteTexture.render(xScreen,yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
+                    break;
+            }
+
+
         if (isSupplyHub)
             supplyHubTexture.render(xScreen+thisScale*((cityTexture.getWidth()/5+supplyHubTexture.getWidth())/2),yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
 
@@ -429,6 +486,22 @@ void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, co
             SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
             SDL_RenderFillRect(renderer,&quad);
         }
+        if (isBuildingMissile) {
+            double height = 100*static_cast<double>(buildingMissileTimer)/buildingMissileLength;
+            SDL_SetRenderDrawColor(renderer,255,64,0,255);
+
+            int barWidth = 16;
+            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale-barWidth*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
+            SDL_RenderFillRect(renderer,&quad);
+        }
+        if (isRepairing) {
+            double height = 100*static_cast<double>(repairTimer)/repairLength;
+            SDL_SetRenderDrawColor(renderer,255,255,0,255);
+
+            int barWidth = 16;
+            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale-2*barWidth*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
+            SDL_RenderFillRect(renderer,&quad);
+        }
 
 
         //Uncomment to display front-lines
@@ -454,15 +527,18 @@ void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, co
         */
 
 
-        if (nearestSupplyHub!=-1) {
+        if (highlightSupply && nearestSupplyHub!=-1) {
             int nearestSupplyPrev=supplyHubs.at(nearestSupplyHub).getPrev(myId);
 
             if (nearestSupplyPrev!=-1) {
-                int theirXScreen = cities[nearestSupplyPrev].getX()*scale-screenMinX;
-                int theirYScreen = cities[nearestSupplyPrev].getY()*scale-screenMinY;
 
-                SDL_SetRenderDrawColor(renderer, 0, 128, 255, 64);
-                SDL_RenderDrawLine(renderer,xScreen,yScreen,theirXScreen,theirYScreen);
+                highlightNeighbour(arrowTexture,nearestSupplyPrev,cities,screenMinX,screenMinY,screenWidthPx,screenHeightPx,scale,renderer,millis,128,200,255);
+            }
+        }
+
+        if (highlightNeighbours) {
+            for (int n : neighbours) {
+                highlightNeighbour(arrowTexture,n,cities,screenMinX,screenMinY,screenWidthPx,screenHeightPx,scale,renderer,millis,255,128,0);
             }
         }
 
@@ -496,8 +572,21 @@ void city::recalcNearestSupplyhub(const std::map<int, supplyHub>& supplyHubs,con
 
 }
 
+void city::damage(std::vector<country>& countries) {
+    damaged = true;
+    if (isRecruiting) {
+        isRecruiting=false;
+        recruitmentTimer=0;
+        countries[owner].decrementRecruitingSoldiers();
+    }
+    buildingMissileTimer=0;
+    isBuildingMissile=false;
 
-void city::highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,unsigned int millis) const {
+    development=std::max(0,development-1);
+}
+
+
+void city::highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,unsigned int millis, Uint8 r, Uint8 g, Uint8 b) const {
     for (const auto& neighbour : neighbours) {
         if (neighbourId == neighbour) {
             int xScreen = x*scale-screenMinX;
@@ -514,8 +603,28 @@ void city::highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const 
             for (double loc = arrowTexture.getWidth()*(millis%2000)*0.001; loc < dist; loc += arrowTexture.getWidth()*2) {
                 double xArrow=loc*Dx/dist+xScreen;
                 double yArrow=loc*Dy/dist+yScreen;
-                //TODO, colour should depend on diplomatic relations with other country
-                arrowTexture.render(xArrow,yArrow,renderer,1.0,false,false,false,1,0,angle);
+                arrowTexture.render(xArrow,yArrow,r,g,b,renderer,1.0,false,false,false,1,0,angle);
+            }
+        }
+    }
+}
+
+void city::highlightDirectPathScreen(const texwrap& arrowTexture,int theirXScreen, int theirYScreen,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,unsigned int millis, Uint8 r, Uint8 g, Uint8 b) const {
+    {
+        {
+            int xScreen = x*scale-screenMinX;
+            int yScreen = y*scale-screenMinY;
+
+
+            double angle = atan2(theirYScreen-yScreen,theirXScreen-xScreen);
+
+            double Dx =theirXScreen - xScreen;
+            double Dy =theirYScreen - yScreen;
+            double dist = sqrt(Dx*Dx+Dy*Dy);
+            for (double loc = arrowTexture.getWidth()*(millis%2000)*0.001; loc < dist; loc += arrowTexture.getWidth()*2) {
+                double xArrow=loc*Dx/dist+xScreen;
+                double yArrow=loc*Dy/dist+yScreen;
+                arrowTexture.render(xArrow,yArrow,r,g,b,renderer,1.0,false,false,false,1,0,angle);
             }
         }
     }
@@ -992,6 +1101,10 @@ std::vector<int> city::findPathFrom(int source, const std::vector<city> &cities,
 }
 
 bool city::recruit(std::vector<country> &countries) {
+
+    if (damaged)
+        return false;
+
     if (!isRecruiting) {
         isRecruiting=true;
         recruitmentTimer=0;
@@ -1002,7 +1115,23 @@ bool city::recruit(std::vector<country> &countries) {
     return false;
 }
 
+bool city::buildMissile(const std::vector<country> &countries) {
+    if (damaged)
+        return false;
+
+    if (!isBuildingMissile && !hasMissile && mySpecialization==MISSILE_SITE) {
+        isBuildingMissile=true;
+        buildingMissileTimer=0;
+        buildingMissileLength=countries[owner].getMissileBuildingTime();
+        return true;
+    }
+    return false;
+}
+
+
 bool city::updateRecruitment(unsigned int dtGameTime) {
+    if (damaged)
+        return false;
     if (isRecruiting) {
         recruitmentTimer+=dtGameTime;
         if (recruitmentTimer>=recruitmentLength) {
@@ -1013,6 +1142,45 @@ bool city::updateRecruitment(unsigned int dtGameTime) {
     return false;
 }
 
+bool city::updateMissileBuilding(unsigned int dtGameTime) {
+    if (damaged)
+        return false;
+    if (isBuildingMissile  && !hasMissile && mySpecialization==MISSILE_SITE) {
+        buildingMissileTimer+=dtGameTime;
+        if (buildingMissileTimer>=buildingMissileLength) {
+
+            isBuildingMissile=false;
+            hasMissile=true;
+            return true;
+        }
+    }
+    return false;
+
+}
+
+
+void city::repair() {
+    if (damaged && !isRepairing) {
+        isRepairing=true;
+        repairTimer=0;
+    }
+}
+
+void city::updateRepair(unsigned int dtGameTime) {
+    if (isRepairing) {
+        repairTimer+=dtGameTime;
+        if (repairTimer>=repairLength) {
+            isRepairing=false;
+            damaged=false;
+            repairTimer=0;
+        }
+    }
+}
+
+
+
+
+
 int city::getHostileNeighbours(const std::vector<city> &cities, const std::vector<country> &countries,const diplomacyManager& diploManager) const {
 
     int result = 0;
@@ -1021,4 +1189,77 @@ int city::getHostileNeighbours(const std::vector<city> &cities, const std::vecto
             ++result;
     }
     return result;
+}
+
+void city::shoot(const std::vector<country>& countries, std::vector<std::shared_ptr<countryball> > &shotBalls, std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball> > &soldiers, const std::vector<city> &cities, std::default_random_engine &randomEngine, double dt, const diplomacyManager &diploManager, const soundWrap &shot, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale) {
+
+    if (damaged)
+        return;
+
+    //No shots when paused (that would crash the poisson distribution)
+    if (dt==0.0)
+        return;
+
+    if (myStockpile.bullets<=0)
+        return;
+
+    //It is FAR better for performance to calculate the number of shots first (since most soldiers don't shoot each frame)
+    double mean = dt*countries[owner].getPoliceFireRate();
+    std::poisson_distribution<int> poisson_distribution(mean);
+
+    int shotsThisFrame = std::min(poisson_distribution(randomEngine),myStockpile.bullets);
+
+    if (shotsThisFrame==0)
+        return;
+
+
+    //Create list of targets
+    std::vector<std::shared_ptr<countryball>> targets;
+    double range = countries[owner].getInfantryRange();
+
+    const auto& setOfCities = getNeighbourhood();
+
+    //This for loop over all cities near my base
+    for (int c : setOfCities) {
+        //And all squads of soldiers around that city
+        for (const auto& squad : cities[c].getSquads())
+            //And if we are at war with that squad (the first index is their allegiance) we will loop over all the soldiers
+            if (countries[owner].atWarWith(squad.first,diploManager)) {
+                for (const auto& soldier :squad.second)
+                {
+                    //Bail early if they are obviously to far away
+                    double dx = x-soldier->getX();
+                    double dy = y-soldier->getY();
+                    if (std::abs(dx)>range || std::abs(dy)>range || !soldier->isAlive()) {
+                        continue;
+                    }
+                    double dist2 = dx*dx + dy*dy;
+
+                    //We wouldn't want to shoot ourselves (since that actually damages me)
+                    //and we wouldn't waste bullets on someone out of range
+                    if (dist2<range*range) {
+                        targets.emplace_back(soldier);
+                    }
+                }
+            }
+    }
+
+    //Fire shots at random targets
+    if (!targets.empty()) {
+        std::uniform_int_distribution<int> targetPicker(0,targets.size()-1);
+        for (int i = 1; i < shotsThisFrame; ++i) {
+            const auto& target =targets[targetPicker(randomEngine)];
+            //The lingering shot line is the graphical effect
+            lingeringShots.emplace_back(x,y,target->getX(),target->getY());
+
+            //This handles the damage
+            shotBalls.emplace_back(target);
+            //This plays the sound when on-screen
+            shot.play(x,y,screenMinX,screenMinY,screenWidth,screenHeight,scale);
+            //And there is one less arrow in the quiver, figuratively speaking
+            --myStockpile.bullets;
+        }
+    }
+
+
 }

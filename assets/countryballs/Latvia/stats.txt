@@ -7,3 +7,4 @@ description Latvia is a small baltic state, and very much on the Russian menu.
 malus Small country: Has only 3 cities
 gun hkg3
 malus small economy: Has middling city development
+bonus High military budget: starts with a large army

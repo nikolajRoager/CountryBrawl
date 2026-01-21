@@ -102,4 +102,8 @@ add_executable(CountryBrawl main.cpp
         supplyHub.h
         stockpile.h
         cargoTicket.cpp
-        cargoTicket.h)
+        cargoTicket.h
+        missile.cpp
+        missile.h
+        explosion.cpp
+        explosion.h)

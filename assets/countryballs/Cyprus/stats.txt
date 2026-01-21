@@ -9,3 +9,4 @@ malus Aftermatch of 1974: The north is occupied by Türkiye.
 bonus Eonosis: Conquer Greece to gain their cores
 gun hkg3
 decent economy Has average city development
+bonus High military budget: starts with a large army

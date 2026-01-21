@@ -22,8 +22,64 @@ ticket::ticket(int issuer, const std::vector<int> &_stops, bool _usePlane)
     stopped = false;
 }
 
+bool ticket::isInRangeOf(const std::vector<city> &cities, double x, double y, double range) const {
+    double myX,myY;
+
+    if (currentStep==0) {
+        myX = cities[stops[currentStep]].getX();
+        myY = cities[stops[currentStep]].getY();
+    }
+    else if (currentStep<stops.size()) {
+        double prevX = cities[stops[currentStep-1]].getX();
+        double prevY = cities[stops[currentStep-1]].getY();
+        double currentX = cities[stops[currentStep]].getX();
+        double currentY = cities[stops[currentStep]].getY();
+
+        myX = prevX*(1-distanceFactor) + currentX*distanceFactor;
+        myY = prevY*(1-distanceFactor) + currentY*distanceFactor;
+    }
+    else
+        return false;
+
+    double dx = x-myX;
+    double dy = y-myY;
+
+    bool out =dx*dx + dy*dy < range*range;
+    return out;
+}
+
+void ticket::destroy(std::vector<city>& cities,std::vector<country>& countries, const diplomacyManager& diploManager) {
+    stopped = true;
+    if (currentStep==0) {
+        //The train has been destroyed, but we didn't make it onto the train, just "disembark"
+        for (auto& p : passengers) {
+            p->setRidingTrain(false);
+            cities[0].addCountryball(p,cities,countries,diploManager);
+        }
+    }
+    else {
+
+        double prevX = cities[stops[currentStep-1]].getX();
+        double prevY = cities[stops[currentStep-1]].getY();
+        double currentX = cities[stops[currentStep]].getX();
+        double currentY = cities[stops[currentStep]].getY();
+
+        double myX = prevX*(1-distanceFactor) + currentX*distanceFactor;
+        double myY = prevY*(1-distanceFactor) + currentY*distanceFactor;
+
+        //Disembark
+        for (auto& p : passengers) {
+            p->setRidingTrain(false);
+            p->kill(countries);
+            p->setLocation(myX,myY);
+        }
+    }
+}
+
+
 void ticket::update(std::vector<city> &cities, const std::vector<country> &countries, double dt, const diplomacyManager& diploManager) {
     if (currentStep==0) {
+
         bool allInPosition = true;
         for (const auto& p : passengers) {
             if ( (!p->inPosition() && p->isAlive())) {

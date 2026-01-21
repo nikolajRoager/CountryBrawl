@@ -24,11 +24,12 @@ class city {
 public:
     enum specialization {
         NONE,
-        FACTORY
+        FACTORY,
+        MISSILE_SITE,
     };
 
     city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y,specialization mySpecialization,int development);
-    void display(const texwrap& baseTexture, const texwrap& factoryTexture, const texwrap& selectedTexture, const texwrap& supplyHubTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer) const;
+    void display(const texwrap& baseTexture, const texwrap& factoryTexture, const texwrap& missileSiteTexture, const texwrap& missileOnSiteTexture, const texwrap& ruin, const texwrap& selectedTexture, const texwrap& supplyHubTexture, const texwrap& arrowTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer, bool highlightSupply, bool highlightNeighbours, unsigned int millis) const;
 
 
     void displayInfobox(
@@ -45,6 +46,7 @@ public:
     const texwrap& stockpileColonTexture,
     const texwrap& productionColonTexture,
     const texwrap& FactoryTextTexture,
+    const texwrap& missileSiteTextTexture,
     const texwrap& NoneTextTexture,
     const texwrap &bulletsTexture,
     const texwrap& developMouseOverText,
@@ -67,6 +69,7 @@ public:
     const texwrap &stockpileColonTexture,
     const texwrap &productionColonTexture,
     const texwrap &FactoryTextTexture,
+    const texwrap& missileSiteTextTexture,
     const texwrap &NoneTextTexture,
     const texwrap &bulletsTexture,
     const std::vector<country> &countries, const numberRenderer &numberer, bool leftCLick, int mouseX, int mouseY, int screenWidthPx,
@@ -76,7 +79,11 @@ public:
 
 
     ///Highlight the path to a direct neighbour
-    void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis) const;
+    void highlightNeighbour(const texwrap& arrowTexture,int neighbourId,const std::vector<city>& cities,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,unsigned int millis, Uint8 r=255, Uint8 g=255, Uint8 b=255) const;
+
+    ///Highlight a direct path to some location on the screen
+    void highlightDirectPathScreen(const texwrap& arrowTexture,int theirXScreen, int theirYScreen,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,unsigned int millis, Uint8 r, Uint8 g, Uint8 b) const;
+
 
     [[nodiscard]] bool hasSoldiersFrom(int country) const;
 
@@ -86,10 +93,17 @@ public:
 
     [[nodiscard]] bool isSelected (const texwrap& baseTexture, int mouseX, int mouseY,int screenMinX, int screenMinY, double scale) const;
 
-    [[nodiscard]] int getIncome() const {return baseIncome+devIncome*development;}
-    [[nodiscard]] int getDevCost() const {return getIncome()*3;}
-    [[nodiscard]] int getArmyCapacity() const {return baseArmyCapacity+devArmyCapacity*development;}
+    [[nodiscard]] int getIncome() const {return damaged? 0: baseIncome+devIncome*development;}
+    [[nodiscard]] int getRepairCost() const {return baseIncome+devIncome*development;}
+    [[nodiscard]] int getDevCost() const {return damaged? 999: getIncome()*3;}
+    [[nodiscard]] int getArmyCapacity() const {return damaged? 0: baseArmyCapacity+devArmyCapacity*development;}
+    [[nodiscard]] bool isDamaged() const {return damaged;}
 
+    void damage(std::vector<country>& countries);
+
+    [[nodiscard]] bool canRepair() const {return damaged && !isRepairing;}
+    void repair();
+    void updateRepair(unsigned int dtGameTime);
 
     [[nodiscard]] const std::string& getName() const {return name;}
     [[nodiscard]] const std::string& getProvinceName() const {return provinceName;}
@@ -156,6 +170,14 @@ public:
     //Update ongoing recruitment, return true if a soldier needs to spawn
     bool updateRecruitment(unsigned int dtGameTime);
 
+
+    bool buildMissile(const std::vector<country>& countries);
+    //Update ongoing building of missiles, return true if done
+    bool updateMissileBuilding(unsigned int dtGameTime);
+
+    [[nodiscard]] bool hasMissileReady() const {return hasMissile && !damaged;}
+
+
     [[nodiscard]] int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) const;
 
     [[nodiscard]] int getSoldiers(int allegiance) {
@@ -214,6 +236,12 @@ public:
     }
 
     [[nodiscard]] const std::set<int>& getPotentialSupplyHubs() const {return potentialSupplyHubs;}
+
+    void launchMissile() {hasMissile=false;}
+
+    //Randomly launch small-arms fire at enemy countryballs
+    void shoot(const std::vector<country>& countries, std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager, const soundWrap& shot, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale);
+
 private:
 
     specialization mySpecialization;
@@ -232,6 +260,8 @@ private:
 
     bool isSupplyHub = false;
 
+    bool damaged = false;
+
 
     int nearestSupplyHub;
 
@@ -240,6 +270,16 @@ private:
     unsigned int recruitmentTimer;
     unsigned int recruitmentLength;
     //TODO, we need a variable telling us what we are recruiting
+
+
+    bool isBuildingMissile;
+    bool hasMissile;
+    unsigned int buildingMissileTimer;
+    unsigned int buildingMissileLength;
+
+    bool isRepairing;
+    unsigned int repairTimer;
+    unsigned int repairLength;
 
     //A list of nearby cities (me, my neighbours, their neighbours, maybe more)
     std::set<int> neighbourhood;

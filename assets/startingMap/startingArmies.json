@@ -1,0 +1,573 @@
+[
+  {
+    "country": "Albania",
+    "list":
+    [
+      {"city": "Tirana","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Algeria",
+    "list":
+    [
+      {"city": "Tindouf","soldiers": 8},
+      {"city": "Béchar","soldiers": 8},
+      {"city": "Tlemcen","soldiers": 8},
+      {"city": "Annaba","soldiers": 8},
+      {"city": "Souk Ahras","soldiers": 8},
+      {"city": "Tébessa","soldiers": 8},
+      {"city": "Ghardaïa","soldiers": 8}
+    ]
+  },
+  {
+    "country": "Andorra",
+    "list":
+    [
+      {"city": "Andorra la Vella","soldiers": 2}
+    ]
+  },
+  {
+    "country": "Armenia",
+    "list":
+    [
+      {"city": "Gyumri","soldiers": 2},
+      {"city": "Vagharshapat","soldiers": 2}
+    ]
+  },
+  {
+    "country": "Austria",
+    "list":
+    [
+      {"city": "Wels","soldiers": 22}
+    ]
+  },
+  {
+    "country": "Belarus",
+    "list":
+    [
+      {"city": "Hrodna","soldiers": 5},
+      {"city": "Brest-Litovsk","soldiers": 5},
+      {"city": "Baranavichy","soldiers": 5},
+      {"city": "Minsk","soldiers": 5},
+      {"city": "Barysaw","soldiers": 5},
+      {"city": "Bobruysk","soldiers": 5}
+    ]
+  },
+  {
+    "country": "Belgium",
+    "list":
+    [
+      {"city": "Bruxelles","soldiers": 23}
+    ]
+  },
+  {
+    "country": "Bosnia and Herzegovina",
+    "list":
+    [
+      {"city": "Banja Luka","soldiers": 6}
+    ]
+  },
+  {
+    "country": "Bulgaria",
+    "list":
+    [
+      {"city": "Sofia","soldiers": 3},
+      {"city": "Plovdiv","soldiers": 3},
+      {"city": "Burgas","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Croatia",
+    "list":
+    [
+      {"city": "Osijek","soldiers": 3},
+      {"city": "Zagreb","soldiers": 3},
+      {"city": "Rijeka","soldiers": 3},
+      {"city": "Split","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Cyprus",
+    "list":
+    [
+      {"city": "South Nicosia","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Czechia",
+    "list":
+    [
+      {"city": "Praha","soldiers": 14}
+    ]
+  },
+  {
+    "country": "Denmark",
+    "list":
+    [
+      {"city": "Esbjerg","soldiers": 3},
+      {"city": "Vejle","soldiers": 3},
+      {"city": "Odense","soldiers": 3},
+      {"city": "Roskilde","soldiers": 3},
+      {"city": "København","soldiers": 3},
+      {"city": "Aalborg","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Egypt",
+    "list":
+    [
+      {"city": "Sallum","soldiers": 10},
+      {"city": "Siwa Oasis","soldiers": 10},
+      {"city": "Damietta","soldiers": 10},
+      {"city": "Port Said","soldiers": 10},
+      {"city": "Arish","soldiers": 10},
+      {"city": "Sharm el-Sheik","soldiers": 10}
+    ]
+  },
+  {
+    "country": "Estonia",
+    "list":
+    [
+      {"city": "Narva","soldiers": 6},
+      {"city": "Tartu","soldiers": 6}
+    ]
+  },
+  {
+    "country": "Finland",
+    "list":
+    [
+      {"city": "Joensuu","soldiers": 19},
+      {"city": "Rovaniemi","soldiers": 19}
+    ]
+  },
+  {
+    "country": "France",
+    "list":
+    [
+      {"city": "Nice","soldiers": 5},
+      {"city": "Bastia","soldiers": 5},
+      {"city": "Lille","soldiers": 5},
+      {"city": "Reims","soldiers": 5},
+      {"city": "Metz","soldiers": 5},
+      {"city": "Nancy","soldiers": 5},
+      {"city": "Strasbourg","soldiers": 5},
+      {"city": "Mulhouse","soldiers": 5},
+      {"city": "Besancon","soldiers": 5},
+      {"city": "Lyon","soldiers": 5},
+      {"city": "Annecy","soldiers": 5},
+      {"city": "Bonifacio","soldiers": 5},
+      {"city": "Perpignan","soldiers": 5},
+      {"city": "Toulouse","soldiers": 5},
+      {"city": "Bordeaux","soldiers": 5}
+    ]
+  },
+  {
+    "country": "Georgia",
+    "list":
+    [
+      {"city": "Batumi","soldiers": 3},
+      {"city": "Kutaisi","soldiers": 4},
+      {"city": "Tbilisi","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Germany",
+    "list":
+    [
+      {"city": "Stralsund","soldiers": 5},
+      {"city": "Neubrandenburg","soldiers": 5},
+      {"city": "Berlin","soldiers": 5},
+      {"city": "Dresden","soldiers": 5},
+      {"city": "Chemnitz","soldiers": 5},
+      {"city": "Nürnberg","soldiers": 5},
+      {"city": "Landshut","soldiers": 5},
+      {"city": "München","soldiers": 5},
+      {"city": "Augsburg","soldiers": 5},
+      {"city": "Freiburg im Breisgau","soldiers": 5},
+      {"city": "Karlsruhe","soldiers": 5},
+      {"city": "Saarbrücken","soldiers": 5},
+      {"city": "Aachen","soldiers": 5},
+      {"city": "Mönchengladbach","soldiers": 5},
+      {"city": "Düsseldorf","soldiers": 5},
+      {"city": "Essen","soldiers": 5},
+      {"city": "Münster","soldiers": 5},
+      {"city": "Emden","soldiers": 5},
+      {"city": "Bremen","soldiers": 5},
+      {"city": "Flensburg","soldiers": 5},
+      {"city": "Kiel","soldiers": 5},
+      {"city": "Rostock","soldiers": 5}
+    ]
+  },
+  {
+    "country": "Greece",
+    "list":
+    [
+      {"city": "Rhodos","soldiers": 8},
+      {"city": "Alexandroupolis","soldiers": 8},
+      {"city": "Thessaloniki","soldiers": 8},
+      {"city": "Ioannina","soldiers": 8}
+    ]
+  },
+  {
+    "country": "Hungary",
+    "list":
+    [
+      {"city": "Szeged","soldiers": 2},
+      {"city": "Pécs","soldiers": 2},
+      {"city": "Szombathely","soldiers": 2},
+      {"city": "Győr","soldiers": 2},
+      {"city": "Budapest","soldiers": 2},
+      {"city": "Miskolc","soldiers": 2},
+      {"city": "Nyíregyháza","soldiers": 2},
+      {"city": "Debrecen","soldiers": 2}
+    ]
+  },
+  {
+    "country": "Iraq",
+    "list":
+    [
+      {"city": "Ramadi","soldiers": 2},
+      {"city": "Sinjar","soldiers": 2},
+      {"city": "Zakho","soldiers": 2},
+      {"city": "Duhok","soldiers": 2}
+    ]
+  },
+  {
+    "country": "Ireland",
+    "list":
+    [
+      {"city": "Dublin","soldiers": 9},
+      {"city": "Athlone","soldiers": 9}
+    ]
+  },
+  {
+    "country": "Israel",
+    "list":
+    [
+      {"city": "Eilat","soldiers": 7},
+      {"city": "Be'er Sheva","soldiers": 7},
+      {"city": "Tel Aviv","soldiers": 7},
+      {"city": "Nablus","soldiers": 7},
+      {"city": "East Jerusalem","soldiers": 7},
+      {"city": "Hebron","soldiers": 7},
+      {"city": "Haifa","soldiers": 7},
+      {"city": "Golan Heights","soldiers": 7}
+    ]
+  },
+  {
+    "country": "Italy",
+    "list":
+    [
+      {"city": "Palermo","soldiers": 6},
+      {"city": "Cagliari","soldiers": 6},
+      {"city": "Sassari","soldiers": 6},
+      {"city": "Genova","soldiers": 6},
+      {"city": "Livorno","soldiers": 6},
+      {"city": "Torino","soldiers": 6},
+      {"city": "Milano","soldiers": 5},
+      {"city": "Brescia","soldiers": 5},
+      {"city": "Trento","soldiers": 5},
+      {"city": "Trieste","soldiers": 5},
+      {"city": "Bari","soldiers": 5},
+      {"city": "Pescara","soldiers": 5}
+    ]
+  },
+  {
+    "country": "Jordan",
+    "list":
+    [
+      {"city": "Aqaba","soldiers": 1},
+      {"city": "Ma'an","soldiers": 1},
+      {"city": "Madaba","soldiers": 1},
+      {"city": "As-Salt","soldiers": 1},
+      {"city": "Irbid","soldiers": 1},
+      {"city": "Amman","soldiers": 1},
+      {"city": "Ar Ruwayshid","soldiers": 1}
+    ]
+  },
+  {
+    "country": "Kosovo",
+    "list":
+    [
+      {"city": "Pristina","soldiers": 1},
+      {"city": "Prizren","soldiers": 1}
+    ]
+  },
+  {
+    "country": "Latvia",
+    "list":
+    [
+      {"city": "Daugavpils","soldiers": 12}
+    ]
+  },
+  {
+    "country": "Lebanon",
+    "list":
+    [
+      {"city": "Tyre","soldiers": 3},
+      {"city": "Nabatieh","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Libyan Government of National Stability",
+    "list":
+    [
+      {"city": "Sirte","soldiers": 10},
+      {"city": "Sabha","soldiers": 10}
+    ]
+  },
+  {
+    "country": "Libyan Government of National Unity",
+    "list":
+    [
+      {"city": "Misrata","soldiers": 8},
+      {"city": "Ghadames","soldiers": 8},
+      {"city": "Zawiya","soldiers": 1},
+      {"city": "Tripoli","soldiers": 1},
+      {"city": "Al Khums","soldiers": 1},
+      {"city": "Zliten","soldiers": 1}
+    ]
+  },
+  {
+    "country": "Lithuania",
+    "list":
+    [
+      {"city": "Vilnius","soldiers": 9},
+      {"city": "Kaunas","soldiers": 9}
+    ]
+  },
+  {
+    "country": "Luxembourg",
+    "list":
+    [
+      {"city": "Luxembourg","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Moldova",
+    "list":
+    [
+      {"city": "Ungheni","soldiers": 2},
+      {"city": "Bălți","soldiers": 2},
+      {"city": "Chișinău","soldiers": 2}
+    ]
+  },
+  {
+    "country": "Montenegro",
+    "list":
+    [
+      {"city": "Podgorica","soldiers": 1}
+    ]
+  },
+  {
+    "country": "Morocco",
+    "list":
+    [
+      {"city": "Tarfaya","soldiers": 6},
+      {"city": "Agadir","soldiers": 6},
+      {"city": "Marrakesh","soldiers": 6},
+      {"city": "Beni Mellal","soldiers": 6},
+      {"city": "Oujda","soldiers": 6}
+    ]
+  },
+  {
+    "country": "Netherlands",
+    "list":
+    [
+      {"city": "Amsterdam","soldiers": 39}
+    ]
+  },
+  {
+    "country": "North Macedonia",
+    "list":
+    [
+      {"city": "Skopje","soldiers": 1},
+      {"city": "Kumanovo","soldiers": 1}
+    ]
+  },
+  {
+    "country": "Norway",
+    "list":
+    [
+      {"city": "Fredrikstad","soldiers": 4},
+      {"city": "Oslo","soldiers": 4},
+      {"city": "Kristiansand","soldiers": 4},
+      {"city": "Trondheim","soldiers": 4},
+      {"city": "Narvik","soldiers": 4},
+      {"city": "Kirkenes","soldiers": 4}
+    ]
+  },
+  {
+    "country": "Palestine",
+    "list":
+    [
+      {"city": "Gaza City","soldiers": 4},
+      {"city": "Rafah","soldiers": 4}
+    ]
+  },
+  {
+    "country": "Poland",
+    "list":
+    [
+      {"city": "Rzeszów","soldiers": 14},
+      {"city": "Lublin","soldiers": 14},
+      {"city": "Białystok","soldiers": 14},
+      {"city": "Suwałki","soldiers": 14},
+      {"city": "Gdańsk","soldiers": 14},
+      {"city": "Olsztyn","soldiers": 14}
+    ]
+  },
+  {
+    "country": "Portugal",
+    "list":
+    [
+      {"city": "Faro","soldiers": 3},
+      {"city": "Évora","soldiers": 3},
+      {"city": "Viseau","soldiers": 3},
+      {"city": "Braga","soldiers": 3}
+    ]
+  },
+  {
+    "country": "Romania",
+    "list":
+    [
+      {"city": "Iași","soldiers": 2},
+      {"city": "Galați","soldiers": 2},
+      {"city": "Constanța","soldiers": 2},
+      {"city": "Constanța","soldiers": 2},
+      {"city": "Oradea","soldiers": 2},
+      {"city": "Arad","soldiers": 2},
+      {"city": "Timișoara","soldiers": 2},
+      {"city": "Craiova","soldiers": 2},
+      {"city": "Pitești","soldiers": 2},
+      {"city": "București","soldiers": 2}
+    ]
+  },
+  {
+    "country": "Russia",
+    "list":
+    [
+      {"city": "Simferopol","soldiers": 20},
+      {"city": "Melitopol","soldiers": 20},
+      {"city": "Donetsk","soldiers": 20},
+      {"city": "Horlivka","soldiers": 20},
+      {"city": "Luhansk","soldiers": 20},
+      {"city": "Voronezh","soldiers": 20},
+      {"city": "Belgorod","soldiers": 20},
+      {"city": "Kursk","soldiers": 20},
+      {"city": "Bryansk","soldiers": 20},
+      {"city": "Kaliningrad","soldiers": 20}
+    ]
+  },
+  {
+    "country": "Saudi Arabia",
+    "list":
+    [
+      {"city": "Qurayyat","soldiers": 8},
+      {"city": "Tabuk","soldiers": 8},
+      {"city": "Arar","soldiers": 8}
+    ]
+  },
+  {
+    "country": "Serbia",
+    "list":
+    [
+      {"city": "Belgrade","soldiers": 9}
+    ]
+  },
+  {
+    "country": "Slovakia",
+    "list":
+    [
+      {"city": "Bratislava","soldiers": 8}
+    ]
+  },
+  {
+    "country": "Spain",
+    "list":
+    [
+      {"city": "Seville","soldiers": 10},
+      {"city": "Vigo","soldiers": 10},
+      {"city": "Barcelona","soldiers": 10},
+      {"city": "Pamplona","soldiers": 10},
+      {"city": "Madrid","soldiers": 10}
+    ]
+  },
+  {
+    "country": "Sweden",
+    "list":
+    [
+      {"city": "Malmö","soldiers": 7},
+      {"city": "Helsingborg","soldiers": 7},
+      {"city": "Göteborg","soldiers": 7},
+      {"city": "Linköbing","soldiers": 7},
+      {"city": "Stockholm","soldiers": 7},
+      {"city": "Sundsvall","soldiers": 7},
+      {"city": "Luleå","soldiers": 7}
+    ]
+  },
+  {
+    "country": "Switzerland",
+    "list":
+    [
+      {"city": "Geneva","soldiers": 8},
+      {"city": "Lausanne","soldiers": 8},
+      {"city": "Basel","soldiers": 8},
+      {"city": "Zürich","soldiers": 8},
+      {"city": "Lugano","soldiers": 8}
+    ]
+  },
+  {
+    "country": "Syria",
+    "list":
+    [
+      {"city": "Aleppo","soldiers": 20},
+      {"city": "Damascus","soldiers": 20}
+    ]
+  },
+  {
+    "country": "Tunisia",
+    "list":
+    [
+      {"city": "Tunis","soldiers": 9}
+    ]
+  },
+  {
+    "country": "Türkiye",
+    "list":
+    [
+      {"city": "Edirne", "soldiers": 10},
+      {"city": "Çorlu", "soldiers": 10},
+      {"city": "İzmir", "soldiers": 10},
+      {"city": "Aydın", "soldiers": 10},
+      {"city": "North Nicosia", "soldiers": 10},
+      {"city": "Antakya", "soldiers": 10},
+      {"city": "Van", "soldiers": 10},
+      {"city": "Erzurum", "soldiers": 10},
+      {"city": "Trabzon", "soldiers": 10}
+    ]
+  },
+  {
+    "country": "United Kingdom",
+    "list":
+    [
+      {"city": "Belfast","soldiers": 15},
+      {"city": "Plymouth","soldiers": 15},
+      {"city": "Southampton","soldiers": 15},
+      {"city": "Brighton and Hove","soldiers": 15},
+      {"city": "Canterbury","soldiers": 15}
+    ]
+  },
+  {
+    "country": "Ukraine",
+    "list":
+    [
+      {"city": "Kherson","soldiers": 19},
+      {"city": "Zaporizhzhia","soldiers": 19},
+      {"city": "Kramatorsk","soldiers": 20},
+      {"city": "Kharkiv","soldiers": 19},
+      {"city": "Sumy","soldiers": 19},
+      {"city": "Chernihiv","soldiers": 19}
+    ]
+  }
+]

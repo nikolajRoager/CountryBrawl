@@ -16,7 +16,7 @@ public:
     void update(double dt) {
         timeOut-=dt;
     }
-    bool dead () const {return timeOut<=0;}
+    [[nodiscard]] bool dead () const {return timeOut<=0;}
 private:
     double originX, originY;
     double targetX, targetY;
