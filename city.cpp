@@ -173,6 +173,7 @@ void city::displayInfobox(
     const texwrap& ownerColonTexture,
     const texwrap& developmentColonTexture,
     const texwrap& developTexture,
+    const texwrap& changeSpecTexture,
     const texwrap& specializationColonTexture,
     const texwrap& incomeColonTexture,
     const texwrap& euroTexture,
@@ -219,7 +220,7 @@ void city::displayInfobox(
     maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
-    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():NoneTextTexture.getWidth()), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():(NoneTextTexture.getWidth()+changeSpecTexture.getWidth())), maxWidthAfterColon);
     //TODO, add width from stockpiles
 
     maxWidthAfterColon *= scale;
@@ -318,13 +319,14 @@ void city::displayInfobox(
     //TODO render stockpile
 }
 
-bool city::hasClickedDevelop(
+bool city::updateInfobox(
     const texwrap &cityColonTexture,
     const texwrap &provinceColonTexture,
     const texwrap &coreColonTexture,
     const texwrap &ownerColonTexture,
     const texwrap &developmentColonTexture,
     const texwrap &developTexture,
+    const texwrap& changeSpecTexture,
     const texwrap &specializationColonTexture,
     const texwrap &incomeColonTexture,
     const texwrap &euroTexture,
@@ -374,7 +376,7 @@ bool city::hasClickedDevelop(
     maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
-    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():NoneTextTexture.getWidth()), maxWidthAfterColon);
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():(NoneTextTexture.getWidth()+changeSpecTexture.getWidth())), maxWidthAfterColon);
     //TODO, add width from stockpiles
 
     maxWidthAfterColon *= scale;

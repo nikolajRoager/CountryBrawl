@@ -84,6 +84,7 @@ private:
     std::shared_ptr<uiArmyCapCounter> armyCapCounter;
     std::shared_ptr<uiFundsTracker> fundsTracker;
 
+    std::shared_ptr<uiExpandableMenu> autoMissileMenu;
     std::shared_ptr<uiExpandableMenu> autoRecruitMenu;
     std::shared_ptr<uiExpandableMenu> stanceMenu;
     std::shared_ptr<uiButton> autoBalanceButton;
@@ -152,6 +153,7 @@ private:
     texwrap ownerColonTexture;
     texwrap developmentColonTexture;
     texwrap developTexture;
+    texwrap changeSpecializationTexture;
     texwrap specializationColonTexture;
     texwrap stockpileColonTexture;
     texwrap productionColonTexture;

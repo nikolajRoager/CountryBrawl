@@ -57,6 +57,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     ownerColonTexture("Owner: ",renderer,smallFont),
     developmentColonTexture("Development: ",renderer,smallFont),
     developTexture(assetsPath()/"ui"/"develop.png",renderer),
+    changeSpecializationTexture(assetsPath()/"ui"/"changeSpecialization.png",renderer),
     specializationColonTexture("Specialization: ",renderer,smallFont),
     stockpileColonTexture("Stockpile:",renderer,smallFont),
     factoryTextTexture("Factory",renderer,smallFont),
@@ -420,6 +421,10 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     autoRecruitMenu = std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"recruitInfantry","recruitArtillery","recruitmentOff"},"Automatic recruitment settings");
     bottomBar.addRightComponent(autoRecruitMenu);
 
+
+    autoMissileMenu= std::make_shared<uiExpandableMenu>(renderer, smallFont,std::vector<std::string>{"autoMissileOff","autoMissile"},"Automatically fire missiles");
+    bottomBar.addRightComponent(autoMissileMenu);
+
     autoBalanceButton = std::make_shared<uiButton>(renderer, smallFont,"autoBalanceButton","Auto balance Front-Lines");
     bottomBar.addRightComponent(autoBalanceButton);
 
@@ -567,6 +572,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             ownerColonTexture,
             developmentColonTexture,
             developTexture,
+            changeSpecializationTexture,
             specializationColonTexture,
             incomeColonTexture,
             euroTexture,
@@ -849,13 +855,14 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         //If we make a development click, we shouldn't deselect the city
         bool madeDevClick=false;
         if (primarySelectedCity!=-1 && cities[primarySelectedCity].getOwner()==playerCountryId) {
-            if (cities[primarySelectedCity].hasClickedDevelop(
+            if (cities[primarySelectedCity].updateInfobox(
                 cityColonTexture,
                 provinceColonTexture,
                 coreColonTexture,
                 ownerColonTexture,
                 developmentColonTexture,
                 developTexture,
+                changeSpecializationTexture,
                 specializationColonTexture,
                 incomeColonTexture,
                 euroTexture,
@@ -1065,7 +1072,11 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     }
 
-    for (auto &city: cities) {
+    //Missiles currently at the ready, indexed by country/cities
+    std::map<int,std::vector<int>> readyMissiles;
+
+    for (int i = 0; i < cities.size(); ++i) {
+        auto &city = cities[i];
         city.shoot(countries,shotBalls, smallArmsShots, soldiers, cities, generator, dt,*diploManager,shotSound,screenMinX, screenMinY, screenWidth, screenHeight, scale);
         city.updateOwnership(cities, countries,supplyHubs,*diploManager);
         if (city.updateRecruitment(dtGameTime)) {
@@ -1076,6 +1087,15 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         if (city.updateMissileBuilding(dtGameTime)) {
             //Currently nothing is done on our side
             //std::cout<<"Build missile in "<<city.getName()<<std::endl;
+        }
+
+        if (city.hasMissileReady()) {
+            if (!readyMissiles.contains(city.getOwner())) {
+                readyMissiles.emplace(city.getOwner(),std::vector<int>{i});
+            }
+            else {
+                readyMissiles.at(city.getOwner()).emplace_back(i);
+            }
         }
         if (city.canRepair()) {
             city.repair();
@@ -1182,13 +1202,87 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     //Update automatic building of missiles, don't bother shuffling, too much hassle
     for (auto& city : cities) {
         //TODO, for now, auto build missiles is always on, we need an option to turn it off
-        auto& owner = countries[city.getOwner()];
-        if (owner.getFunds()>owner.getMissileBuildingCost()) {
-            if (city.buildMissile(countries)) {
-                owner.spendFunds(owner.getMissileBuildingCost());
+        if (city.getSpecialization()==city::MISSILE_SITE) {
+            auto& owner = countries[city.getOwner()];
+            if (owner.getFunds()>owner.getMissileBuildingCost()) {
+                if (city.buildMissile(countries)) {
+                    owner.spendFunds(owner.getMissileBuildingCost());
+                }
             }
         }
 
+    }
+
+    //Update missile auto-targeting
+    for (auto& [countryId,missileCities] : readyMissiles) {
+
+        if (countryId==playerCountryId && autoMissileMenu->getSelectedMenu()==0)
+            continue;
+
+        if (!diploManager->isAtWar(countryId,countries))
+            continue;
+
+        //So that we don't target the same place twice with multiple missiles, for the exceptionally unlikely chance that multiple missiles are ready at the same time (mostly relevant if the player suddenly turns on auto-targeting)
+        std::set<int> alreadyTargeted;
+
+        double missileRange2 = missileRange * missileRange;
+        for (int i : missileCities) {
+            city& launchCity = cities[i];
+            double x0 = launchCity.getX();
+            double y0 = launchCity.getY();
+
+            //Loop through all enemy cities in range, and make a list of the ones with most soldier
+            int maxSoldiers=0;
+            std::vector<int> targets;
+
+
+            for (int j = 0; j < cities.size(); ++j) {
+                //Skip targets which have been assigned to other missiles
+                if (alreadyTargeted.contains(j))
+                    continue;
+                //Add a target if we are at war with them, and they are in range
+                city& potentialTarget = cities[j];
+                if (countries[launchCity.getOwner()].atWarWith(potentialTarget.getOwner(),*diploManager)) {
+                    double tx = potentialTarget.getX();
+                    double ty = potentialTarget.getY();
+                    double dx = tx - x0;
+                    double dy = ty - y0;
+                    if (dx*dx + dy*dy < missileRange2) {
+                        int enemySoldiers = potentialTarget.getSoldiers(potentialTarget.getOwner());
+                        //Add to target list if this has as many soldiers as the target, clear targets if this is a new standard for size
+                        if (enemySoldiers==maxSoldiers) {
+                            targets.push_back(j);
+                        }
+                        else if (enemySoldiers>maxSoldiers) {
+                            targets.clear();
+                            targets.push_back(j);
+                            maxSoldiers=enemySoldiers;
+                        }
+                    }
+                }
+            }
+
+
+            int targetIndex;
+
+            if (targets.size()==1) {
+                targetIndex=targets.front();
+            }
+            else if (targets.empty()) {
+                continue;
+            }
+            else {
+
+                std::uniform_int_distribution<int> targetDistribution(0,targets.size()-1);
+                targetIndex = targets[targetDistribution(generator)];
+            }
+
+            alreadyTargeted.insert(targetIndex);
+
+            launchCity.launchMissile();
+            missiles.emplace_back(missileInAir,x0,y0,cities[targetIndex].getX(),cities[targetIndex].getY(),countries[playerCountryId].getMissileSpeed());
+
+        }
     }
 
 

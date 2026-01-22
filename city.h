@@ -39,6 +39,7 @@ public:
     const texwrap& ownerColonTexture,
     const texwrap& developmentColonTexture,
     const texwrap& developTexture,
+    const texwrap& changeSpecTexture,
     const texwrap& specializationColonTexture,
     const texwrap& incomeColonTexture,
     const texwrap& euroTexture,
@@ -55,13 +56,14 @@ public:
     const numberRenderer& numberer, int mouseX, int mouseY, int screenWidthPx, int screenHeightPx, double scale,SDL_Renderer* renderer) const;
 
 
-    //Is the little button to develop a city clicked, we need all those textures to figure out where the button goes
-    [[nodiscard]] bool hasClickedDevelop(const texwrap &cityColonTexture,
+    //Is the little button to develop a city clicked, or perhabs the button to change specialization, we need all those textures to figure out where the button goes
+    [[nodiscard]] bool updateInfobox(const texwrap &cityColonTexture,
     const texwrap &provinceColonTexture,
     const texwrap &coreColonTexture,
     const texwrap &ownerColonTexture,
     const texwrap &developmentColonTexture,
     const texwrap &developTexture,
+    const texwrap& changeSpecTexture,
     const texwrap &specializationColonTexture,
     const texwrap &incomeColonTexture,
     const texwrap &euroTexture,
@@ -175,7 +177,7 @@ public:
     //Update ongoing building of missiles, return true if done
     bool updateMissileBuilding(unsigned int dtGameTime);
 
-    [[nodiscard]] bool hasMissileReady() const {return hasMissile && !damaged;}
+    [[nodiscard]] bool hasMissileReady() const {return mySpecialization==MISSILE_SITE && hasMissile && !damaged;}
 
 
     [[nodiscard]] int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) const;

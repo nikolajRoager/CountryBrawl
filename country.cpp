@@ -14,7 +14,7 @@ country::country(int _id,const fs::path& path, const texwrap& _ballInWater, cons
     //Default values
     speed=100.0;
 
-    missileSpeed= 10.0/43200.0;
+    missileSpeed= 2.0/43200.0;
 
     maxBullets=3;
     trainSpeed=300.0;

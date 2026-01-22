@@ -37,7 +37,7 @@ void missile::display(double screenMinX, double screenMinY, int screenWidthPx, i
 
     if (xScreen+missileTexture.getHeight()>0 && xScreen <= screenWidthPx+missileTexture.getHeight()/5 && yScreen+missileTexture.getHeight()>0 && yScreen <= screenHeightPx+missileTexture.getHeight())
     {
-        missileTexture.render(xScreen,yScreen+missileTexture.getHeight()*0.5,renderer,scale,true,true,false,1,0,angle);
+        missileTexture.render(xScreen,yScreen+missileTexture.getHeight()*0.5*scale,renderer,scale,true,true,false,1,0,angle);
     }
 }
 
