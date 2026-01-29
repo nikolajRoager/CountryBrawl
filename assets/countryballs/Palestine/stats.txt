@@ -10,5 +10,7 @@ bonus Sympathy: Has good relation with other Arab countries, most notably Egypt
 gun akm
 coreIncomeMultiplier 0.8
 occupiedIncomeMultiplier 0.8
-malus Very poor: Has very low city development
+malus War ravaged: Has very low city development
 bonus High military budget: starts with a large army
+bonus Makeshift rockets: Has a rocket launcher, alas the Israel has the Iron Dome
+malus No air-defence: Has no air-defences

@@ -11,3 +11,4 @@ gun hk416
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 bonus obscenely rich: Has absurdly high city development
+malus No air-defence: Has no air-defences

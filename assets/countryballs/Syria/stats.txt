@@ -3,10 +3,11 @@ genitive Syrian
 colour #00793C
 cities 14
 difficulty medium
-description Syria has only just come out of a civil war, with the ouster of the Assad regime, now seems like a good time to retake the Golan heights.
+description Syria has only just come out of a civil war, now seems like a good time to retake the Golan heights.
 malus Kurdish autonomy: Kurdistan is not cored
 malus Flawed democracy: -10% province income
 gun akm
 coreIncomeMultiplier 0.9
 occupiedIncomeMultiplier 0.9
 malus War ravaged: Has very low city development
+bonus captured Russian Stockpiles: Has some air-defences and missiles

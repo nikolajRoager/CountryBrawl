@@ -12,3 +12,4 @@ coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 trainSpeedMultiplier 1.1
 bonus obscenely rich: Has absurdly high city development
+bonus Kongsberg: Has good air defences and missiles

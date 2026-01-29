@@ -8,3 +8,5 @@ bonus strong arms sector: -10% equipment production time
 bonus Large country: Has a lot of cities
 gun msbsgrot
 malus small economy: Has middling city development
+bonus Prepare for the Russian invasion: Has good air-defences
+bonus Deterrence: Has significant number of missiles

@@ -8,3 +8,4 @@ malus Small country: Has only 3 cities
 gun hkg3
 malus small economy: Has middling city development
 bonus High military budget: starts with a large army
+bonus Prepare for the Russian invasion: Has excellent air-defences

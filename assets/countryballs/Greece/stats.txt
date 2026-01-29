@@ -11,3 +11,4 @@ gun hkg3
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 malus small economy: Has middling city development
+bonus Prepare for the Turkish invasion: has good air-defences

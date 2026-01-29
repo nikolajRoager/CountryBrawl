@@ -6,13 +6,15 @@
 #include <cmath>
 #include <iostream>
 
-missile::missile(const texwrap &_missileTexture, double _x, double _y, double _targetX, double _targetY, double _speed):
+missile::missile(const texwrap &_missileTexture, double _x, double _y, double _targetX, double _targetY, double _speed, int _countryId):
 missileTexture(_missileTexture)
 {
+    countryId=_countryId;
     x=_x;
     y=_y;
     targetX=_targetX;
     targetY=_targetY;
+    isShotDown=false;
     double dx = targetX-x;
     double dy = targetY-y;
     double distance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));

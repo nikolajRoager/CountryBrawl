@@ -8,3 +8,4 @@ bonus strong arms sector: -10% equipment production time
 bonus Large country: Has a lot of cities
 gun l85a3
 bonus good economy: Has quite high city development
+bonus Independent deterrence: Has some missiles

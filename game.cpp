@@ -33,7 +33,9 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     missileSiteTexture(assetsPath()/"missileSite.png",renderer),
     missileOnSiteTexture(assetsPath()/"missile.png",renderer),
     missileInAir(assetsPath()/"missileInAir.png",renderer),
+    SAMInAir(assetsPath()/"SAMInAir.png",renderer),
     supplyHubTexture(assetsPath() / "supplyHub.png", renderer),
+    airDefenceTexture(assetsPath() / "airDefence.png", renderer),
     selectedCityTexture(assetsPath() / "selectedCity.png", renderer),
     arrowTexture(assetsPath() / "arrow.png", renderer),
     circleMarkerTexture(assetsPath() / "circleMarker.png", renderer),
@@ -59,10 +61,13 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     developTexture(assetsPath()/"ui"/"develop.png",renderer),
     changeSpecializationTexture(assetsPath()/"ui"/"changeSpecialization.png",renderer),
     specializationColonTexture("Specialization: ",renderer,smallFont),
+    airDefenceColonTexture("Air defence: ",renderer,smallFont),
+    yesTexture(assetsPath()/"ui"/"yes.png",renderer),
+    noTexture(assetsPath()/"ui"/"no.png",renderer),
     stockpileColonTexture("Stockpile:",renderer,smallFont),
-    factoryTextTexture("Factory",renderer,smallFont),
-    missileSiteTextTexture("Missile Site",renderer,smallFont),
-    noneTextTexture("None",renderer,smallFont),
+    factoryTextTexture("Factory ",renderer,smallFont),
+    missileSiteTextTexture("Missile Site ",renderer,smallFont),
+    noneTextTexture("None ",renderer,smallFont),
     incomeColonTexture("Income: ",renderer,smallFont),
     euroTexture("€",renderer,smallFont),
     armyCapColonTexture("Army Cap: ",renderer,smallFont),
@@ -78,6 +83,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
 
     developMouseOverText("Develop, €",renderer,smallFont),
     developMaxMouseOverText("Max developed already",renderer,smallFont),
+    addAirDefenceMouseOverText("Add air defence, €",renderer,smallFont),
     shotSound(assetsPath()/"sound"/"shot.wav"),
     explosionSound(assetsPath()/"sound"/"explosion.wav"),
     topBar(renderer),
@@ -468,6 +474,7 @@ game::game(SDL_Renderer *renderer, int windowWidthPx, int windowHeightPx, const 
     //The explosion size is taken from the animation
     missileExplosionRadius=missileAimMarker.getWidth()/2;
     missileRange=2048;
+    SAMRange=512;
 }
 
 void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int screenWidth, int screenHeight,
@@ -494,7 +501,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     for (int i = 0; i < cities.size(); i++) {
         const city &city = cities[i];
-        city.display(cityTexture,factoryTexture,missileSiteTexture,missileOnSiteTexture, ruinTexture, selectedCityTexture, supplyHubTexture,arrowTexture, selectedCities.contains(i), i == primarySelectedCity,
+        city.display(cityTexture,factoryTexture,missileSiteTexture,missileOnSiteTexture, ruinTexture, selectedCityTexture, supplyHubTexture,airDefenceTexture,arrowTexture, selectedCities.contains(i), i == primarySelectedCity,
                      countries, cities, supplyHubs, screenMinX, screenMinY, screenWidth, screenHeight, scale, renderer, numbererSmall,supplyMapMode,neighbourMapMode,millis);
     }
 
@@ -537,6 +544,9 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         missile.display(screenMinX, screenMinY, screenWidth, screenHeight,scale, renderer);
     }
 
+    for (const auto &missile : SAMs) {
+        missile.display(screenMinX, screenMinY, screenWidth, screenHeight,scale, renderer);
+    }
 
     //Draw a selection box
     if (boxSelectionActive) {
@@ -574,6 +584,9 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             developTexture,
             changeSpecializationTexture,
             specializationColonTexture,
+            airDefenceColonTexture,
+            yesTexture,
+            noTexture,
             incomeColonTexture,
             euroTexture,
             armyCapColonTexture,
@@ -585,6 +598,7 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             bulletsTexture,
             developMouseOverText,
             developMaxMouseOverText,
+            addAirDefenceMouseOverText,
             countries,
             numbererSmall,
             userInputs.mouseXPx, userInputs.mouseYPx,
@@ -617,7 +631,33 @@ void game::render(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                     double posX = cxScreen + radiusScreen*cos(theta);
                     double posY = cyScreen + radiusScreen*sin(theta);
 
-                    circleMarkerTexture.render(posX,posY-circleMarkerTexture.getHeight()*0.5,renderer,1.0,true,false,false,1,0,theta);
+                    circleMarkerTexture.render(posX,posY-circleMarkerTexture.getHeight()*0.5,255,0,0,renderer,1.0,true,false,false,1,0,theta);
+                }
+
+                double dx = mouseXWorld-cx;
+                double dy = mouseYWorld-cy;
+
+                if (dx*dx+dy*dy<missileRange*missileRange) {
+                    cities[c].highlightDirectPathScreen(arrowTexture,userInputs.mouseXPx, userInputs.mouseYPx, screenMinX, screenMinY, screenWidth, screenHeight,scale,renderer,millis,255,0,0);
+                    hasMissile = true;
+                }
+            }
+            if (cities[c].getOwner()==playerCountryId && cities[c].getHasAntiAirLauncher()) {
+
+                double cx = cities[c].getX();
+                double cy = cities[c].getY();
+
+                int cxScreen = cx*scale-screenMinX;
+                int cyScreen = cy*scale-screenMinY;
+
+                double radiusScreen = SAMRange*scale;
+                double dtheta=1.0/std::max(1.0,std::floor((scale*64.0)))*M_PI;
+
+                for (double theta = 0; theta<2*M_PI; theta+=dtheta) {
+                    double posX = cxScreen + radiusScreen*cos(theta);
+                    double posY = cyScreen + radiusScreen*sin(theta);
+
+                    circleMarkerTexture.render(posX,posY-circleMarkerTexture.getHeight()*0.5,0,0,255,renderer,1.0,true,false,false,1,0,theta);
                 }
 
                 double dx = mouseXWorld-cx;
@@ -846,7 +886,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
                         if (dx*dx+dy*dy<missileRange*missileRange) {
                             cities[c].launchMissile();
-                            missiles.emplace_back(missileInAir,cities[c].getX(),cities[c].getY(),mouseXWorld,mouseYWorld,countries[playerCountryId].getMissileSpeed());
+                            missiles.emplace_back(missileInAir,cities[c].getX(),cities[c].getY(),mouseXWorld,mouseYWorld,countries[playerCountryId].getMissileSpeed(),playerCountryId);
                         }
                     }
                 }
@@ -855,7 +895,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         //If we make a development click, we shouldn't deselect the city
         bool madeDevClick=false;
         if (primarySelectedCity!=-1 && cities[primarySelectedCity].getOwner()==playerCountryId) {
-            if (cities[primarySelectedCity].updateInfobox(
+            auto hoveredInfo = cities[primarySelectedCity].updateInfobox(
                 cityColonTexture,
                 provinceColonTexture,
                 coreColonTexture,
@@ -864,6 +904,9 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                 developTexture,
                 changeSpecializationTexture,
                 specializationColonTexture,
+                airDefenceColonTexture,
+                yesTexture,
+                noTexture,
                 incomeColonTexture,
                 euroTexture,
                 armyCapColonTexture,
@@ -876,13 +919,38 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
                 countries,
                 numbererSmall,
                 userInputs.leftMouseDown && !userInputs.prevLeftMouseDown, userInputs.mouseXPx, userInputs.mouseYPx,
-                screenWidth,screenHeight,backgroundScale)) {
-                if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getDevCost()) {
-                    countries[playerCountryId].spendFunds(cities[primarySelectedCity].getDevCost());
-                    cities[primarySelectedCity].incrementDevelopment();
+                screenWidth,screenHeight,backgroundScale);
+
+            if (userInputs.leftMouseDown && !userInputs.prevLeftMouseDown) {
+                if (hoveredInfo==city::DEVELOP_HOVER) {
+                    if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getDevCost()) {
+                        countries[playerCountryId].spendFunds(cities[primarySelectedCity].getDevCost());
+                        cities[primarySelectedCity].incrementDevelopment();
+                    }
+                    madeDevClick=true;
                 }
-                madeDevClick=true;
+                else if (hoveredInfo==city::FACTORY_HOVER) {
+                    if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getRespecCost()) {
+                        countries[playerCountryId].spendFunds(cities[primarySelectedCity].getRespecCost());
+                        cities[primarySelectedCity].setSpecialization(city::FACTORY);
+                    }
+                    madeDevClick=true;
                 }
+                else if (hoveredInfo==city::MISSILE_HOVER) {
+                    if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getRespecCost()) {
+                        countries[playerCountryId].spendFunds(cities[primarySelectedCity].getRespecCost());
+                        cities[primarySelectedCity].setSpecialization(city::MISSILE_SITE);
+                    }
+                    madeDevClick=true;
+                }
+                else if (hoveredInfo==city::AIRDEFENCE_HOVER) {
+                    if (countries[playerCountryId].getFunds()>=cities[primarySelectedCity].getAirDefenceCost()) {
+                        countries[playerCountryId].spendFunds(cities[primarySelectedCity].getAirDefenceCost());
+                        cities[primarySelectedCity].buildAirDefence();
+                    }
+                    madeDevClick=true;
+                }
+            }
         }
 
 
@@ -1004,6 +1072,26 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         ticket->update(cities, countries, dt,*diploManager);
     }
 
+    for (auto &sam : SAMs) {
+        sam.update(dtGameTime);
+        if (sam.hasHit()) {
+            double tx = sam.getTargetX();
+            double ty = sam.getTargetY();
+            explosions.emplace_back(bigExplosion,tx,ty,missileExplosionRadius);
+
+            explosionSound.play(tx,ty,screenMinX,screenMinY,screenWidth,screenHeight,scale,false);
+            double missileExplosionRadius2= missileExplosionRadius*missileExplosionRadius;
+            for (auto &missile : missiles) {
+                double dx = missile.getX()-tx;
+                double dy = missile.getY()-ty;
+                if (dx*dx+dy*dy <missileExplosionRadius2) {
+                    missile.shootDown();
+                }
+            }
+        }
+    }
+
+
     for (auto &missile : missiles) {
         missile.update(dtGameTime);
         if (missile.hasHit()) {
@@ -1054,6 +1142,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
         explosions.pop_front();
 
 
+    SAMs.remove_if([](const missile& missile){return missile.isDead();});
     missiles.remove_if([](const missile& missile){return missile.isDead();});
     tickets.remove_if([](const ticket &ticket) { return ticket.isDone(); });
     cargoTickets.remove_if([](const std::shared_ptr<cargoTicket> &ticket) { return ticket->isDone(); });
@@ -1075,6 +1164,8 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
     //Missiles currently at the ready, indexed by country/cities
     std::map<int,std::vector<int>> readyMissiles;
 
+    std::map<int,std::vector<int>> readySAMS;
+
     for (int i = 0; i < cities.size(); ++i) {
         auto &city = cities[i];
         city.shoot(countries,shotBalls, smallArmsShots, soldiers, cities, generator, dt,*diploManager,shotSound,screenMinX, screenMinY, screenWidth, screenHeight, scale);
@@ -1088,6 +1179,10 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             //Currently nothing is done on our side
             //std::cout<<"Build missile in "<<city.getName()<<std::endl;
         }
+        if (city.updateSAMBuilding(dtGameTime)) {
+            //Currently nothing is done on our side
+            //std::cout<<"Build missile in "<<city.getName()<<std::endl;
+        }
 
         if (city.hasMissileReady()) {
             if (!readyMissiles.contains(city.getOwner())) {
@@ -1095,6 +1190,15 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             }
             else {
                 readyMissiles.at(city.getOwner()).emplace_back(i);
+            }
+        }
+
+        if (city.hasSAMReady()) {
+            if (!readySAMS.contains(city.getOwner())) {
+                readySAMS.emplace(city.getOwner(),std::vector<int>{i});
+            }
+            else {
+                readySAMS.at(city.getOwner()).emplace_back(i);
             }
         }
         if (city.canRepair()) {
@@ -1201,12 +1305,97 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
 
     //Update automatic building of missiles, don't bother shuffling, too much hassle
     for (auto& city : cities) {
-        //TODO, for now, auto build missiles is always on, we need an option to turn it off
         if (city.getSpecialization()==city::MISSILE_SITE) {
             auto& owner = countries[city.getOwner()];
             if (owner.getFunds()>owner.getMissileBuildingCost()) {
                 if (city.buildMissile(countries)) {
                     owner.spendFunds(owner.getMissileBuildingCost());
+                }
+            }
+        }
+        if (city.getHasAntiAirLauncher()) {
+            auto& owner = countries[city.getOwner()];
+            if (owner.getFunds()>owner.getSAMBuildingCost()) {
+                if (city.buildSAM(countries)) {
+                    owner.spendFunds(owner.getSAMBuildingCost());
+                }
+            }
+        }
+
+    }
+
+    for (auto& [countryId,SAMCities] : readySAMS) {
+
+        if (!diploManager->isAtWar(countryId,countries))
+            continue;
+
+        double SAMRange2 = SAMRange*SAMRange;
+        for (int i : SAMCities) {
+            city& launchCity = cities[i];
+            double x0 = launchCity.getX();
+            double y0 = launchCity.getY();
+
+            for (missile &m : missiles) {
+                //This line prevents us from shooting down our own rockets
+                if (!countries[m.getCountryId()].atWarWith(countryId,*diploManager))
+                    continue;
+
+                double mx = m.getX();
+                double my = m.getY();
+
+                //Vector from shooter to target
+                double rx = mx-x0 ;
+                double ry = my-y0;
+                //This represents the missile being in-range of our radar, we will try to get an intercept solution
+                if (rx*rx + ry*ry < SAMRange2) {
+                    //Intercept calculation, pretty basic stuff just google it
+
+                    double SAMSpeed = countries[countryId].getSAMSpeed();
+                    double ssmVx = m.getVX();
+                    double ssmVy = m.getVY();
+
+                    //2nd degree equation to get the inverse of the time to target
+                    //Has up to two solutions, but maybe 0
+                    //First get the discriminant
+                    double discriminant = 4*pow(rx*ssmVx+ry*ssmVy,2)-4*(rx*rx+ry*ry)*((ssmVx*ssmVx+ssmVy*ssmVy)-SAMSpeed*SAMSpeed);
+
+                    //Negative time indicates no solution found
+                    double interceptTime=-1;
+                    double invInterceptTime=-1;
+                    if (discriminant>=0) {
+                        double invInterceptTime0 = (-2*(rx*ssmVx+ry*ssmVy)-sqrt(discriminant))/(2*(rx*rx+ry*ry));
+                        double invInterceptTime1 = (-2*(rx*ssmVx+ry*ssmVy)+sqrt(discriminant))/(2*(rx*rx+ry*ry));
+
+                        if (invInterceptTime0>0 && invInterceptTime1>0) {
+                            if (invInterceptTime0>invInterceptTime1) {
+                                invInterceptTime=invInterceptTime0;
+                            }
+                            else {
+                                invInterceptTime=invInterceptTime1;
+                            }
+                        }
+                        else if (invInterceptTime0>0) {
+                            invInterceptTime=invInterceptTime0;
+                        }
+                        else if (invInterceptTime1>0) {
+
+                            invInterceptTime=invInterceptTime1;
+                        }
+                        interceptTime = 1/invInterceptTime;
+                    }
+
+                    //Intercept is in the future, we can shoot at it
+                    if (interceptTime>0 && interceptTime*SAMSpeed <= SAMRange2) {
+
+                        double samVx = ssmVx+rx*invInterceptTime;
+                        double samVy = ssmVy+ry*invInterceptTime;
+                        double tx = x0+samVx*interceptTime;
+                        double ty = y0+samVy*interceptTime;
+
+                        SAMs.emplace_back(SAMInAir,x0,y0,tx,ty,SAMSpeed,countryId);
+                        launchCity.launchSAM();
+                    }
+                    break;
                 }
             }
         }
@@ -1280,7 +1469,7 @@ void game::update(SDL_Renderer *renderer, const texwrap &loadingBackground, int 
             alreadyTargeted.insert(targetIndex);
 
             launchCity.launchMissile();
-            missiles.emplace_back(missileInAir,x0,y0,cities[targetIndex].getX(),cities[targetIndex].getY(),countries[playerCountryId].getMissileSpeed());
+            missiles.emplace_back(missileInAir,x0,y0,cities[targetIndex].getX(),cities[targetIndex].getY(),countries[playerCountryId].getMissileSpeed(),countryId);
 
         }
     }

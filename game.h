@@ -142,6 +142,7 @@ private:
     texwrap missileSiteTexture;
     texwrap missileOnSiteTexture;
     texwrap supplyHubTexture;
+    texwrap airDefenceTexture;
     texwrap selectedCityTexture;
     texwrap arrowTexture;
     texwrap circleMarkerTexture;
@@ -155,6 +156,9 @@ private:
     texwrap developTexture;
     texwrap changeSpecializationTexture;
     texwrap specializationColonTexture;
+    texwrap airDefenceColonTexture;
+    texwrap yesTexture;
+    texwrap noTexture;
     texwrap stockpileColonTexture;
     texwrap productionColonTexture;
     texwrap incomeColonTexture;
@@ -165,6 +169,7 @@ private:
     texwrap noneTextTexture;
     texwrap developMouseOverText;
     texwrap developMaxMouseOverText;
+    texwrap addAirDefenceMouseOverText;
     texwrap bulletsTexture;
 
     //Accessories for trains
@@ -189,6 +194,7 @@ private:
 
     //Accessories for missiles
     texwrap missileInAir;
+    texwrap SAMInAir;
 
     //Accessories for explosions
     texwrap bigExplosion;
@@ -217,8 +223,10 @@ private:
 
     //Missiles in the air
     std::list<missile> missiles;
+    std::list<missile> SAMs;
     double missileExplosionRadius;
     double missileRange;
+    double SAMRange;
 
     std::deque<explosion> explosions;
 

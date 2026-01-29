@@ -15,3 +15,5 @@ coreIncomeMultiplier 0.9
 occupiedIncomeMultiplier 0.9
 infantryRecruitmentTimeMultiplier 0.9
 malus War ravaged: Has very low city development
+bonus European connections: Has decent air-defence (but Russia has a lot of missiles)
+bonus Penguins: Has decent number of missiles

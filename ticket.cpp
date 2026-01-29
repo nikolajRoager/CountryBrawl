@@ -54,7 +54,7 @@ void ticket::destroy(std::vector<city>& cities,std::vector<country>& countries, 
         //The train has been destroyed, but we didn't make it onto the train, just "disembark"
         for (auto& p : passengers) {
             p->setRidingTrain(false);
-            cities[0].addCountryball(p,cities,countries,diploManager);
+            cities[stops[0]].addCountryball(p,cities,countries,diploManager);
         }
     }
     else {

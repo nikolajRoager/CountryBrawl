@@ -10,3 +10,4 @@ gun m16
 coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 bonus Good economy: Has high city development
+malus No air-defence: Has no air-defences=

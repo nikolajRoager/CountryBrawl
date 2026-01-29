@@ -9,3 +9,4 @@ gun akm
 coreIncomeMultiplier 0.8
 occupiedIncomeMultiplier 0.8
 malus Very poor: Has very low city development
+malus No air-defence: Has no air-defences

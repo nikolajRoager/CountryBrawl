@@ -10,3 +10,4 @@ gun akm
 coreIncomeMultiplier 0.9
 occupiedIncomeMultiplier 0.9
 malus poor: Has low city development
+bonus Prepare for the Russian Invasion: Has excellent air-defences

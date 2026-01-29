@@ -1657,10 +1657,60 @@ Try to mathematically solve the auto-targeting problem Done I have done some thi
 day 36, 21-1-2026, workload 4 hours
 ==============
 
+Note
+---
+This is the last day for quite a while I will have time to work on this project.
+
 plan
 ----
-Add auto targeting menu
+Add auto targeting menu Done
 
-Make auto-targeting system, target large collection of hostile cities which are not destroyed
+Make auto-targeting system, target large collection of hostile cities which are not destroyed Done
 
-Option to change specialization
+Option to change specialization Done
+
+day 36, 28-1-2026, workload 6 hours
+===============
+
+Plan
+----
+
+Add air defence boolean to cities Done
+
+Add option to add air defence Done
+
+Add visual air-defence unit Done
+
+Add air-defence missile class Not done, I will reuse the existing missile class with a different texture
+
+Add air-defence and missiles to all starting nations Done (that took forever)
+
+Fix countryballs all moving to Copenhagen at random Done
+
+Make air-defence fire missiles FAILED (out of time)
+
+Make interceptions happen and destroy missiles FAILED (out of time)
+
+Note
+---
+I have created a fascinating bug, where countryballs at war randomly decide to go to Copenhagen (The city with ID 0) I need to look into that tomorrow, that will likely take the entire day
+
+It seems, that whenever the missiles start flying, some countryballs get lost, and start going to Copenhagen. Interestingly Copenhagen seems to adopt them "Accept" them, as if the addCountryball function was called.
+
+Never mind I fixed it, it was in the train code, I used `city[0]` instead of `cities[stops[0]]` to add the passengers when the train gets destroyed
+
+day 37, 29-1-2026
+========
+
+plan
+-----
+
+Make air-defence missiles automatically build
+
+Make air-defence fire missiles FAILED
+
+Make interceptions happen and destroy missiles FAILED
+
+Add particle system
+
+Spawn particles from missiles

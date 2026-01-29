@@ -14,3 +14,5 @@ gun tar21
 armyCapMultiplier 1.2
 occupiedIncomeMultiplier 0.8
 bonus rich: Has high city development
+bonus Iron Dome: Has exceptional air-defences
+bonus Jericho missiles: has significant number of missiles

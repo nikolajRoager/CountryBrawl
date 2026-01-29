@@ -45,10 +45,14 @@ devProduction(1)
 
 
     isBuildingMissile=false;
-    hasMissile=true;
+    hasMissile=false;
     buildingMissileTimer=0;
     buildingMissileLength=864000000;
 
+    isBuildingSAM=false;
+    hasSAM=false;
+    buildingSAMTimer=0;
+    buildingSAMLength=86400000;
 
 
     isRepairing=false;
@@ -57,9 +61,13 @@ devProduction(1)
 
     damaged=false;
 
+    isSelectingSpecialization=false;
+    respecializeCost=64;
+    hasAntiAirLauncher=false;
+    airDefenceCost=12;
 }
 
-city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, const std::set<int> &_neighbours, bool _isSupplyHub,specialization _mySpecialization,int _development):
+city::city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName, double _x, double _y, const std::set<int> &_neighbours, bool _isSupplyHub,specialization _mySpecialization,int _development, bool airDefence):
 myStockpile(0),
 maxStockpile(50),
 baseProduction(2),
@@ -90,9 +98,14 @@ devProduction(1)
     recruitmentLength=0;
 
     isBuildingMissile=false;
-    hasMissile=true;
+    hasMissile=false;
     buildingMissileTimer=0;
     buildingMissileLength=0;
+
+    isBuildingSAM=false;
+    hasSAM=false;
+    buildingSAMTimer=0;
+    buildingSAMLength=86400000;
 
     isRepairing=false;
     repairTimer=0;
@@ -102,6 +115,13 @@ devProduction(1)
     nearestSupplyHub=-1;
 
     damaged=false;
+
+    isSelectingSpecialization=false;
+    respecializeCost=64;
+
+    hasAntiAirLauncher=airDefence;
+    airDefenceCost=12;
+
 }
 
 void city::updateDailyProduction(const std::vector<country>& countries) {
@@ -175,17 +195,21 @@ void city::displayInfobox(
     const texwrap& developTexture,
     const texwrap& changeSpecTexture,
     const texwrap& specializationColonTexture,
+    const texwrap& airDefenceColonTexture,
+    const texwrap& yesTexture,
+    const texwrap& noTexture,
     const texwrap& incomeColonTexture,
     const texwrap& euroTexture,
     const texwrap& armyCapColonTexture,
     const texwrap& stockpileColonTexture,
     const texwrap& productionColonTexture,
-    const texwrap& FactoryTextTexture,
+    const texwrap& factoryTextTexture,
     const texwrap& missileSiteTextTexture,
-    const texwrap& NoneTextTexture,
+    const texwrap& noneTextTexture,
     const texwrap& bulletsTexture,
     const texwrap& developMouseOverText,
     const texwrap& developMaxMouseOverText,
+    const texwrap& addAirDefenceMouseOverText,
     const std::vector<country>& countries,
     const numberRenderer& numberer, int mouseX, int mouseY, int screenWidthPx, int screenHeightPx, double scale,SDL_Renderer* renderer) const {
 
@@ -195,6 +219,7 @@ void city::displayInfobox(
     maxWidthBeforeColon = std::max(ownerColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(developmentColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(specializationColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(airDefenceColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(stockpileColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(productionColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(incomeColonTexture.getWidth(), maxWidthBeforeColon);
@@ -220,13 +245,13 @@ void city::displayInfobox(
     maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
-    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():(NoneTextTexture.getWidth()+changeSpecTexture.getWidth())), maxWidthAfterColon);
-    //TODO, add width from stockpiles
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?factoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():(noneTextTexture.getWidth()+changeSpecTexture.getWidth())), maxWidthAfterColon);
+
+    maxWidthAfterColon = std::max(yesTexture.getWidth(), maxWidthAfterColon);
 
     maxWidthAfterColon *= scale;
 
 
-    //todo TEMP
     int width = maxWidthBeforeColon+maxWidthAfterColon;
 
     int height = cityColonTexture.getHeight()+provinceColonTexture.getHeight()+coreColonTexture.getHeight()+ownerColonTexture.getHeight()+developmentColonTexture.getHeight()+specializationColonTexture.getHeight()+stockpileColonTexture.getHeight()+productionColonTexture.getHeight()+incomeColonTexture.getHeight()+armyCapColonTexture.getHeight();
@@ -276,6 +301,8 @@ void city::displayInfobox(
 
                 int w = developMaxMouseOverText.getWidth();
                 int h = developMaxMouseOverText.getHeight();
+                w*=scale;
+                h*=scale;
                 SDL_Rect background{mouseX-w,mouseY,w,h};
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderFillRect(renderer, &background);
@@ -290,36 +317,78 @@ void city::displayInfobox(
 
     switch (mySpecialization) {
         case NONE:
-            NoneTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+            noneTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+            changeSpecTexture.render(x0+maxWidthBeforeColon+noneTextTexture.getWidth()*scale,y,renderer,scale);
             break;
         case FACTORY:
-            FactoryTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+            factoryTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
             break;
         case MISSILE_SITE:
             missileSiteTextTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
             break;
     }
     y+=specializationColonTexture.getHeight()*scale;
+    int ySpecializationSlashAirdefence = y;
+    airDefenceColonTexture.render(x0,y,renderer,scale);
+    if (hasAntiAirLauncher)
+        yesTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+    else
+        noTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
+    y+=airDefenceColonTexture.getHeight()*scale;
     incomeColonTexture.render(x0,y,renderer,scale);
     euroTexture.render(x0+maxWidthBeforeColon,y,renderer,scale);
-    numberer.render(income,x0+maxWidthBeforeColon+euroTexture.getWidth(),y,renderer,scale);
+    numberer.render(income,x0+maxWidthBeforeColon+euroTexture.getWidth()*scale,y,renderer,scale);
     y+=incomeColonTexture.getHeight()*scale;
     armyCapColonTexture.render(x0,y,renderer,scale);
     numberer.render(armyCapacity,x0+maxWidthBeforeColon,y,renderer,scale);
     y+=armyCapColonTexture.getHeight()*scale;
     stockpileColonTexture.render(x0,y,renderer,scale);
-    int wstock = numberer.render(myStockpile.bullets,x0+maxWidthBeforeColon,y,renderer,scale);
+    int wstock = numberer.render(myStockpile.bullets,x0+maxWidthBeforeColon,y,renderer,scale)*scale;
     bulletsTexture.render(x0+maxWidthBeforeColon+wstock ,y,renderer,scale);
     y+=stockpileColonTexture.getHeight()*scale;
     productionColonTexture.render(x0,y,renderer,scale);
-    int wprod = numberer.render(bulletProduction,x0+maxWidthBeforeColon,y,renderer,scale);
+    int wprod = numberer.render(bulletProduction,x0+maxWidthBeforeColon,y,renderer,scale)*scale;
     bulletsTexture.render(x0+maxWidthBeforeColon+wprod,y,renderer,scale);
 
+    if (mySpecialization==NONE && isSelectingSpecialization) {
 
-    //TODO render stockpile
+        int specWidth = std::max(factoryTextTexture.getWidth(),missileSiteTextTexture.getWidth());
+        specWidth += euroTexture.getWidth();
+        specWidth += numberer.getWidth(respecializeCost);
+        specWidth*=scale;
+        int specHeight = factoryTextTexture.getHeight()+missileSiteTextTexture.getHeight();
+        SDL_Rect background{screenWidthPx-specWidth,ySpecializationSlashAirdefence,specWidth,specHeight};
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &background);
+        factoryTextTexture.render(screenWidthPx-specWidth,ySpecializationSlashAirdefence,renderer,scale);
+        euroTexture.render(screenWidthPx-specWidth+factoryTextTexture.getWidth()*scale,ySpecializationSlashAirdefence,renderer,scale);
+        numberer.render(respecializeCost,screenWidthPx-specWidth+factoryTextTexture.getWidth()*scale+euroTexture.getWidth()*scale,ySpecializationSlashAirdefence,renderer,scale);
+        missileSiteTextTexture.render(screenWidthPx-specWidth,ySpecializationSlashAirdefence+factoryTextTexture.getHeight(),renderer,scale);
+        euroTexture.render(screenWidthPx-specWidth+missileSiteTextTexture.getWidth()*scale,ySpecializationSlashAirdefence+factoryTextTexture.getHeight(),renderer,scale);
+        numberer.render(respecializeCost,screenWidthPx-specWidth+missileSiteTextTexture.getWidth()*scale+euroTexture.getWidth()*scale,ySpecializationSlashAirdefence+factoryTextTexture.getHeight(),renderer,scale);
+
+        //TODO, add a euro symbol
+
+    }
+    else {
+        if (mouseX>x0+maxWidthBeforeColon && mouseX<x0+maxWidthBeforeColon+yesTexture.getWidth() &&
+            mouseY>ySpecializationSlashAirdefence && mouseY<ySpecializationSlashAirdefence+yesTexture.getHeight() && !hasAntiAirLauncher) {
+                int w = addAirDefenceMouseOverText.getWidth()+numberer.getWidth(airDefenceCost);
+                int h = addAirDefenceMouseOverText.getHeight();
+            w*=scale;
+            h*=scale;
+                SDL_Rect background{mouseX-w,mouseY,w,h};
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &background);
+                addAirDefenceMouseOverText.render(mouseX-w,mouseY,renderer,scale);
+                numberer.render(airDefenceCost,mouseX+addAirDefenceMouseOverText.getWidth()-w,mouseY,renderer,scale);
+
+            }
+    }
+
 }
 
-bool city::updateInfobox(
+city::infoboxHoverSubject city::updateInfobox(
     const texwrap &cityColonTexture,
     const texwrap &provinceColonTexture,
     const texwrap &coreColonTexture,
@@ -328,29 +397,31 @@ bool city::updateInfobox(
     const texwrap &developTexture,
     const texwrap& changeSpecTexture,
     const texwrap &specializationColonTexture,
+    const texwrap& airDefenceColonTexture,
+    const texwrap& yesTexture,
+    const texwrap& noTexture,
     const texwrap &incomeColonTexture,
     const texwrap &euroTexture,
     const texwrap &armyCapColonTexture,
     const texwrap &stockpileColonTexture,
     const texwrap &productionColonTexture,
-    const texwrap &FactoryTextTexture,
+    const texwrap &factoryTextTexture,
     const texwrap& missileSiteTextTexture,
-    const texwrap &NoneTextTexture,
+    const texwrap &noneTextTexture,
     const texwrap& bulletsTexture,
     const std::vector<country> &countries, const numberRenderer &numberer, bool leftCLick, int mouseX, int mouseY, int screenWidthPx,
-                             int screenHeightPx, double scale) const {
+                             int screenHeightPx, double scale) {
 
-    if (!leftCLick)
-        return false;
 
     if (damaged)
-        return false;
+        return NONE_HOVER;
     int maxWidthBeforeColon = cityColonTexture.getWidth();
     maxWidthBeforeColon = std::max(provinceColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(coreColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(ownerColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(developmentColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(specializationColonTexture.getWidth(), maxWidthBeforeColon);
+    maxWidthBeforeColon = std::max(airDefenceColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(stockpileColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(productionColonTexture.getWidth(), maxWidthBeforeColon);
     maxWidthBeforeColon = std::max(incomeColonTexture.getWidth(), maxWidthBeforeColon);
@@ -376,8 +447,9 @@ bool city::updateInfobox(
     maxWidthAfterColon = std::max(numberer.getWidth(development)+developTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(myStockpile.bullets)+bulletsTexture.getWidth(), maxWidthAfterColon);
     maxWidthAfterColon = std::max(numberer.getWidth(bulletProduction)+bulletsTexture.getWidth(), maxWidthAfterColon);
-    maxWidthAfterColon = std::max(mySpecialization==FACTORY?FactoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():(NoneTextTexture.getWidth()+changeSpecTexture.getWidth())), maxWidthAfterColon);
-    //TODO, add width from stockpiles
+    maxWidthAfterColon = std::max(mySpecialization==FACTORY?factoryTextTexture.getWidth():(mySpecialization==MISSILE_SITE?missileSiteTextTexture.getWidth():(noneTextTexture.getWidth()+changeSpecTexture.getWidth())), maxWidthAfterColon);
+
+    maxWidthAfterColon = std::max(yesTexture.getWidth(), maxWidthAfterColon);
 
     maxWidthAfterColon *= scale;
 
@@ -404,18 +476,59 @@ bool city::updateInfobox(
         && mouseY>y && mouseY<y+developTexture.getHeight()) {
 
         if (development<MAX_DEVELOPMENT) {
-            return true;
+            return DEVELOP_HOVER;
         }
     }
 
-    return false;
+
+    //Try to see if the mouse is over the button to change specialization
+    y+=developmentColonTexture.getHeight()*scale;
+    int ySpecializationSlashAirdefence =y+specializationColonTexture.getHeight()*scale;
+    if (mySpecialization==NONE) {
+        if (isSelectingSpecialization==false) {
+            int buttonX =x0+maxWidthBeforeColon+noneTextTexture.getWidth()*scale;
+            int buttonW = changeSpecTexture.getWidth()*scale;
+            int buttonH = changeSpecTexture.getHeight()*scale;
+            if (mouseX>buttonX && mouseX<buttonX+buttonW && mouseY>y && mouseY<y+buttonH) {
+                isSelectingSpecialization=true;
+            }
+
+        }
+        else {//If we are already selecting specialization, we are a lot more generous
+
+            int specWidth = std::max(factoryTextTexture.getWidth(),missileSiteTextTexture.getWidth());
+            specWidth += euroTexture.getWidth();
+            specWidth += numberer.getWidth(respecializeCost);
+            specWidth*=scale;
+            int specHeight = noneTextTexture.getHeight()+ factoryTextTexture.getHeight()+missileSiteTextTexture.getHeight();
+            specHeight *= scale;
+
+            int x0 = screenWidthPx-specWidth;
+            if (mouseX<x0 || mouseY<y || mouseY>y+specHeight) {
+                isSelectingSpecialization=false;
+            }
+            else {
+                if (mouseY>y + noneTextTexture.getHeight()*scale+factoryTextTexture.getHeight()*scale)
+                    return MISSILE_HOVER;
+                else if (mouseY>y + noneTextTexture.getHeight()*scale)
+                    return FACTORY_HOVER;
+
+            }
+        }
+    }
+    if (mouseX>x0+maxWidthBeforeColon && mouseX<x0+maxWidthBeforeColon+yesTexture.getWidth() &&
+        mouseY>ySpecializationSlashAirdefence && mouseY<ySpecializationSlashAirdefence+yesTexture.getHeight() && !hasAntiAirLauncher && !isSelectingSpecialization) {
+        return AIRDEFENCE_HOVER;
+        }
+
+    return NONE_HOVER;
 }
 
 
 
 
 //This is horribly bodged, with me hardcoding in the number of frames, it is fine for a little game but not really
-void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, const texwrap& missileSiteTexture, const texwrap& missileOnSiteTexture, const texwrap& ruin, const texwrap& selectedTexture, const texwrap& supplyHubTexture, const texwrap& arrowTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer, bool highlightSupply, bool highlightNeighbours, unsigned int millis) const {
+void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, const texwrap& missileSiteTexture, const texwrap& missileOnSiteTexture, const texwrap& ruin, const texwrap& selectedTexture, const texwrap& supplyHubTexture, const texwrap& airDefenceTexture, const texwrap& arrowTexture, bool isSelected, bool isPrimary, const std::vector<country> &countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs, double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer *renderer,const numberRenderer& numberer, bool highlightSupply, bool highlightNeighbours, unsigned int millis) const {
 
     int xScreen = x*scale-screenMinX;
     int yScreen = y*scale-screenMinY;
@@ -451,6 +564,9 @@ void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, co
 
         if (isSupplyHub)
             supplyHubTexture.render(xScreen+thisScale*((cityTexture.getWidth()/5+supplyHubTexture.getWidth())/2),yScreen,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
+        if (hasAntiAirLauncher)
+            airDefenceTexture.render(xScreen+thisScale*((cityTexture.getWidth()/5+supplyHubTexture.getWidth())/2),yScreen+airDefenceTexture.getHeight()*thisScale,countries[core].getRed(),countries[core].getGreen(),countries[core].getBlue(), renderer,thisScale,true,true);
+
 
         countries[owner].getFlag().render(xScreen-thisScale*(cityTexture.getWidth()/10-3),yScreen-thisScale*cityTexture.getHeight(),renderer,thisScale);
 
@@ -496,12 +612,20 @@ void city::display(const texwrap& cityTexture, const texwrap& factoryTexture, co
             SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale-barWidth*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
             SDL_RenderFillRect(renderer,&quad);
         }
+        if (isBuildingSAM) {
+            double height = 100*static_cast<double>(buildingSAMTimer)/buildingSAMLength;
+            SDL_SetRenderDrawColor(renderer,0,64,255,255);
+
+            int barWidth = 16;
+            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale-2*barWidth*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
+            SDL_RenderFillRect(renderer,&quad);
+        }
         if (isRepairing) {
             double height = 100*static_cast<double>(repairTimer)/repairLength;
             SDL_SetRenderDrawColor(renderer,255,255,0,255);
 
             int barWidth = 16;
-            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale-2*barWidth*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
+            SDL_Rect quad = {(int)(xScreen-cityTexture.getWidth()/5*thisScale-3*barWidth*thisScale),(int)yScreen,(int)(barWidth*thisScale),(int)(-height*thisScale)};
             SDL_RenderFillRect(renderer,&quad);
         }
 
@@ -583,6 +707,9 @@ void city::damage(std::vector<country>& countries) {
     }
     buildingMissileTimer=0;
     isBuildingMissile=false;
+    isBuildingSAM=false;
+    hasSAM=false;
+    buildingSAMTimer=0;
 
     development=std::max(0,development-1);
 }
@@ -1130,6 +1257,19 @@ bool city::buildMissile(const std::vector<country> &countries) {
     return false;
 }
 
+bool city::buildSAM(const std::vector<country> &countries) {
+    if (damaged)
+        return false;
+
+    if (!isBuildingSAM && !hasSAM && hasAntiAirLauncher) {
+        isBuildingSAM =true;
+        buildingSAMTimer =0;
+        buildingSAMLength=countries[owner].getSAMBuildingTime();
+        return true;
+    }
+    return false;
+}
+
 
 bool city::updateRecruitment(unsigned int dtGameTime) {
     if (damaged)
@@ -1157,7 +1297,21 @@ bool city::updateMissileBuilding(unsigned int dtGameTime) {
         }
     }
     return false;
+}
 
+bool city::updateSAMBuilding(unsigned int dtGameTime) {
+    if (damaged)
+        return false;
+    if (isBuildingSAM && !hasSAM&& hasAntiAirLauncher) {
+        buildingSAMTimer+=dtGameTime;
+        if (buildingSAMTimer>=buildingSAMLength) {
+
+            isBuildingSAM=false;
+            hasSAM=true;
+            return true;
+        }
+    }
+    return false;
 }
 
 

@@ -194,8 +194,11 @@ public:
 
     [[nodiscard]] double getMissileBuildingCost() const {return missileBuildingCost;}
     [[nodiscard]] unsigned int getMissileBuildingTime() const {return missileBuildingTime;}
+    [[nodiscard]] double getSAMBuildingCost() const {return SAMBuildingCost;}
+    [[nodiscard]] unsigned int getSAMBuildingTime() const {return SAMBuildingTime;}
 
     [[nodiscard]] double getMissileSpeed() const {return missileSpeed;}
+    [[nodiscard]] double getSAMSpeed() const {return SAMSpeed;}
 private:
 
     int id;
@@ -265,11 +268,16 @@ private:
     double infantryRecruitmentCost;
 
     double missileSpeed;
+    double SAMSpeed;
     //Time to recruit a new infantry soldier, in ms in-game time
     unsigned int infantryRecruitmentTime;
 
     double missileBuildingCost;
     unsigned int missileBuildingTime;
+
+
+    double SAMBuildingCost;
+    unsigned int SAMBuildingTime;
 
     //Multiplied unto the number of stuff produced by factories each day
     double productionMultiplier;

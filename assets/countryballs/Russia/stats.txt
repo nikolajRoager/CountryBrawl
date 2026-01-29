@@ -7,7 +7,6 @@ difficulty easy
 malus Authoritarian regime: -20% province income
 malus Depoliticized population: +20% recruitment time
 malus Endemic corruption: -20% production output
-malus Post-Truth propaganda: a terrible place to live
 malus Pariah: has poor relations with almost everyone
 malus Special military operation: starts at war with Ukraine
 malus Illegal occupation: the occupied Ukrainian land is not cored
@@ -22,3 +21,5 @@ infantryRecruitmentTimeMultiplier 1.2
 defenestration true
 productionMultiplier 0.8
 malus poor: Has low city development
+malus What airdefence doing!?: Has moderate air-defences
+bonus Strategic rocketry: Has A LOT of missiles

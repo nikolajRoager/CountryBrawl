@@ -11,3 +11,5 @@ gun hkg3
 coreIncomeMultiplier 0.9
 occupiedIncomeMultiplier 0.9
 malus poor: Has low city development
+bonus S-400 Purchase: Has good air-defences
+bonus Local rocket industry: Has notable number of missiles

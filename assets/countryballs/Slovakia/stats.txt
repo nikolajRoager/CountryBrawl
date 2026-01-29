@@ -7,3 +7,4 @@ description Slovakia is a small country in central Europe, it broke away from Cz
 bonus Czechoslovak legacy: Conquer Czechia to gain their cores
 gun m4
 malus small economy: Has middling city development
+malus No air defence: has no air-defences

@@ -15,3 +15,5 @@ coreIncomeMultiplier 1.1
 occupiedIncomeMultiplier 1.1
 trainSpeedMultiplier 1.1
 bonus good economy: Has quite high city development
+bonus IRIS-T: decent air-defences
+bonus TAURUS: Decent number of missiles

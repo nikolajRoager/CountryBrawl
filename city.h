@@ -29,8 +29,9 @@ public:
     };
 
     city(int _owner, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y,specialization mySpecialization,int development);
-    void display(const texwrap& baseTexture, const texwrap& factoryTexture, const texwrap& missileSiteTexture, const texwrap& missileOnSiteTexture, const texwrap& ruin, const texwrap& selectedTexture, const texwrap& supplyHubTexture, const texwrap& arrowTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer, bool highlightSupply, bool highlightNeighbours, unsigned int millis) const;
+    void display(const texwrap& baseTexture, const texwrap& factoryTexture, const texwrap& missileSiteTexture, const texwrap& missileOnSiteTexture, const texwrap& ruin, const texwrap& selectedTexture, const texwrap& supplyHubTexture, const texwrap& airDefenceTexture, const texwrap& arrowTexture, bool isSelected, bool isPrimary, const std::vector<country>& countries, const std::vector<city>& cities, const std::map<int,supplyHub>& supplyHubs,double screenMinX, double screenMinY, int screenWidthPx, int screenHeightPx, double scale, SDL_Renderer* renderer,const numberRenderer& numberer, bool highlightSupply, bool highlightNeighbours, unsigned int millis) const;
 
+    [[nodiscard]] bool getHasAntiAirLauncher() const { return hasAntiAirLauncher; }
 
     void displayInfobox(
     const texwrap& cityColonTexture,
@@ -41,23 +42,34 @@ public:
     const texwrap& developTexture,
     const texwrap& changeSpecTexture,
     const texwrap& specializationColonTexture,
+    const texwrap& airDefenceColonTexture,
+    const texwrap& yesTexture,
+    const texwrap& noTexture,
     const texwrap& incomeColonTexture,
     const texwrap& euroTexture,
     const texwrap& armyCapColonTexture,
     const texwrap& stockpileColonTexture,
     const texwrap& productionColonTexture,
-    const texwrap& FactoryTextTexture,
+    const texwrap& factoryTextTexture,
     const texwrap& missileSiteTextTexture,
-    const texwrap& NoneTextTexture,
+    const texwrap& noneTextTexture,
     const texwrap &bulletsTexture,
     const texwrap& developMouseOverText,
     const texwrap& developMaxMouseOverText,
+    const texwrap& addAirDefenceMouseOverText,
     const std::vector<country>& countries,
     const numberRenderer& numberer, int mouseX, int mouseY, int screenWidthPx, int screenHeightPx, double scale,SDL_Renderer* renderer) const;
 
+    enum infoboxHoverSubject {
+        NONE_HOVER,
+        DEVELOP_HOVER,
+        MISSILE_HOVER,
+        FACTORY_HOVER,
+        AIRDEFENCE_HOVER,
+    };
 
     //Is the little button to develop a city clicked, or perhabs the button to change specialization, we need all those textures to figure out where the button goes
-    [[nodiscard]] bool updateInfobox(const texwrap &cityColonTexture,
+    [[nodiscard]] infoboxHoverSubject updateInfobox(const texwrap &cityColonTexture,
     const texwrap &provinceColonTexture,
     const texwrap &coreColonTexture,
     const texwrap &ownerColonTexture,
@@ -65,18 +77,26 @@ public:
     const texwrap &developTexture,
     const texwrap& changeSpecTexture,
     const texwrap &specializationColonTexture,
+    const texwrap& airDefenceColonTexture,
+    const texwrap& yesTexture,
+    const texwrap& noTexture,
     const texwrap &incomeColonTexture,
     const texwrap &euroTexture,
     const texwrap &armyCapColonTexture,
     const texwrap &stockpileColonTexture,
     const texwrap &productionColonTexture,
-    const texwrap &FactoryTextTexture,
+    const texwrap &factoryTextTexture,
     const texwrap& missileSiteTextTexture,
-    const texwrap &NoneTextTexture,
+    const texwrap &noneTextTexture,
     const texwrap &bulletsTexture,
     const std::vector<country> &countries, const numberRenderer &numberer, bool leftCLick, int mouseX, int mouseY, int screenWidthPx,
                              int screenHeightPx, double scale
-) const;
+);
+
+    [[nodiscard]] int getRespecCost() const {return respecializeCost;}
+    [[nodiscard]] int getAirDefenceCost() const {return airDefenceCost;}
+
+    void buildAirDefence() {hasAntiAirLauncher = true;}
 
 
 
@@ -136,8 +156,12 @@ public:
         }
     }
 
+    void setSpecialization(specialization newSpecialization) {
+        mySpecialization = newSpecialization;
+    }
+
     ///For loading from file
-    city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, const std::set<int>& _neighbours, bool isSupplyHub,specialization mySpecialization,int development);
+    city(int _owner, int _core, int _myId, const std::string &_name, const std::string &_provinceName,double _x, double _y, const std::set<int>& _neighbours, bool isSupplyHub,specialization mySpecialization,int development, bool airDefence);
 
     void updateFrontlinesAndNeighbourDistances(const std::vector<city>& cities,const mapData& watermap);
 
@@ -177,7 +201,13 @@ public:
     //Update ongoing building of missiles, return true if done
     bool updateMissileBuilding(unsigned int dtGameTime);
 
+    bool buildSAM(const std::vector<country>& countries);
+    //Update ongoing building of missiles, return true if done
+    bool updateSAMBuilding(unsigned int dtGameTime);
+
+
     [[nodiscard]] bool hasMissileReady() const {return mySpecialization==MISSILE_SITE && hasMissile && !damaged;}
+    [[nodiscard]] bool hasSAMReady() const {return hasAntiAirLauncher && hasSAM && !damaged;}
 
 
     [[nodiscard]] int getHostileNeighbours(const std::vector<city>& cities, const std::vector<country>& countries,const diplomacyManager& diploManager) const;
@@ -240,11 +270,16 @@ public:
     [[nodiscard]] const std::set<int>& getPotentialSupplyHubs() const {return potentialSupplyHubs;}
 
     void launchMissile() {hasMissile=false;}
+    void launchSAM() {hasSAM=false;}
 
     //Randomly launch small-arms fire at enemy countryballs
     void shoot(const std::vector<country>& countries, std::vector<std::shared_ptr<countryball>>& shotBalls,std::deque<lingeringShot> &lingeringShots, const std::vector<std::shared_ptr<countryball>> &soldiers, const std::vector<city>& cities, std::default_random_engine &randomEngine, double dt,const diplomacyManager& diploManager, const soundWrap& shot, double screenMinX, double screenMinY, int screenWidth, int screenHeight, double scale);
 
 private:
+    //For the development and specialization menu
+    bool isSelectingSpecialization;
+    int respecializeCost;
+    int airDefenceCost;
 
     specialization mySpecialization;
 
@@ -278,6 +313,15 @@ private:
     bool hasMissile;
     unsigned int buildingMissileTimer;
     unsigned int buildingMissileLength;
+
+
+
+    bool isBuildingSAM;
+    bool hasSAM;
+    unsigned int buildingSAMTimer;
+    unsigned int buildingSAMLength;
+
+    bool hasAntiAirLauncher;
 
     bool isRepairing;
     unsigned int repairTimer;

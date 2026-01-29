@@ -10,3 +10,5 @@ malus Too low retirement age: -10% army capacity from cities
 gun hk416
 armyCapMultiplier 0.9
 bonus good economy: Has quite high city development
+bonus Independent deterrence: Has A LOT of missiles
+bonus Good air-defence: Has good air-defence

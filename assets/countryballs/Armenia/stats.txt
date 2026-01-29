@@ -8,3 +8,4 @@ malus Small country: Has only 2 cities
 malus Cut-off: half of Armenia is not in game
 gun akm
 malus Very poor: Has very low city development
+bonus Russian connections: Has good air-defences

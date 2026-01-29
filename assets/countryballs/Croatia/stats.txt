@@ -7,3 +7,4 @@ difficulty hard
 malus Small country: Has only 4 cities
 gun vhs
 malus small economy: Has middling city development
+malus No air-defence: Has no air-defences=

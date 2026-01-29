@@ -10,3 +10,5 @@ gun m4
 coreIncomeMultiplier 0.8
 occupiedIncomeMultiplier 0.8
 malus small economy: Has middling city development
+bonus American connection: Has good air-defences
+bonus Bomb Yemen: Has notable number of missiles

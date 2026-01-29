@@ -7,3 +7,4 @@ description Slovenia is often confused with Slovakia, and honestly, you are bett
 malus Small country: has only 2 cities
 gun fnscar
 malus decent economy Has average city development
+malus No air-defence: Has no air-defences

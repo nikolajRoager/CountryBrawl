@@ -11,3 +11,4 @@ gun hkg3
 coreIncomeMultiplier 0.9
 occupiedIncomeMultiplier 0.9
 malus Very poor: Has very low city development
+malus No air-defence: Has no air-defences=

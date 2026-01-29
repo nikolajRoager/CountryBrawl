@@ -10,3 +10,4 @@ bonus Eonosis: Conquer Greece to gain their cores
 gun hkg3
 decent economy Has average city development
 bonus High military budget: starts with a large army
+malus No air-defence: Has no air-defences... and Turkey has missiles

@@ -55,6 +55,8 @@ struct loadableBase {
 
     bool isSupplyHub = false;
 
+    bool isAirLauncher = false;
+
     ///Neighbour, saved as index to be safe when the vector containing us get resized
     std::set<int> neighbours;
 
@@ -74,6 +76,7 @@ void from_json(const nlohmann::json& j, loadableBase& b) {
     j.at("y").get_to(b.y);
     j.at("neighbours").get_to(b.neighbours);
     b.isSupplyHub= j.value("isSupplyHub", false);
+    b.isAirLauncher= j.value("isAirLauncher", false);
     b.development= j.value("development", 0);
     std::string spec = j.value("specialization", "NONE");
     if (spec == "FACTORY") {
@@ -125,7 +128,7 @@ void jsonClient::load(std::vector<city>& bases,const std::vector<country>& count
         }
 
 
-        bases.emplace_back(ownerId,coreId,i++,base.name,base.provinceName,base.x,base.y,base.neighbours,base.isSupplyHub,base.mySpecialization,base.development);
+        bases.emplace_back(ownerId,coreId,i++,base.name,base.provinceName,base.x,base.y,base.neighbours,base.isSupplyHub,base.mySpecialization,base.development,base.isAirLauncher);
     }
 }
 
